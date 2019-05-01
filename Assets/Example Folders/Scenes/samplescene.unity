@@ -151,7 +151,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 168218571}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.019999983, y: 1.196, z: 1.8100104}
+  m_LocalPosition: {x: 0.019999983, y: 1.196, z: 1.8100114}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 405591765}
@@ -200,7 +200,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 168218571}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: d0ef8dc2c2eabfa4e8cb77be57a837c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -356,7 +355,7 @@ MonoBehaviour:
   m_BakedTexture: {fileID: 8900000, guid: 3dacf31294e808941b9dbbb4ac22a151, type: 3}
   m_CustomTexture: {fileID: 0}
   m_BakedRenderData:
-    worldToCameraRHS:
+    m_WorldToCameraRHS:
       e00: 0
       e01: 0
       e02: 0
@@ -373,7 +372,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    projectionMatrix:
+    m_ProjectionMatrix:
       e00: 0
       e01: 0
       e02: 0
@@ -390,9 +389,9 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    capturePosition: {x: 0, y: 0, z: 0}
+    m_CapturePosition: {x: 0, y: 0, z: 0}
   m_CustomRenderData:
-    worldToCameraRHS:
+    m_WorldToCameraRHS:
       e00: 0
       e01: 0
       e02: 0
@@ -409,7 +408,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    projectionMatrix:
+    m_ProjectionMatrix:
       e00: 0
       e01: 0
       e02: 0
@@ -426,7 +425,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    capturePosition: {x: 0, y: 0, z: 0}
+    m_CapturePosition: {x: 0, y: 0, z: 0}
   m_HDProbeVersion: 3
   m_ObsoleteInfiniteProjection: 0
   m_ObsoleteInfluenceVolume:
@@ -646,6 +645,69 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 300715998}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &322177602
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 322177604}
+  - component: {fileID: 322177603}
+  m_Layer: 0
+  m_Name: InputTestObj
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &322177603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322177602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 0c38a8f01adb82745bc892f64bf25a8a,
+    type: 3}
+  m_NotificationBehavior: 0
+  m_UIEventSystem: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Experimental.Input.Plugins.PlayerInput.PlayerInput+DeviceLostEvent,
+      Unity.InputSystem, Version=0.2.8.0, Culture=neutral, PublicKeyToken=null
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Experimental.Input.Plugins.PlayerInput.PlayerInput+DeviceRegainedEvent,
+      Unity.InputSystem, Version=0.2.8.0, Culture=neutral, PublicKeyToken=null
+  m_ActionEvents: []
+  m_AutoSwitchControlScheme: 0
+  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultActionMap: 07ce13c0-8d43-496b-a9cd-51a4100f874b
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
+--- !u!4 &322177604
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322177602}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.8303022, y: 2.6987362, z: -3.1862612}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &405591764
 GameObject:
   m_ObjectHideFlags: 0
@@ -721,7 +783,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 581876909}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -770,7 +831,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 954474956}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -819,7 +879,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1020492026}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 483944395}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -877,7 +936,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1037846703}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.019999983, y: 1.196, z: -0.6870022}
+  m_LocalPosition: {x: 0.019999983, y: 1.196, z: -0.6870024}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 405591765}
@@ -926,7 +985,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1037846703}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: d0ef8dc2c2eabfa4e8cb77be57a837c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1082,7 +1140,7 @@ MonoBehaviour:
   m_BakedTexture: {fileID: 8900000, guid: f87447f4c3970e2409d959b91b49c574, type: 3}
   m_CustomTexture: {fileID: 0}
   m_BakedRenderData:
-    worldToCameraRHS:
+    m_WorldToCameraRHS:
       e00: 0
       e01: 0
       e02: 0
@@ -1099,7 +1157,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    projectionMatrix:
+    m_ProjectionMatrix:
       e00: 0
       e01: 0
       e02: 0
@@ -1116,9 +1174,9 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    capturePosition: {x: 0, y: 0, z: 0}
+    m_CapturePosition: {x: 0, y: 0, z: 0}
   m_CustomRenderData:
-    worldToCameraRHS:
+    m_WorldToCameraRHS:
       e00: 0
       e01: 0
       e02: 0
@@ -1135,7 +1193,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    projectionMatrix:
+    m_ProjectionMatrix:
       e00: 0
       e01: 0
       e02: 0
@@ -1152,7 +1210,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    capturePosition: {x: 0, y: 0, z: 0}
+    m_CapturePosition: {x: 0, y: 0, z: 0}
   m_HDProbeVersion: 3
   m_ObsoleteInfiniteProjection: 0
   m_ObsoleteInfluenceVolume:
@@ -1386,7 +1444,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1297650280}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 23c1ce4fb46143f46bc5cb5224c934f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1399,6 +1456,7 @@ MonoBehaviour:
   volumeAnchorOverride: {fileID: 0}
   antialiasing: 2
   dithering: 1
+  stopNaNs: 0
   physicalParameters:
     m_Iso: 200
     m_ShutterSpeed: 0.005
@@ -1414,62 +1472,62 @@ MonoBehaviour:
   probeLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  renderingPathCustomFrameSettings:
+  m_RenderingPathCustomFrameSettings:
     bitDatas:
-      data1: 69275665628957
+      data1: 68184748261149
       data2: 4539628424389459968
   renderingPathCustomFrameSettingsOverrideMask:
     mask:
       data1: 0
       data2: 0
   defaultFrameSettings: 0
-  m_Version: 1
+  m_Version: 5
   m_ObsoleteRenderingPath: 0
   m_ObsoleteFrameSettings:
     overrides: 0
-    enableShadow: 1
-    enableContactShadows: 1
+    enableShadow: 0
+    enableContactShadows: 0
     enableShadowMask: 0
-    enableSSR: 1
-    enableSSAO: 1
-    enableSubsurfaceScattering: 1
-    enableTransmission: 1
-    enableAtmosphericScattering: 1
-    enableVolumetrics: 1
-    enableReprojectionForVolumetrics: 1
-    enableLightLayers: 1
+    enableSSR: 0
+    enableSSAO: 0
+    enableSubsurfaceScattering: 0
+    enableTransmission: 0
+    enableAtmosphericScattering: 0
+    enableVolumetrics: 0
+    enableReprojectionForVolumetrics: 0
+    enableLightLayers: 0
     enableExposureControl: 1
-    diffuseGlobalDimmer: 1
-    specularGlobalDimmer: 1
-    shaderLitMode: 1
+    diffuseGlobalDimmer: 0
+    specularGlobalDimmer: 0
+    shaderLitMode: 0
     enableDepthPrepassWithDeferredRendering: 0
-    enableTransparentPrepass: 1
-    enableMotionVectors: 1
-    enableObjectMotionVectors: 1
-    enableDecals: 1
-    enableRoughRefraction: 1
-    enableTransparentPostpass: 1
-    enableDistortion: 1
-    enablePostprocess: 1
-    enableOpaqueObjects: 1
-    enableTransparentObjects: 1
-    enableRealtimePlanarReflection: 1
+    enableTransparentPrepass: 0
+    enableMotionVectors: 0
+    enableObjectMotionVectors: 0
+    enableDecals: 0
+    enableRoughRefraction: 0
+    enableTransparentPostpass: 0
+    enableDistortion: 0
+    enablePostprocess: 0
+    enableOpaqueObjects: 0
+    enableTransparentObjects: 0
+    enableRealtimePlanarReflection: 0
     enableMSAA: 0
     enableAsyncCompute: 0
-    runLightListAsync: 1
-    runSSRAsync: 1
-    runSSAOAsync: 1
-    runContactShadowsAsync: 1
-    runVolumeVoxelizationAsync: 1
+    runLightListAsync: 0
+    runSSRAsync: 0
+    runSSAOAsync: 0
+    runContactShadowsAsync: 0
+    runVolumeVoxelizationAsync: 0
     lightLoopSettings:
       overrides: 0
-      enableDeferredTileAndCluster: 1
-      enableComputeLightEvaluation: 1
-      enableComputeLightVariants: 1
-      enableComputeMaterialVariants: 1
-      enableFptlForForwardOpaque: 1
-      enableBigTilePrepass: 1
-      isFptlEnabled: 1
+      enableDeferredTileAndCluster: 0
+      enableComputeLightEvaluation: 0
+      enableComputeLightVariants: 0
+      enableComputeMaterialVariants: 0
+      enableFptlForForwardOpaque: 0
+      enableBigTilePrepass: 0
+      isFptlEnabled: 0
 --- !u!20 &1297650283
 Camera:
   m_ObjectHideFlags: 0
@@ -1536,7 +1594,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1297650280}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: e8a636f62116c0a40bbfefdf876d4608, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1784,7 +1841,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1847340766}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 483944395}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1839,7 +1895,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2011204166}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 441482e8936e35048a1dffac814e3ef8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1854,7 +1909,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2011204166}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -1920,6 +1974,24 @@ Light:
     m_Bias: 0.01
     m_NormalBias: 0.1
     m_NearPlane: 0.1
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
   m_Cookie: {fileID: 0}
   m_DrawHalo: 0
   m_Flare: {fileID: 0}
@@ -1927,12 +1999,15 @@ Light:
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  m_RenderingLayerMask: 1
   m_Lightmapping: 1
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
   m_ColorTemperature: 5500
   m_UseColorTemperature: 1
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
 --- !u!4 &2035111235
@@ -1958,7 +2033,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2035111233}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: c6c2871f720b2af4e9210febdac74517, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -2008,12 +2082,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2035111233}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 7a68c43fe1f2a47cfa234b5eeaa98012, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 3
-  m_Version: 3
+  version: 4
+  m_Version: 4
   directionalIntensity: 10
   punctualIntensity: 600
   areaIntensity: 200
@@ -2030,7 +2103,7 @@ MonoBehaviour:
   affectSpecular: 1
   nonLightmappedOnly: 0
   lightTypeExtent: 0
-  spotLightShape: 0
+  m_SpotLightShape: 0
   shapeWidth: 0.5
   shapeHeight: 0.5
   aspectRatio: 1
@@ -2043,6 +2116,12 @@ MonoBehaviour:
   showAdditionalSettings: 0
   displayLightIntensity: 500
   displayAreaLightEmissiveMesh: 0
+  areaLightCookie: {fileID: 0}
+  areaLightShadowCone: 120
+  evsmExponent: 15
+  evsmLightLeakBias: 0
+  evsmVarianceBias: 0.00001
+  evsmBlurPasses: 0
   lightLayers: 1
   shadowNearPlane: 0.1
   shadowSoftness: 0.5
@@ -2082,7 +2161,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2059789766}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.5100102, y: 1.196, z: 1.1760052}
+  m_LocalPosition: {x: 2.5100112, y: 1.196, z: 1.1760057}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 405591765}
@@ -2131,7 +2210,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2059789766}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: d0ef8dc2c2eabfa4e8cb77be57a837c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -2287,7 +2365,7 @@ MonoBehaviour:
   m_BakedTexture: {fileID: 8900000, guid: 04128dad1bcf5164389f76307f4068a2, type: 3}
   m_CustomTexture: {fileID: 0}
   m_BakedRenderData:
-    worldToCameraRHS:
+    m_WorldToCameraRHS:
       e00: 0
       e01: 0
       e02: 0
@@ -2304,7 +2382,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    projectionMatrix:
+    m_ProjectionMatrix:
       e00: 0
       e01: 0
       e02: 0
@@ -2321,9 +2399,9 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    capturePosition: {x: 0, y: 0, z: 0}
+    m_CapturePosition: {x: 0, y: 0, z: 0}
   m_CustomRenderData:
-    worldToCameraRHS:
+    m_WorldToCameraRHS:
       e00: 0
       e01: 0
       e02: 0
@@ -2340,7 +2418,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    projectionMatrix:
+    m_ProjectionMatrix:
       e00: 0
       e01: 0
       e02: 0
@@ -2357,7 +2435,7 @@ MonoBehaviour:
       e31: 0
       e32: 0
       e33: 0
-    capturePosition: {x: 0, y: 0, z: 0}
+    m_CapturePosition: {x: 0, y: 0, z: 0}
   m_HDProbeVersion: 3
   m_ObsoleteInfiniteProjection: 0
   m_ObsoleteInfluenceVolume:
