@@ -18,6 +18,9 @@ public class CameraController : MonoBehaviour
 	public float lockOffLerpSpeed = 15f;
 
 
+	private Vector3 flatDir = Vector3.zero;
+	private Vector3 rawFlatPos = Vector3.zero;
+	private Vector3 dir = Vector3.zero;
 	private float aspectRatio;
 	private float tanFov;
 
@@ -59,26 +62,37 @@ public class CameraController : MonoBehaviour
 			float distBetween = vectorBetween.magnitude;
 			float cameraDistance = (distBetween / 2.0f / aspectRatio) / tanFov;
 
-			var flatDir = -vectorBetween.normalized;
+			flatDir = -vectorBetween;
 			flatDir.y = 0;
+			flatDir.Normalize();
 
-			var dir = Quaternion.AngleAxis(lockOnXAngle, Vector3.up) * Quaternion.AngleAxis(lockOnYAngle, transform.right) * flatDir;
+			if (flatDir != Vector3.zero)
+			{
+				//Applies offset angles so that player is not blocking view to enemy
+				var goalDir = Quaternion.AngleAxis(lockOnXAngle, Vector3.up) * Quaternion.AngleAxis(lockOnYAngle, transform.right) * flatDir;
+				//Use quaternion to slerp direction, handles closeups better than pure vectors.
+				dir = Quaternion.Slerp(Quaternion.LookRotation(dir), Quaternion.LookRotation(goalDir), Time.deltaTime * lockOnLerpSpeed) * Vector3.forward;
+			}
 
-			var dist = dir * (cameraDistance + DISTANCE_MARGIN);
-			if (dist.magnitude > maxDistFromPlayer)
-				dist = dist.normalized * maxDistFromPlayer;
-			if (dist.magnitude < minDistFromPlayer)
-				dist = dist.normalized * minDistFromPlayer;
-
-			newPos = player.GetPos + dist;
-			transform.position = Vector3.Lerp(transform.position, newPos, Time.deltaTime * lockOnLerpSpeed);
+			//Apply position without lerp, as it was added for the direction already
+			newPos = player.GetPos + (dir * distFromPlayer);
+			transform.position = newPos;
 
 		}
 		else
 		{
-			Vector3 dirFromPlayer = (transform.position - player.GetPos).normalized;
-			newPos = player.GetPos + dirFromPlayer * distFromPlayer;
-			transform.position = Vector3.Lerp(transform.position, newPos, Time.deltaTime * lockOffLerpSpeed);
+			//If real position was used, offsetting would cause camera to spin. RawFlatPos used instead.
+			flatDir = (rawFlatPos - player.GetPos);
+			flatDir.y = 0;
+			flatDir.Normalize();
+
+			//Store the real position before applying offsetting angles
+			rawFlatPos = player.GetPos + (flatDir * distFromPlayer); 
+
+			dir = Quaternion.AngleAxis(lockOnXAngle, Vector3.up) * Quaternion.AngleAxis(lockOnYAngle, transform.right) * flatDir;
+
+			newPos = Vector3.Lerp(transform.position, player.GetPos + (dir * distFromPlayer), Time.deltaTime * lockOffLerpSpeed);
+			transform.position = newPos;
 		}
 
 
@@ -86,14 +100,18 @@ public class CameraController : MonoBehaviour
 
 	void SetRotation()
 	{
+		Quaternion newRot = Quaternion.identity;
+
 		if (player.Target)
 		{
 			Vector3 middlepoint = (player.Target.position + player.GetPos) / 2f;
-			transform.rotation = Quaternion.LookRotation((middlepoint - transform.position).normalized);
+			newRot = Quaternion.LookRotation((middlepoint - transform.position).normalized);
 		}
 		else
 		{
-			transform.LookAt(player.transform);
+			newRot = Quaternion.LookRotation((player.GetPos - transform.position).normalized);
 		}
+
+		transform.rotation = Quaternion.Slerp(transform.rotation, newRot, Time.deltaTime * lockOffLerpSpeed);
 	}
 }
