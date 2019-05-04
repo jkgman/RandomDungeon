@@ -330,6 +330,17 @@ public class Inputs : IInputActionCollection
                     ""processors"": """",
                     ""interactions"": """",
                     ""bindings"": []
+                },
+                {
+                    ""name"": ""TargetLock"",
+                    ""id"": ""a775e4fd-e153-4bd2-b010-4c35c28c90b3"",
+                    ""expectedControlLayout"": """",
+                    ""continuous"": false,
+                    ""passThrough"": false,
+                    ""initialStateCheck"": false,
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""bindings"": []
                 }
             ],
             ""bindings"": [
@@ -512,6 +523,42 @@ public class Inputs : IInputActionCollection
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b37d6132-c12e-4946-8000-d119f89cea39"",
+                    ""path"": ""<Gamepad>/rightStickPress"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""TargetLock"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fb129c5e-e8b2-4840-bcd8-7f9fc3f66fd5"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";KBM"",
+                    ""action"": ""TargetLock"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c017f771-6ed9-4dc7-8e60-b3388c9f5dde"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";KBM"",
+                    ""action"": ""TargetLock"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
                 }
             ]
         }
@@ -560,6 +607,7 @@ public class Inputs : IInputActionCollection
         m_Player_Move = m_Player.GetAction("Move");
         m_Player_Look = m_Player.GetAction("Look");
         m_Player_Attack = m_Player.GetAction("Attack");
+        m_Player_TargetLock = m_Player.GetAction("TargetLock");
     }
     ~Inputs()
     {
@@ -676,6 +724,7 @@ public class Inputs : IInputActionCollection
     private InputAction m_Player_Move;
     private InputAction m_Player_Look;
     private InputAction m_Player_Attack;
+    private InputAction m_Player_TargetLock;
     public struct PlayerActions
     {
         private Inputs m_Wrapper;
@@ -683,6 +732,7 @@ public class Inputs : IInputActionCollection
         public InputAction @Move { get { return m_Wrapper.m_Player_Move; } }
         public InputAction @Look { get { return m_Wrapper.m_Player_Look; } }
         public InputAction @Attack { get { return m_Wrapper.m_Player_Attack; } }
+        public InputAction @TargetLock { get { return m_Wrapper.m_Player_TargetLock; } }
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -702,6 +752,9 @@ public class Inputs : IInputActionCollection
                 Attack.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
                 Attack.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
                 Attack.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
+                TargetLock.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
+                TargetLock.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
+                TargetLock.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -715,6 +768,9 @@ public class Inputs : IInputActionCollection
                 Attack.started += instance.OnAttack;
                 Attack.performed += instance.OnAttack;
                 Attack.cancelled += instance.OnAttack;
+                TargetLock.started += instance.OnTargetLock;
+                TargetLock.performed += instance.OnTargetLock;
+                TargetLock.cancelled += instance.OnTargetLock;
             }
         }
     }
@@ -756,5 +812,6 @@ public class Inputs : IInputActionCollection
         void OnMove(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
+        void OnTargetLock(InputAction.CallbackContext context);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Input;
 
 
 /// <summary>
@@ -15,13 +16,37 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-	[SerializeField] private float currentHAngle = 0;
-	[SerializeField] private float currentVAngle = 0;
+	[SerializeField] private float _currentHAngle = 0;
+	private float CurrentHAngle
+	{
+		get { return _currentHAngle; }
+		set { _currentHAngle = value; }
+	}
+
+	[SerializeField] private float minVAngle = -45;
+	[SerializeField] private float maxVAngle = 80;
+	[SerializeField] private float _currentVAngle = 0;
+	private float CurrentVAngle
+	{
+		get { return _currentVAngle; }
+		set
+		{
+			if (value < minVAngle)
+				_currentVAngle = minVAngle;
+			else if (value > maxVAngle)
+				_currentVAngle = maxVAngle;
+			else
+				_currentVAngle = value;
+		}
+	}
 	[SerializeField] private float distDefault = 4f;
 
 	[SerializeField] private float distTargeting = 4f;
 	[SerializeField] private float angleVTargeting = 30f;
 	[SerializeField] private float angleHTargeting = 30f;
+
+	[SerializeField] private float sensitivityH = 10f;
+	[SerializeField] private float sensitivityV = 10f;
 
 	[Header("Lerp speeds")]
 	[SerializeField] private float lerpDummyTargeting = 5f;
@@ -35,6 +60,55 @@ public class CameraController : MonoBehaviour
 	private Vector3 dir = Vector3.zero;
 	private PlayerController player;
 
+	private Vector2 lookModifier = Vector2.zero;
+
+
+	#region Inputs
+
+	private Inputs inputs;
+
+	void OnEnable() 
+	{
+		ControlsSubscribe();
+	}
+	void OnDisable() 
+	{
+		ControlsUnsubscribe();
+	}
+
+	void ControlsSubscribe() 
+	{
+		if (inputs == null)
+			inputs = new Inputs();
+
+		inputs.Player.TargetLock.performed += InputTargetLock;
+		inputs.Player.Look.performed += InputLookAround;
+		inputs.Player.TargetLock.Enable();
+		inputs.Player.Look.Enable();
+	}
+	void ControlsUnsubscribe() 
+	{
+		inputs.Player.TargetLock.performed -= InputTargetLock;
+		inputs.Player.Look.performed -= InputLookAround;
+		inputs.Player.TargetLock.Disable();
+		inputs.Player.Look.Disable();
+	}
+
+	void InputTargetLock(InputAction.CallbackContext context)
+	{
+		//Todo:
+		//Get targets, no idea how
+		//if no targets, reset camera:
+		ResetCamera();
+	}
+	void InputLookAround(InputAction.CallbackContext context)
+	{
+        lookModifier = context.ReadValue<Vector2>() * Time.deltaTime * sensitivityH; ;
+	}
+
+
+
+	#endregion
 
 	void Awake()
 	{
@@ -88,9 +162,9 @@ public class CameraController : MonoBehaviour
 			if (rawFlatDir != Vector3.zero)
 			{
 				//Applies offset angles so that player is not blocking view to enemy
-				currentHAngle = Vector3.SignedAngle(Vector3.forward, rawFlatDir, Vector3.up) + angleHTargeting;
-				currentVAngle = angleVTargeting;
-				dir = Quaternion.Euler(-currentVAngle, currentHAngle, 0) * Vector3.forward;
+				CurrentHAngle = Vector3.SignedAngle(Vector3.forward, rawFlatDir, Vector3.up) + angleHTargeting;
+				CurrentVAngle = angleVTargeting;
+				dir = Quaternion.Euler(-CurrentVAngle, CurrentHAngle, 0) * Vector3.forward;
 			}
 			
 			newPos += (dir.normalized * distTargeting);
@@ -104,10 +178,11 @@ public class CameraController : MonoBehaviour
 			newFlatDir.Normalize();
 			
 			rawFlatDir = Vector3.Lerp(rawFlatDir, newFlatDir, Time.deltaTime * lerpCamDefault);
-			dir = Quaternion.AngleAxis(currentVAngle, GetVectorRight()) * rawFlatDir;
+			//dir = Quaternion.AngleAxis(currentVAngle, GetVectorRight()) * rawFlatDir;
 
 			//Make sure the horizontal angle value matches current angle
-			currentHAngle = Vector3.SignedAngle(Vector3.forward, rawFlatDir, Vector3.up);
+			CurrentHAngle = Vector3.SignedAngle(Vector3.forward, rawFlatDir, Vector3.up);
+			dir = Quaternion.Euler(-CurrentVAngle, CurrentHAngle, 0) * Vector3.forward;
 			// currentVAngle = Vector3.SignedAngle(rawFlatDir, dir, Vector3.Cross(rawFlatDir, Vector3.up));
 
 			newPos += (dir.normalized * distDefault);
@@ -117,8 +192,41 @@ public class CameraController : MonoBehaviour
 
 	void ApplyInputPosition()
 	{
-		//TODO :
-		//modify camera with input values.
+		if (!player.Target)
+		{
+			CurrentHAngle += lookModifier.x;
+			CurrentVAngle += lookModifier.y;
+
+			//Reset modifier in case there is no more input.
+			lookModifier = Vector2.zero;
+
+			dir = Quaternion.Euler(-CurrentVAngle, CurrentHAngle, 0) * Vector3.forward;
+			
+			//Update rawdir, it is used as a reference in default camera position handling
+			rawFlatDir = new Vector3(dir.x, 0, dir.z).normalized;
+
+			Vector3 newPos = dummyPos;
+			newPos += (dir.normalized * distDefault);
+			transform.position = newPos;
+		}
+	}
+
+	void ResetCamera()
+	{
+		if (!player.Target)
+		{
+			CurrentHAngle = Vector3.SignedAngle(-player.transform.forward, Vector3.forward, Vector3.up);
+			CurrentVAngle = 30f;
+
+			dir = Quaternion.Euler(-CurrentVAngle, CurrentHAngle, 0) * Vector3.forward;
+
+			//Update rawdir, it is used as a reference in default camera position handling
+			rawFlatDir = new Vector3(dir.x, 0, dir.z).normalized;
+
+			Vector3 newPos = dummyPos;
+			newPos += (dir.normalized * distDefault);
+			transform.position = newPos;
+		}
 	}
 
 	void SetRotation()
@@ -133,8 +241,9 @@ public class CameraController : MonoBehaviour
 		}
 		else
 		{
-			newRot = Quaternion.LookRotation((player.GetPos - transform.position).normalized);
+			newRot = Quaternion.LookRotation(-dir.normalized);
 			transform.rotation = Quaternion.Slerp(transform.rotation, newRot, Time.deltaTime * lerpCamDefault);
+			transform.rotation = newRot;
 		}
 
 	}

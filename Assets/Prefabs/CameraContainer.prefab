@@ -44,18 +44,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b65f2c6343bfc74e91901ffe3835d80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _currentHAngle: 0
+  minVAngle: -45
+  maxVAngle: 80
+  _currentVAngle: 0
   distDefault: 6
-  fovDefault: 70
   distTargeting: 6
-  fovTargeting: 60
   angleVTargeting: 20
   angleHTargeting: 15
+  sensitivityH: 10
+  sensitivityV: 10
   lerpDummyTargeting: 5
   lerpCamTargeting: 20
   lerpDummyDefault: 8
   lerpCamDefault: 35
-  currentVAngle: 20
-  currentHAngle: 0
 --- !u!1 &7496383073002038917
 GameObject:
   m_ObjectHideFlags: 0

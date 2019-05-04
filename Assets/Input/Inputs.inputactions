@@ -316,6 +316,17 @@
                     "processors": "",
                     "interactions": "",
                     "bindings": []
+                },
+                {
+                    "name": "TargetLock",
+                    "id": "a775e4fd-e153-4bd2-b010-4c35c28c90b3",
+                    "expectedControlLayout": "",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "",
+                    "bindings": []
                 }
             ],
             "bindings": [
@@ -495,6 +506,42 @@
                     "processors": "",
                     "groups": "",
                     "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "b37d6132-c12e-4946-8000-d119f89cea39",
+                    "path": "<Gamepad>/rightStickPress",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "TargetLock",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "fb129c5e-e8b2-4840-bcd8-7f9fc3f66fd5",
+                    "path": "<Mouse>/middleButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KBM",
+                    "action": "TargetLock",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "c017f771-6ed9-4dc7-8e60-b3388c9f5dde",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KBM",
+                    "action": "TargetLock",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "modifiers": ""
