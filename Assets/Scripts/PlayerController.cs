@@ -22,6 +22,10 @@ public class PlayerController : MonoBehaviour
 		get { return _target; }
 		set { _target = value; }
 	}
+	public float GetMaxDistToTarget
+	{
+		get { return maxDistToTarget; }
+	}
 	
 
 	public Vector3 GetPos
