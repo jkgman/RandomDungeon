@@ -1,15 +1,31 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Experimental.Input;
 
 
 public class PlayerController : MonoBehaviour
 {
+	public Transform debugTarget;
 	[SerializeField] private float maxDistToTarget = 10f;
 	[SerializeField] private Transform _target; //Temp for testing
+	[SerializeField] private float moveSpeed = 15f;
 
-	private Vector2 moveDirection;
+	private Vector2 moveDirectionRaw;
 	private Vector2 velocityModifier;
 
+	private CameraController _cam;
+	private CameraController Cam
+	{
+		get
+		{
+			if (!_cam)
+			{
+				_cam = Camera.main.GetComponentInParent<CameraController>();
+			}
+
+			return _cam;
+		}
+	}
 
 	private bool _isRunning;
 	private bool _isGrounded;
@@ -17,10 +33,18 @@ public class PlayerController : MonoBehaviour
 	private bool _isStunned;
 	private bool _isAttacking;
 
+	public UnityEvent targetChangedEvent;
+
 	public Transform Target
 	{
 		get { return _target; }
-		set { _target = value; }
+		set
+		{
+			if (value != _target)
+				targetChangedEvent.Invoke();
+
+			_target = value;
+		}
 	}
 	public float GetMaxDistToTarget
 	{
@@ -37,6 +61,9 @@ public class PlayerController : MonoBehaviour
 
     void OnEnable()
     {
+		if (targetChangedEvent == null)
+			targetChangedEvent = new UnityEvent();
+		
         ControlsSubscribe();
     }
     void OnDisable()
@@ -47,47 +74,68 @@ public class PlayerController : MonoBehaviour
 
 	void Update()
 	{
+		UpdateTarget();
+		Move();
+
+	}
+
+	void UpdateTarget()
+	{
 		if (Target && (Target.position - transform.position).magnitude > maxDistToTarget)
 		{
 			Target = null;
 		}
 	}
 
+	public void SetTarget(Transform in_traget)
+	{
 
-    void ControlsSubscribe()
+	}
+	public bool SetTarget()
+	{
+		if (debugTarget)
+		{
+			Target = Target == null ? debugTarget : null;
+		}
+		return true; //Return true if target changed in any way
+	}
+
+	void Move()
+	{
+		Quaternion rot = Quaternion.Euler(0, Cam.CurAngle.y, 0);
+		Vector3 realMoveDirection = rot * new Vector3(-moveDirectionRaw.x, 0, -moveDirectionRaw.y);
+		transform.position += realMoveDirection * moveSpeed * Time.deltaTime;
+		moveDirectionRaw = Vector3.zero;
+	}
+
+
+	void ControlsSubscribe()
     {
         if (inputs == null)
             inputs = new Inputs();
 
-        inputs.Player.Move.performed += Move;
+        inputs.Player.Move.performed += InputMove;
 		inputs.Player.Move.Enable();
     }
     void ControlsUnsubscribe()
     {
-        inputs.Player.Move.performed -= Move;
+        inputs.Player.Move.performed -= InputMove;
 		inputs.Player.Move.Disable();
 	}
 
 
 	#region HandleControls
 
-	void Move(InputAction.CallbackContext context)
+	void InputMove(InputAction.CallbackContext context)
     {
-        Debug.Log("Move vector: "+context.ReadValue<Vector2>());
+        moveDirectionRaw = context.ReadValue<Vector2>();
+
     }
-	void Jump(InputAction.CallbackContext context)
+	void InputJump(InputAction.CallbackContext context)
 	{
 	
 	}
-	void TargetLock(InputAction.CallbackContext context)
-	{
-
-	}
-	void SwitchTarget(InputAction.CallbackContext context)
-	{
-
-	}
-	void LookAround(InputAction.CallbackContext context)
+	void InputLook(InputAction.CallbackContext context)
 	{
 
 	}

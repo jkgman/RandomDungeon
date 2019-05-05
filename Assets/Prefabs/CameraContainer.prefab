@@ -44,20 +44,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b65f2c6343bfc74e91901ffe3835d80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentHAngle: 0
-  minVAngle: -45
-  maxVAngle: 80
-  _currentVAngle: 0
+  _rawAngle: {x: 0, y: 0}
+  _curAngle: {x: 0, y: 0}
+  minVAngle: -80
+  maxVAngle: 45
+  defaultVAngle: -15
   distDefault: 6
+  autoCameraDelayAfterLookInput: 0.5
   distTargeting: 6
-  angleVTargeting: 20
+  angleVTargeting: -20
   angleHTargeting: 15
   sensitivityH: 10
   sensitivityV: 10
-  lerpDummyTargeting: 5
+  lerpDummyTargeting: 10
   lerpCamTargeting: 20
-  lerpDummyDefault: 8
-  lerpCamDefault: 35
+  lerpDummyDefault: 10
+  lerpCamDefault: 15
+  lerpCamToDefault: 2
 --- !u!1 &7496383073002038917
 GameObject:
   m_ObjectHideFlags: 0
