@@ -794,9 +794,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugTarget: {fileID: 2136333126}
+  targetIndicatorPrefab: {fileID: 2182517120718306254, guid: 3c1f1ef38d5839841897c7d13fb496d7,
+    type: 3}
   maxDistToTarget: 10
   _target: {fileID: 0}
-  moveSpeed: 15
+  moveSpeed: 10
+  rotationSpeed: 10
+  targetChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!1001 &7496383071359217351
 PrefabInstance:
   m_ObjectHideFlags: 0

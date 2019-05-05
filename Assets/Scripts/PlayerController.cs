@@ -6,12 +6,15 @@ using UnityEngine.Experimental.Input;
 public class PlayerController : MonoBehaviour
 {
 	public Transform debugTarget;
+	[SerializeField] private GameObject targetIndicatorPrefab;
 	[SerializeField] private float maxDistToTarget = 10f;
 	[SerializeField] private Transform _target; //Temp for testing
 	[SerializeField] private float moveSpeed = 15f;
+	[SerializeField] private float rotationSpeed = 10f;
 
 	private Vector2 moveDirectionRaw;
-	private Vector2 velocityModifier;
+	private GameObject targetIndicator;
+
 
 	private CameraController _cam;
 	private CameraController Cam
@@ -42,7 +45,7 @@ public class PlayerController : MonoBehaviour
 		{
 			if (value != _target)
 				targetChangedEvent.Invoke();
-
+			
 			_target = value;
 		}
 	}
@@ -76,6 +79,8 @@ public class PlayerController : MonoBehaviour
 	{
 		UpdateTarget();
 		Move();
+		Rotate();
+		ResetInputModifiers();
 
 	}
 
@@ -85,6 +90,30 @@ public class PlayerController : MonoBehaviour
 		{
 			Target = null;
 		}
+
+		// Start of Indicator
+		if (!Target)
+		{
+			if (targetIndicator)
+				Destroy(targetIndicator);
+		} 
+		else
+		{
+			if (!Cam) // Indicator relies on camera
+				return;
+
+			if (!targetIndicator)
+			{
+				if (targetIndicatorPrefab)
+					targetIndicator = Instantiate(targetIndicatorPrefab, Target.transform.position, Quaternion.LookRotation(Cam.transform.position - Target.transform.position));
+			} 
+			else
+			{
+				targetIndicator.transform.position = Target.transform.position;
+				targetIndicator.transform.rotation = Quaternion.LookRotation(Cam.transform.position - Target.transform.position);
+			}
+		}
+		// End of Indicator
 	}
 
 	public void SetTarget(Transform in_traget)
@@ -99,15 +128,41 @@ public class PlayerController : MonoBehaviour
 		}
 		return true; //Return true if target changed in any way
 	}
+	
 
 	void Move()
 	{
 		Quaternion rot = Quaternion.Euler(0, Cam.CurAngle.y, 0);
 		Vector3 realMoveDirection = rot * new Vector3(-moveDirectionRaw.x, 0, -moveDirectionRaw.y);
 		transform.position += realMoveDirection * moveSpeed * Time.deltaTime;
-		moveDirectionRaw = Vector3.zero;
 	}
 
+	void Rotate()
+	{
+		if (Target)
+		{
+			var lookpos = Target.transform.position - transform.position;
+			lookpos.y = 0;
+			var rot = Quaternion.LookRotation(lookpos);
+			transform.rotation = Quaternion.Slerp(transform.rotation, rot, Time.deltaTime * rotationSpeed);
+		}
+		else
+		{
+			if (moveDirectionRaw != Vector2.zero)
+			{
+				var lookpos = new Vector3(moveDirectionRaw.x, 0, moveDirectionRaw.y);
+				var dir = Quaternion.LookRotation(lookpos) * -Cam.GetCurrentFlatDirection();
+				transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
+			}
+		}
+	}
+
+	void ResetInputModifiers()
+	{
+		//These should be zero for next frame in case no input was given
+		moveDirectionRaw = Vector3.zero;
+
+	}
 
 	void ControlsSubscribe()
     {

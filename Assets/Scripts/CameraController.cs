@@ -304,6 +304,11 @@ public class CameraController : MonoBehaviour
 	Vector3 GetCurrentDirection()
 	{
 		return (Quaternion.Euler(new Vector3(CurAngle.x, CurAngle.y, 0)) * Vector3.forward).normalized;
-
+	}
+	public Vector3 GetCurrentFlatDirection()
+	{
+		var dir = GetCurrentDirection();
+		dir.y = 0;
+		return dir.normalized;
 	}
 }
