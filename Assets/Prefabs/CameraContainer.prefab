@@ -54,8 +54,11 @@ MonoBehaviour:
   distTargeting: 6
   angleVTargeting: -20
   angleHTargeting: 15
-  sensitivityH: 10
-  sensitivityV: 10
+  lookSensitivityMouse: 10
+  lookSensitivityGamepad: 200
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 311
   lerpDummyTargeting: 10
   lerpCamTargeting: 20
   lerpDummyDefault: 10

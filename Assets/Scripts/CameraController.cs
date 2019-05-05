@@ -45,8 +45,10 @@ public class CameraController : MonoBehaviour
 	[SerializeField] private float angleVTargeting = 30f;
 	[SerializeField] private float angleHTargeting = 30f;
 
-	[SerializeField] private float sensitivityH = 10f;
-	[SerializeField] private float sensitivityV = 10f;
+	[SerializeField] private float lookSensitivityMouse = 10f;
+	[SerializeField] private float lookSensitivityGamepad = 100f;
+
+	[SerializeField] private LayerMask layerMask;
 
 	[Header("Lerp speeds")]
 	[SerializeField] private float lerpDummyTargeting = 5f;
@@ -56,9 +58,8 @@ public class CameraController : MonoBehaviour
 	[SerializeField] private float lerpCamToDefault = 2f;
 
 	private Vector3 dummyPos = Vector3.zero;
-	//private Vector3 rawFlatDirNoOffset = Vector3.zero;
+	private float currentDistance;
 	private Vector3 rawFlatPos = Vector3.zero;
-	//private Vector3 rawDir = Vector3.zero;
 	private PlayerController player;
 
 	private Vector2 lookModifier = Vector2.zero;
@@ -125,7 +126,13 @@ public class CameraController : MonoBehaviour
 	}
 	void InputLookAround(InputAction.CallbackContext context)
 	{
-        lookModifier = context.ReadValue<Vector2>() * Time.deltaTime * sensitivityH;
+        lookModifier = context.ReadValue<Vector2>() * Time.deltaTime;
+
+		if (context.control.layout == "Stick")
+			lookModifier *= lookSensitivityGamepad;
+		else
+			lookModifier *= lookSensitivityMouse;
+
 		lastLookInput = Time.time;
 	}
 
@@ -154,6 +161,7 @@ public class CameraController : MonoBehaviour
 		UpdateAutomaticCameraAngleDirection(); // Automatic camera movements
 		ProcessCurrentAngle(); // Lerps current angles towards raw angles
 		ApplyInputDirection(); // Offsets to default camera movements modified by inputs
+		PhysicsCheck();
 		SetPositionByDirection(); //Finally applies camera position according to earlier modifier values
 		SetRotation(); // Rotates face towards current target
 
@@ -250,10 +258,24 @@ public class CameraController : MonoBehaviour
 		}
 	}
 
+
+	void PhysicsCheck()
+	{
+		Physics.SphereCast(dummyPos, 0.5f, GetCurrentDirection(), out RaycastHit hit, distDefault, layerMask.value);
+		if (hit.collider)
+		{
+			currentDistance = (dummyPos-hit.point).magnitude;
+		}
+		else
+		{
+			currentDistance = Mathf.Lerp(currentDistance, distDefault, Time.deltaTime*lerpCamDefault);
+		}
+	}
+
 	void SetPositionByDirection()
 	{
 		Vector3 newPos = dummyPos;
-		newPos += (GetCurrentDirection() * distDefault);
+		newPos += (GetCurrentDirection() * currentDistance);
 		transform.position = newPos;
 	}
 

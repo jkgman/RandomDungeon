@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8729411306941275266}
   - component: {fileID: 510830625699400460}
   - component: {fileID: 3497706803962541073}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -58,7 +58,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 73c176f402d2c2f4d929aa5da7585d17, type: 2}
+  - {fileID: 2100000, guid: b248431c86d96a54a863f3b8fd92ad87, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -100,7 +100,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5036150936471246257}
-  m_Layer: 0
+  - component: {fileID: 3680647838422055351}
+  m_Layer: 9
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -122,6 +123,30 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3680647838422055351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3953715977821950901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a6ecbd6a4735c64cb23ece8ffe78cb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debugTarget: {fileID: 0}
+  targetIndicatorPrefab: {fileID: 2182517120718306254, guid: 3c1f1ef38d5839841897c7d13fb496d7,
+    type: 3}
+  maxDistToTarget: 10
+  _target: {fileID: 0}
+  moveSpeed: 10
+  rotationSpeed: 10
+  targetChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!1 &6221907372546217487
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,7 +156,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3100024206320026715}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: MeshVisuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -166,7 +191,7 @@ GameObject:
   - component: {fileID: 3219789868409190638}
   - component: {fileID: 7349764245851723434}
   - component: {fileID: 5458627761912928665}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -212,7 +237,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 73c176f402d2c2f4d929aa5da7585d17, type: 2}
+  - {fileID: 2100000, guid: 800442810373ce3429302b011505d3a9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
