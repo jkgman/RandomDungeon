@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.Experimental.Input;
 
@@ -7,10 +8,15 @@ public class PlayerController : MonoBehaviour
 {
 	public Transform debugTarget;
 	[SerializeField] private GameObject targetIndicatorPrefab;
-	[SerializeField] private float maxDistToTarget = 10f;
-	[SerializeField] private Transform _target; //Temp for testing
 	[SerializeField] private float moveSpeed = 15f;
 	[SerializeField] private float rotationSpeed = 10f;
+
+	[Header("Target stuff")]
+	[SerializeField] private float maxDistToTarget = 10f;
+	[SerializeField] private LayerMask targetLayerMask;
+	[SerializeField] private LayerMask blockTargetLayerMask;
+
+
 
 	private Vector2 moveDirectionRaw;
 	private GameObject targetIndicator;
@@ -38,6 +44,7 @@ public class PlayerController : MonoBehaviour
 
 	public UnityEvent targetChangedEvent;
 
+	private Transform _target;
 	public Transform Target
 	{
 		get { return _target; }
@@ -116,17 +123,96 @@ public class PlayerController : MonoBehaviour
 		// End of Indicator
 	}
 
-	public void SetTarget(Transform in_traget)
+	
+	public bool SetTarget(CameraTargetingData data)
 	{
-
-	}
-	public bool SetTarget()
-	{
+		Transform oldTarget = Target;
+		
+		if (Target != null)
+		{
+			Target = null;
+			return true;
+		}
 		if (debugTarget)
 		{
-			Target = Target == null ? debugTarget : null;
+			Target = debugTarget;
+			return true;
 		}
-		return true; //Return true if target changed in any way
+
+		Transform[] nearbyTargets = FindTargets();
+		if (nearbyTargets != null && nearbyTargets.Length > 0)
+			Target = FindBestTarget(data, nearbyTargets);
+
+		return Target != oldTarget; //Return true if target changed in any way
+	}
+
+	Transform[] FindTargets()
+	{
+		//Sphere check on all nearby enemies.
+		//Adds objects with Enemy script in temp list
+		//Converts list into output array.
+
+		List<Transform> temp = new List<Transform>();
+		Collider[] cols = Physics.OverlapSphere(transform.position, maxDistToTarget, targetLayerMask.value);
+		if (cols != null && cols.Length > 0)
+		{
+			for (int i = 0; i < cols.Length; i++)
+			{
+				var enemy = cols[i].GetComponent<Enemy>();
+				if (enemy && enemy.CanBeTargeted() && !temp.Contains(enemy.transform))
+				{
+					temp.Add(enemy.transform);
+				}
+			}
+		}
+		Transform[] output = new Transform[temp.Count];
+		for (int i = 0; i < temp.Count; i++)
+		{
+			output[i] = temp[i];
+		}
+		
+		return output;
+	}
+
+	Transform FindBestTarget(CameraTargetingData camData, Transform[] allTheBoisToBeTargeted)
+	{
+		//TODO
+		//Find a target thats closest to the middle of the current view.
+		//Target must not be blocked from raycast.
+
+		Transform output = null;
+		float currentBestAngle = -1;
+		Debug.Log("alltheboys: " + allTheBoisToBeTargeted.Length);
+
+		for (int i = 0; i < allTheBoisToBeTargeted.Length; i++)
+		{
+			float angle = Vector3.Angle(camData.forward, (allTheBoisToBeTargeted[i].position - camData.position));
+			bool inView = angle < camData.fov*0.65f;
+			if (inView)
+			{
+				Debug.Log("inView = true");
+				//Check if target is visible in camera.
+				RaycastHit hit;
+				Physics.Raycast(camData.position, (allTheBoisToBeTargeted[i].position - camData.position).normalized, out hit, maxDistToTarget, blockTargetLayerMask.value);
+				Debug.Log(hit.collider);
+				if (!hit.collider || hit.collider.transform == allTheBoisToBeTargeted[i])
+				{
+					Debug.Log("raycast succeeded");
+					//Check that the angle is better than currentBest.
+					if (currentBestAngle < 0 || angle < currentBestAngle)
+					{
+						//Its the fucking best so far so assign that mf to output.
+						Debug.Log("whole shit succeeded");
+						output = allTheBoisToBeTargeted[i];
+						currentBestAngle = angle;
+					}
+				}
+			}
+		}
+
+		
+
+		return output;
 	}
 	
 

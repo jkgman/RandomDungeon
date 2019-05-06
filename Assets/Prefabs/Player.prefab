@@ -138,10 +138,15 @@ MonoBehaviour:
   debugTarget: {fileID: 0}
   targetIndicatorPrefab: {fileID: 2182517120718306254, guid: 3c1f1ef38d5839841897c7d13fb496d7,
     type: 3}
-  maxDistToTarget: 10
-  _target: {fileID: 0}
   moveSpeed: 10
   rotationSpeed: 10
+  maxDistToTarget: 10
+  targetLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  blockTargetLayerMask:
+    serializedVersion: 2
+    m_Bits: 1335
   targetChangedEvent:
     m_PersistentCalls:
       m_Calls: []
