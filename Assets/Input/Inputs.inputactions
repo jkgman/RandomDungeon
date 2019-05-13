@@ -561,7 +561,7 @@
                     "name": "",
                     "id": "e3af22c2-c39e-45fd-a7f0-ff1a6109dbbe",
                     "path": "<Gamepad>/rightStick",
-                    "interactions": "Press",
+                    "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "SwitchTarget",

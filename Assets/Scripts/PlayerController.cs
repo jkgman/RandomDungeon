@@ -149,8 +149,6 @@ public class PlayerController : MonoBehaviour
 
 	void Move()
 	{
-		Quaternion rot = Quaternion.identity;
-
 		if (Target)
 		{
 			//This calculation moves along circular path around target according to sideways input (moveInputRaw.x)
@@ -160,27 +158,27 @@ public class PlayerController : MonoBehaviour
 			float currentAngle = Vector3.SignedAngle(Vector3.forward, -GetFlatDirectionToTarget(), Vector3.up);
 			Vector2 newPosWithSidewaysOffset = MoveAlongCircle(currentAngle, pos,targetPos, -moveInputRaw.x * moveSpeed * Time.deltaTime);
 
-			//Apply sideways inputs first
-			if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y))
+			//Apply sideways inputs to transform position
+			if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y)) // Apparently this happens too
 				transform.position = new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y);
 
-			//Add forward input
-			rot = Quaternion.LookRotation(GetFlatDirectionToTarget());
+			//Add forward input and apply to transform position as well
+			Quaternion rot = Quaternion.LookRotation(GetFlatDirectionToTarget());
 			Vector3 forwardMoveDir = rot * new Vector3(0, 0, moveInputRaw.y);
 			transform.position += forwardMoveDir * moveSpeed * Time.deltaTime;
+
+			//Prevent from going too close. This might become problematic for combat but we'll see.
 			float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(Target.transform.position.x, 0, Target.transform.position.z));
-			
-			//Prevent from going too close
-			if (flatDistanceToTarget < 1f)
+			if (flatDistanceToTarget < 0.5f)
 			{
-				Vector3 newPos = new Vector3(Target.transform.position.x, transform.position.y, Target.transform.position.z) - GetFlatDirectionToTarget().normalized;
+				Vector3 newPos = new Vector3(Target.transform.position.x, transform.position.y, Target.transform.position.z) - GetFlatDirectionToTarget().normalized*0.5f;
 				transform.position = newPos;
 			}
 		}
 		else
 		{
 
-			rot = Quaternion.LookRotation(-Cam.GetRawFlatDirection());
+			Quaternion rot = Quaternion.LookRotation(-Cam.GetRawFlatDirection());
 			Vector3 realMoveDirection = rot * new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
 			transform.position += realMoveDirection * moveSpeed * Time.deltaTime;
 		}
@@ -324,8 +322,9 @@ public class PlayerController : MonoBehaviour
 		for (int i = 0; i < allTheBoisToBeTargeted.Length; i++)
 		{
 			float angle = Vector3.Angle(camData.forward, (allTheBoisToBeTargeted[i].position - camData.position));
-			bool inView = angle < camData.fov*0.65f; 
-			if (inView)
+			bool inView = angle < camData.fov*0.65f;
+			bool farEnoughFromCamera = Vector3.Distance(camData.position, allTheBoisToBeTargeted[i].position) > 3f;
+			if (inView && farEnoughFromCamera)
 			{
 				//Check if target is visible in camera.
 				RaycastHit hit;
@@ -343,17 +342,61 @@ public class PlayerController : MonoBehaviour
 				}
 			}
 		}
-
-		
-
 		return output;
+	}
+
+	void SwitchTarget(int direction)
+	{
+		Transform[] allTheBoisToBeTargeted = FindTargets();
+		CameraTargetingData camData = Cam.GetTargetingData();
+
+		//TODO
+		//Look for all targets in chosen direction
+		//Pick the one with smallest angle if it is in view
+
+
+		Transform newTarget = null;
+		float currentBestAngle = -1;
+
+		for (int i = 0; i < allTheBoisToBeTargeted.Length; i++)
+		{
+			Vector3 dirToBoi = (allTheBoisToBeTargeted[i].position - transform.position);
+			dirToBoi.y = 0;
+			dirToBoi.Normalize();
+			float angle = Vector3.SignedAngle(GetFlatDirectionToTarget(), dirToBoi, Vector3.up);
+			bool inView = Mathf.Abs(angle) < 100f;
+			bool farEnoughFromCamera = Vector3.Distance(camData.position, allTheBoisToBeTargeted[i].position) > 3f;
+			bool correctSide = (direction > 0 && angle > 0) || (direction < 0 && angle < 0);
+			if (inView && farEnoughFromCamera && correctSide)
+			{
+				//Check if target is visible in camera.
+				RaycastHit hit;
+				Physics.Raycast(camData.position, (allTheBoisToBeTargeted[i].position - camData.position).normalized, out hit, maxDistToTarget, blockTargetLayerMask.value);
+				Debug.Log(hit.collider);
+				if (!hit.collider || hit.collider.transform == allTheBoisToBeTargeted[i])
+				{
+					//Check that the angle is better than currentBest.
+					if (currentBestAngle < 0 || Mathf.Abs(angle) < currentBestAngle)
+					{
+						//Its the fucking best so far so assign that mf to output.
+						newTarget = allTheBoisToBeTargeted[i];
+						currentBestAngle = Mathf.Abs(angle);
+					}
+				}
+			}
+		}
+
+		if (newTarget)
+			Target = newTarget;
+
+
 	}
 
 	#endregion
 
 	#region HandleControls
-	
-	
+
+
 	void ControlsSubscribe()
     {
         if (inputs == null)
@@ -363,7 +406,7 @@ public class PlayerController : MonoBehaviour
 		inputs.Player.Move.Enable();
 		inputs.Player.TargetLock.performed += InputTargetLock;
 		inputs.Player.TargetLock.Enable();
-		inputs.Player.SwitchTarget.performed += InputTargetSwitch;
+		inputs.Player.SwitchTarget.started += InputTargetSwitch;
 		inputs.Player.SwitchTarget.Enable();
 	}
 	void ControlsUnsubscribe()
@@ -372,7 +415,7 @@ public class PlayerController : MonoBehaviour
 		inputs.Player.Move.Disable();
 		inputs.Player.TargetLock.performed -= InputTargetLock;
 		inputs.Player.TargetLock.Disable();
-		inputs.Player.SwitchTarget.performed -= InputTargetSwitch;
+		inputs.Player.SwitchTarget.started -= InputTargetSwitch;
 		inputs.Player.SwitchTarget.Disable();
 	}
 
@@ -383,16 +426,27 @@ public class PlayerController : MonoBehaviour
 			Cam.ResetCamera();
 
 	}
-	void InputTargetSwitch(InputAction.CallbackContext context) {
 
-		//TODO
-		//Get axis of target switch
-		//Look for all targets in chosen direction
-		//Pick the one with smallest angle if it is in view
-
-		//For mouse scroll, ignore verticality (vector1)
+	
+	void InputTargetSwitch(InputAction.CallbackContext context) 
+	{
+	
+		int targetSwitchDirection = 0;
+		
+		if (context.control.layout == "Stick")
+		{
+			targetSwitchDirection = context.ReadValue<Vector2>().x > 0 ? 1 : -1;
+		}
+		else
+		{
+			//Downwards is +1 (right)
+			targetSwitchDirection = context.ReadValue<Vector2>().y > 0 ? -1 : 1;
+		}
+		
+		SwitchTarget(targetSwitchDirection);
 
 	}
+
 	void InputMove(InputAction.CallbackContext context)
     {
         moveInputRaw = context.ReadValue<Vector2>();
