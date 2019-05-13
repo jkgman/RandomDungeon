@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5036150936471246257}
   - component: {fileID: 3680647838422055351}
+  - component: {fileID: 3766095293103317566}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -135,11 +136,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a6ecbd6a4735c64cb23ece8ffe78cb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugTarget: {fileID: 0}
+  debugVisuals: 1
+  moveSpeed: 8
+  rotationSpeed: 8
   targetIndicatorPrefab: {fileID: 2182517120718306254, guid: 3c1f1ef38d5839841897c7d13fb496d7,
     type: 3}
-  moveSpeed: 10
-  rotationSpeed: 10
   maxDistToTarget: 10
   targetLayerMask:
     serializedVersion: 2
@@ -152,6 +153,25 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  currentWeapon: {fileID: 0}
+--- !u!143 &3766095293103317566
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3953715977821950901}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6221907372546217487
 GameObject:
   m_ObjectHideFlags: 0

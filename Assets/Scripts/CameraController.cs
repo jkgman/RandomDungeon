@@ -45,8 +45,8 @@ public class CameraController : MonoBehaviour
 	private readonly float lerpDirTargeting = 20f;
 	private readonly float lerpLookRotTargeting = 30f;
 	private readonly float lerpDummyDefault = 10f;
-	private readonly float lerpDirDefault = 15f;
-	private readonly float lerpLookRotDefault = 150f;
+	private readonly float lerpDirDefault = 5f;
+	private readonly float lerpLookRotDefault = 100f;
 	private readonly float lerpLookAtPosDefault = 200f;
 	private readonly float lerpCamToDefault = 2f;
 
@@ -145,7 +145,7 @@ public class CameraController : MonoBehaviour
 
 	void InputLookAround(InputAction.CallbackContext context)
 	{
-        lookModifier = context.ReadValue<Vector2>() * Time.deltaTime;
+        lookModifier = context.ReadValue<Vector2>() * Time.smoothDeltaTime;
 
 		if (context.control.layout == "Stick")
 			lookModifier *= lookSensitivityGamepad;
@@ -169,6 +169,11 @@ public class CameraController : MonoBehaviour
 	void TargetChanged()
 	{
 		targetChangeTime = Time.time;
+	}
+
+	void Update()
+	{
+		updateGizmos = true;
 	}
 
 	void LateUpdate()
@@ -210,12 +215,12 @@ public class CameraController : MonoBehaviour
 			//Weight towards player the further away target is
 			Vector3 goalPos = Vector3.Lerp(midPos, player.GetPos, player.GetMaxDistToTarget / vectorBetween.magnitude);
 			//Lerp determines how much camera lags behind player
-			dummyPos = Vector3.Lerp(dummyPos, goalPos, Time.deltaTime * lerpDummyTargeting);
+			dummyPos = Vector3.Lerp(dummyPos, goalPos, Time.smoothDeltaTime * lerpDummyTargeting);
 		}
 		else
 		{
 			//Lerp determines how much camera lags behind player
-			dummyPos = Vector3.Lerp(dummyPos, player.GetPos, Time.deltaTime * lerpDummyDefault);
+			dummyPos = Vector3.Lerp(dummyPos, player.GetPos, Time.smoothDeltaTime * lerpDummyDefault);
 		}
 	}
 
@@ -252,10 +257,10 @@ public class CameraController : MonoBehaviour
 		if (player.Target)
 		{
 			//Because of angles being between -180 and 180, quaternion is needed to lerp between eulers.
-			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.deltaTime * lerpDirTargeting);
+			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.smoothDeltaTime * lerpDirTargeting);
 			var y = Vector3.SignedAngle(Vector3.forward, yRot * Vector3.forward, Vector3.up);
 			//Vertical angles are ok with mathf.lerp
-			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.deltaTime * lerpDirTargeting);
+			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.smoothDeltaTime * lerpDirTargeting);
 
 			CurAngle = new Vector2(x, y);
 		}
@@ -266,14 +271,14 @@ public class CameraController : MonoBehaviour
 			{
 				//Lerp towards default angle (vertical angles are never extreme -> mathf.lerp is ok)
 				float lerpWeight = Mathf.Clamp01((Time.time - (lastLookInput + autoCameraDelayAfterLookInput)) / 3f); //Takes 3s to be full strength
-				RawAngle = new Vector2(Mathf.Lerp(RawAngle.x, defaultVAngle, Time.deltaTime * lerpCamToDefault * lerpWeight), RawAngle.y);
+				RawAngle = new Vector2(Mathf.Lerp(RawAngle.x, defaultVAngle, Time.smoothDeltaTime * lerpCamToDefault * lerpWeight), RawAngle.y);
 			}
 
 			//Because of angles being between -180 and 180, quaternion is needed to lerp between eulers.
-			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.deltaTime * lerpDirDefault);
+			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.smoothDeltaTime * lerpDirDefault);
 			var y = Vector3.SignedAngle(Vector3.forward, yRot * Vector3.forward, Vector3.up);
 			//Vertical angles are ok with mathf.lerp
-			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.deltaTime * lerpDirDefault);
+			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.smoothDeltaTime * lerpDirDefault);
 
 			CurAngle = new Vector2(x, y);
 		}
@@ -302,7 +307,7 @@ public class CameraController : MonoBehaviour
 		}
 		else
 		{
-			currentDistance = Mathf.Lerp(currentDistance, distDefault, Time.deltaTime*lerpDirDefault);
+			currentDistance = Mathf.Lerp(currentDistance, distDefault, Time.smoothDeltaTime*lerpDirDefault);
 		}
 	}
 
@@ -334,19 +339,19 @@ public class CameraController : MonoBehaviour
 			//The goal to look at
 			rawLookRot = Quaternion.LookRotation((lookAtPoint - transform.position).normalized);
 			//The real direction we look at
-			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.deltaTime * lerpLookRotTargeting);
+			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.smoothDeltaTime * lerpLookRotTargeting);
 		}
 		else
 		{
 			//"Lerp weight" when defaulting to new position after target has changed.
 			float defaultingTime = Mathf.Clamp01((Time.time - targetChangeTime) / 5f);
-			lookAtPoint = Vector3.Lerp(lookAtPoint, dummyPos, Time.deltaTime * lerpLookAtPosDefault * defaultingTime);
+			lookAtPoint = Vector3.Lerp(lookAtPoint, dummyPos, Time.smoothDeltaTime * lerpLookAtPosDefault * defaultingTime);
 
 			//The goal to look at
 			rawLookRot = Quaternion.LookRotation((lookAtPoint - transform.position).normalized);
 
 			//The real direction we look at
-			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.deltaTime * lerpLookRotDefault);
+			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.smoothDeltaTime * lerpLookRotDefault);
 		}
 
 		transform.rotation = newRot;
@@ -381,5 +386,47 @@ public class CameraController : MonoBehaviour
 		var dir = GetCurrentDirection();
 		dir.y = 0;
 		return dir.normalized;
+	}
+
+
+	[SerializeField] private bool debugVisuals = false;
+	Vector3[] guiPositions = new Vector3[200];
+	Vector3[] guiPositionsDummy = new Vector3[200];
+	Vector3[] guiForw = new Vector3[200];
+	int guiPosIndex = 0;
+	bool updateGizmos = false;
+
+	void OnDrawGizmos() {
+		if (!debugVisuals)
+			return;
+		if (Application.isPlaying && updateGizmos)
+		{
+			guiPositions[guiPosIndex] = transform.position;
+			guiPositionsDummy[guiPosIndex] = dummyPos;
+			guiForw[guiPosIndex] = -GetCurrentDirection();
+		}
+		for (int i = 0; i < guiPositions.Length; i++)
+		{
+			Gizmos.color = Color.green;
+			if (guiPositions[i] != null)
+				Gizmos.DrawWireSphere(guiPositions[i], 0.15f);
+			Gizmos.color = Color.blue;
+			if (guiPositionsDummy[i] != null)
+				Gizmos.DrawWireSphere(guiPositionsDummy[i], 0.075f);
+			Gizmos.color = Color.grey;
+			if (guiPositions[i] != null && guiPositionsDummy[i] != null)
+				Gizmos.DrawLine(guiPositions[i], guiPositionsDummy[i]);
+			Gizmos.color = Color.black;
+			if (guiForw[i] != null)
+				Gizmos.DrawRay(guiPositions[i], guiForw[i]*2);
+
+
+
+		}
+		guiPosIndex++;
+		if (guiPosIndex >= 200)
+			guiPosIndex = 0;
+
+		updateGizmos = false;
 	}
 }

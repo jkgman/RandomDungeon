@@ -7,11 +7,15 @@ using System.Collections;
 public class PlayerController : MonoBehaviour
 {
 
+	[SerializeField] private bool debugVisuals = false;
+
 	[Header("Movement Controlling")]
 	
+
 	[SerializeField] private float moveSpeed = 15f;
 	[SerializeField] private float rotationSpeed = 10f;
 
+	private CharacterController controller;
 	private Vector2 moveDirection;
 	private float height = 0.5f;
 	private bool _isGrounded;
@@ -100,6 +104,8 @@ public class PlayerController : MonoBehaviour
 
 	void OnEnable()
     {
+		controller = GetComponent<CharacterController>();
+		
 		if (targetChangedEvent == null)
 			targetChangedEvent = new UnityEvent();
 
@@ -121,16 +127,18 @@ public class PlayerController : MonoBehaviour
 
 	void Update()
 	{
+		updateGizmos = true;
+
 		UpdateTarget();
 
 
-		ApplyGravity();
 		Move();
 		Rotate();
-		
-		
-		
+		ApplyGravity();
+
 		ResetInputModifiers();
+
+
 
 	}
 
@@ -143,7 +151,7 @@ public class PlayerController : MonoBehaviour
 
 	void ApplyGravity()
 	{
-
+		controller.Move(Physics.gravity * Time.deltaTime);
 	}
 
 
@@ -160,19 +168,19 @@ public class PlayerController : MonoBehaviour
 
 			//Apply sideways inputs to transform position
 			if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y)) // Apparently this happens too
-				transform.position = new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y);
+				controller.Move(new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y) - transform.position);
 
 			//Add forward input and apply to transform position as well
 			Quaternion rot = Quaternion.LookRotation(GetFlatDirectionToTarget());
 			Vector3 forwardMoveDir = rot * new Vector3(0, 0, moveInputRaw.y);
-			transform.position += forwardMoveDir * moveSpeed * Time.deltaTime;
+			controller.Move(forwardMoveDir * moveSpeed * Time.deltaTime);
 
 			//Prevent from going too close. This might become problematic for combat but we'll see.
 			float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(Target.transform.position.x, 0, Target.transform.position.z));
 			if (flatDistanceToTarget < 0.5f)
 			{
 				Vector3 newPos = new Vector3(Target.transform.position.x, transform.position.y, Target.transform.position.z) - GetFlatDirectionToTarget().normalized*0.5f;
-				transform.position = newPos;
+				controller.Move(newPos - transform.position);
 			}
 		}
 		else
@@ -180,7 +188,7 @@ public class PlayerController : MonoBehaviour
 
 			Quaternion rot = Quaternion.LookRotation(-Cam.GetRawFlatDirection());
 			Vector3 realMoveDirection = rot * new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
-			transform.position += realMoveDirection * moveSpeed * Time.deltaTime;
+			controller.Move(realMoveDirection * moveSpeed * Time.deltaTime);
 		}
 		
 	}
@@ -430,6 +438,8 @@ public class PlayerController : MonoBehaviour
 	
 	void InputTargetSwitch(InputAction.CallbackContext context) 
 	{
+		if (!Target)
+			return;
 	
 		int targetSwitchDirection = 0;
 		
@@ -481,5 +491,29 @@ public class PlayerController : MonoBehaviour
 
 
 	#endregion
+
+
+	Vector3[] guiPositions = new Vector3[200];
+	int guiPosIndex = 0;
+	bool updateGizmos = false;
+
+	void OnDrawGizmos()
+	{
+		if (!debugVisuals)
+			return;
+		Gizmos.color = Color.red;
+		if (Application.isPlaying && updateGizmos)
+			guiPositions[guiPosIndex] = transform.position;
+		for (int i = 0; i < guiPositions.Length; i++)
+		{
+			if (guiPositions[i] != null)
+				Gizmos.DrawWireSphere(guiPositions[i], 0.15f);
+		}
+		guiPosIndex++;
+		if (guiPosIndex >= guiPositions.Length)
+			guiPosIndex = 0;
+
+		updateGizmos = false;
+	}
 
 }
