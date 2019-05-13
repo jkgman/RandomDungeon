@@ -161,12 +161,21 @@ public class PlayerController : MonoBehaviour
 			Vector2 newPosWithSidewaysOffset = MoveAlongCircle(currentAngle, pos,targetPos, -moveInputRaw.x * moveSpeed * Time.deltaTime);
 
 			//Apply sideways inputs first
-			transform.position = new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y);
+			if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y))
+				transform.position = new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y);
 
 			//Add forward input
 			rot = Quaternion.LookRotation(GetFlatDirectionToTarget());
 			Vector3 forwardMoveDir = rot * new Vector3(0, 0, moveInputRaw.y);
 			transform.position += forwardMoveDir * moveSpeed * Time.deltaTime;
+			float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(Target.transform.position.x, 0, Target.transform.position.z));
+			
+			//Prevent from going too close
+			if (flatDistanceToTarget < 1f)
+			{
+				Vector3 newPos = new Vector3(Target.transform.position.x, transform.position.y, Target.transform.position.z) - GetFlatDirectionToTarget().normalized;
+				transform.position = newPos;
+			}
 		}
 		else
 		{
