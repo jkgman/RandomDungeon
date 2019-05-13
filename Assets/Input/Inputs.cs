@@ -341,6 +341,17 @@ public class Inputs : IInputActionCollection
                     ""processors"": """",
                     ""interactions"": """",
                     ""bindings"": []
+                },
+                {
+                    ""name"": ""SwitchTarget"",
+                    ""id"": ""1106d524-5dc4-4b2f-960e-67d3c74592c0"",
+                    ""expectedControlLayout"": """",
+                    ""continuous"": false,
+                    ""passThrough"": false,
+                    ""initialStateCheck"": false,
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""bindings"": []
                 }
             ],
             ""bindings"": [
@@ -559,6 +570,30 @@ public class Inputs : IInputActionCollection
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e3af22c2-c39e-45fd-a7f0-ff1a6109dbbe"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": ""Press"",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""SwitchTarget"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""47231867-1224-414e-8d64-570651052c90"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";KBM"",
+                    ""action"": ""SwitchTarget"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
                 }
             ]
         }
@@ -608,6 +643,7 @@ public class Inputs : IInputActionCollection
         m_Player_Look = m_Player.GetAction("Look");
         m_Player_Attack = m_Player.GetAction("Attack");
         m_Player_TargetLock = m_Player.GetAction("TargetLock");
+        m_Player_SwitchTarget = m_Player.GetAction("SwitchTarget");
     }
     ~Inputs()
     {
@@ -725,6 +761,7 @@ public class Inputs : IInputActionCollection
     private InputAction m_Player_Look;
     private InputAction m_Player_Attack;
     private InputAction m_Player_TargetLock;
+    private InputAction m_Player_SwitchTarget;
     public struct PlayerActions
     {
         private Inputs m_Wrapper;
@@ -733,6 +770,7 @@ public class Inputs : IInputActionCollection
         public InputAction @Look { get { return m_Wrapper.m_Player_Look; } }
         public InputAction @Attack { get { return m_Wrapper.m_Player_Attack; } }
         public InputAction @TargetLock { get { return m_Wrapper.m_Player_TargetLock; } }
+        public InputAction @SwitchTarget { get { return m_Wrapper.m_Player_SwitchTarget; } }
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -755,6 +793,9 @@ public class Inputs : IInputActionCollection
                 TargetLock.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
                 TargetLock.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
                 TargetLock.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
+                SwitchTarget.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchTarget;
+                SwitchTarget.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchTarget;
+                SwitchTarget.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchTarget;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -771,6 +812,9 @@ public class Inputs : IInputActionCollection
                 TargetLock.started += instance.OnTargetLock;
                 TargetLock.performed += instance.OnTargetLock;
                 TargetLock.cancelled += instance.OnTargetLock;
+                SwitchTarget.started += instance.OnSwitchTarget;
+                SwitchTarget.performed += instance.OnSwitchTarget;
+                SwitchTarget.cancelled += instance.OnSwitchTarget;
             }
         }
     }
@@ -813,5 +857,6 @@ public class Inputs : IInputActionCollection
         void OnLook(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnTargetLock(InputAction.CallbackContext context);
+        void OnSwitchTarget(InputAction.CallbackContext context);
     }
 }

@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Experimental.Input;
 
 
@@ -63,6 +62,8 @@ public class CameraController : MonoBehaviour
 	private float lastLookInput = 0; //Last Time.time when "Look" input was detected
 	private float targetChangeTime = 0; //Last Time.time that player's target changed in any way
 
+	public UnityEvent CameraTransformsUpdated;
+
 
 	//The angle that currentAngle lerps towards
 	private Vector2 _rawAngle;
@@ -93,26 +94,33 @@ public class CameraController : MonoBehaviour
 		GetPlayer();
 		if (player)
 		{
-			AddEventListeners();
+			AddEvents();
 			ControlsSubscribe();
 		}
 	}
 	void OnDisable() 
 	{
-		RemoveEventListeners();
+		RemoveEvents();
 		ControlsUnsubscribe();
 	}
 
-	void AddEventListeners()
+	void AddEvents()
 	{
 		if (player && player.targetChangedEvent != null)
 			player.targetChangedEvent.AddListener(TargetChanged);
+		if (CameraTransformsUpdated == null)
+			CameraTransformsUpdated = new UnityEvent();
 
 	}
-	void RemoveEventListeners()
+	void RemoveEvents()
 	{
 		if (player && player.targetChangedEvent != null)
 			player.targetChangedEvent.RemoveListener(TargetChanged);
+
+		if (CameraTransformsUpdated != null)
+			CameraTransformsUpdated.RemoveAllListeners();
+
+		CameraTransformsUpdated = null;
 
 	}
 
@@ -126,33 +134,15 @@ public class CameraController : MonoBehaviour
 		if (inputs == null)
 			inputs = new Inputs();
 
-		inputs.Player.TargetLock.performed += InputTargetLock;
 		inputs.Player.Look.performed += InputLookAround;
-		inputs.Player.TargetLock.Enable();
 		inputs.Player.Look.Enable();
 	}
 	void ControlsUnsubscribe() 
 	{
-		inputs.Player.TargetLock.performed -= InputTargetLock;
 		inputs.Player.Look.performed -= InputLookAround;
-		inputs.Player.TargetLock.Disable();
 		inputs.Player.Look.Disable();
 	}
 
-	void InputTargetLock(InputAction.CallbackContext context) {
-		//Todo:
-		//Get targets, no idea how
-		//if no targets, reset camera:
-		CameraTargetingData data = new CameraTargetingData() {
-			forward = -GetCurrentDirection(),
-			position = transform.position,
-			fov = Camera.main.fieldOfView
-		};
-		bool success = player.SetTarget(data);
-		if (!success)
-			ResetCamera();
-		
-	}
 	void InputLookAround(InputAction.CallbackContext context)
 	{
         lookModifier = context.ReadValue<Vector2>() * Time.deltaTime;
@@ -194,9 +184,19 @@ public class CameraController : MonoBehaviour
 		SetPositionByDirection(); //Finally applies camera position according to earlier modifier values
 		SetRotation(); // Rotates face towards current target
 
-
-
+		//Send a public event that camera lateupdate is done.
+		CameraTransformsUpdated.Invoke();
 	}
+
+	public CameraTargetingData GetTargetingData()
+	{
+		return new CameraTargetingData() {
+			forward = -GetCurrentDirection(),
+			position = transform.position,
+			fov = Camera.main.fieldOfView
+		};
+	}
+
 
 	void SetDummyPosition()
 	{
@@ -313,14 +313,13 @@ public class CameraController : MonoBehaviour
 		transform.position = newPos;
 	}
 
-	void ResetCamera()
+	public void ResetCamera()
 	{
 		if (!player.Target)
 		{
 			var x = defaultVAngle;
 			var y = Vector3.SignedAngle(Vector3.forward , -player.transform.forward, Vector3.up);
 			RawAngle = new Vector2(x, y);
-
 		}
 	}
 
@@ -364,11 +363,16 @@ public class CameraController : MonoBehaviour
 		return r.normalized;
 	}
 
-	Vector3 GetRawDirection()
+	public Vector3 GetRawDirection()
 	{
 		return (Quaternion.Euler(new Vector3(RawAngle.x, RawAngle.y, 0)) * Vector3.forward).normalized;
 	}
-	Vector3 GetCurrentDirection()
+	public Vector3 GetRawFlatDirection()
+	{
+		return (Quaternion.Euler(new Vector3(0, RawAngle.y, 0)) * Vector3.forward).normalized;
+	}
+
+	public Vector3 GetCurrentDirection()
 	{
 		return (Quaternion.Euler(new Vector3(CurAngle.x, CurAngle.y, 0)) * Vector3.forward).normalized;
 	}

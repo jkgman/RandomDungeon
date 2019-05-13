@@ -2,25 +2,49 @@
 using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.Experimental.Input;
-
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
-	public Transform debugTarget;
-	[SerializeField] private GameObject targetIndicatorPrefab;
+
+	[Header("Movement Controlling")]
+	
 	[SerializeField] private float moveSpeed = 15f;
 	[SerializeField] private float rotationSpeed = 10f;
 
-	[Header("Target stuff")]
+	private Vector2 moveDirection;
+	private float height = 0.5f;
+	private bool _isGrounded;
+	private bool _isRunning;
+
+	
+	[Header("Target crap")]
+	
+	[SerializeField] private GameObject targetIndicatorPrefab;
 	[SerializeField] private float maxDistToTarget = 10f;
 	[SerializeField] private LayerMask targetLayerMask;
 	[SerializeField] private LayerMask blockTargetLayerMask;
 
-
-
-	private Vector2 moveDirectionRaw;
 	private GameObject targetIndicator;
+	public UnityEvent targetChangedEvent;
 
+	
+	[Header("Combat shit")]
+
+	[SerializeField] private Weapon currentWeapon;
+
+	private bool _isBlocking;
+	private bool _isStunned;
+	private bool _isAttacking;
+
+
+
+    private Inputs inputs;
+	private Vector2 moveInputRaw;
+
+
+
+	#region Getters & Setters
 
 	private CameraController _cam;
 	private CameraController Cam
@@ -36,14 +60,6 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
-	private bool _isRunning;
-	private bool _isGrounded;
-	private bool _isBlocking;
-	private bool _isStunned;
-	private bool _isAttacking;
-
-	public UnityEvent targetChangedEvent;
-
 	private Transform _target;
 	public Transform Target
 	{
@@ -56,40 +72,164 @@ public class PlayerController : MonoBehaviour
 			_target = value;
 		}
 	}
+
 	public float GetMaxDistToTarget
 	{
 		get { return maxDistToTarget; }
 	}
 	
-
 	public Vector3 GetPos
 	{
 		get{ return transform.position; }
 	}
 
-    private Inputs inputs;
+	Vector3 GetFlatMoveDirection()
+	{
+		var lookDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
+		var dir = Quaternion.LookRotation(lookDir) * -Cam.GetCurrentFlatDirection();
+		return dir.normalized;
+	}
 
-    void OnEnable()
+	Vector3 GetCurrentMoveDirection()
+	{
+		return moveDirection;
+	}
+
+	#endregion
+
+
+	void OnEnable()
     {
 		if (targetChangedEvent == null)
 			targetChangedEvent = new UnityEvent();
+
+		if (Cam && Cam.CameraTransformsUpdated != null)
+			Cam.CameraTransformsUpdated.AddListener(CameraReadyEvent);
 		
         ControlsSubscribe();
     }
     void OnDisable()
     {
-        ControlsUnsubscribe();
+		targetChangedEvent = null;
+
+		if (Cam && Cam.CameraTransformsUpdated != null)
+			Cam.CameraTransformsUpdated.RemoveListener(CameraReadyEvent);
+
+		ControlsUnsubscribe();
     }
 
 
 	void Update()
 	{
 		UpdateTarget();
+
+
+		ApplyGravity();
 		Move();
 		Rotate();
+		
+		
+		
 		ResetInputModifiers();
 
 	}
+
+	//Is called after camera has updated its transform.
+	void CameraReadyEvent()
+	{
+		// Target indicator needs the latest camera position, otherwise looks bad at low fps.
+		SetTargetIndicator();
+	}
+
+	void ApplyGravity()
+	{
+
+	}
+
+
+	void Move()
+	{
+		Quaternion rot = Quaternion.identity;
+
+		if (Target)
+		{
+			//This calculation moves along circular path around target according to sideways input (moveInputRaw.x)
+			Vector2 pos = new Vector2(transform.position.x, transform.position.z);
+			Vector2 targetPos = new Vector2(Target.transform.position.x, Target.transform.position.z);
+
+			float currentAngle = Vector3.SignedAngle(Vector3.forward, -GetFlatDirectionToTarget(), Vector3.up);
+			Vector2 newPosWithSidewaysOffset = MoveAlongCircle(currentAngle, pos,targetPos, -moveInputRaw.x * moveSpeed * Time.deltaTime);
+
+			//Apply sideways inputs first
+			transform.position = new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y);
+
+			//Add forward input
+			rot = Quaternion.LookRotation(GetFlatDirectionToTarget());
+			Vector3 forwardMoveDir = rot * new Vector3(0, 0, moveInputRaw.y);
+			transform.position += forwardMoveDir * moveSpeed * Time.deltaTime;
+		}
+		else
+		{
+
+			rot = Quaternion.LookRotation(-Cam.GetRawFlatDirection());
+			Vector3 realMoveDirection = rot * new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
+			transform.position += realMoveDirection * moveSpeed * Time.deltaTime;
+		}
+		
+	}
+	Vector3 GetFlatDirectionToTarget()
+	{
+		if (Target)
+		{
+			var dirToTarget = Target.transform.position - transform.position;
+			dirToTarget.y = 0;
+			return dirToTarget.normalized;
+		}
+		else
+		{
+			return -Cam.GetCurrentFlatDirection();
+		}
+	}
+	Vector2 MoveAlongCircle(float currentAngle, Vector2 currentPoint, Vector2 centerPoint, float distance)
+	{
+		var r = Vector2.Distance(currentPoint, centerPoint);
+		var a1 = currentAngle * (Mathf.PI / 180);
+		var a2 = a1 + distance / r;
+		var p2 = Vector2.zero;
+		p2.x = centerPoint.x + r * Mathf.Sin(a2);
+		p2.y = centerPoint.y + r * Mathf.Cos(a2);
+		return p2;
+	}
+
+	void Rotate()
+	{
+		if (Target)
+		{
+			var lookpos = Target.transform.position - transform.position;
+			lookpos.y = 0;
+			var rot = Quaternion.LookRotation(lookpos);
+			transform.rotation = Quaternion.Slerp(transform.rotation, rot, Time.deltaTime * rotationSpeed);
+		}
+		else
+		{
+			if (moveInputRaw != Vector2.zero)
+			{
+				var lookDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
+				var dir = Quaternion.LookRotation(lookDir) * -Cam.GetCurrentFlatDirection();
+				transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
+			}
+		}
+	}
+
+	void ResetInputModifiers()
+	{
+		//These should be zero for next frame in case no input was given
+		moveInputRaw = Vector3.zero;
+
+	}
+
+
+	#region Targeting
 
 	void UpdateTarget()
 	{
@@ -98,32 +238,30 @@ public class PlayerController : MonoBehaviour
 			Target = null;
 		}
 
-		// Start of Indicator
-		if (!Target)
+
+	}
+
+	void SetTargetIndicator()
+	{
+		if (!Target || !Cam) // Indicator relies on camera
 		{
 			if (targetIndicator)
 				Destroy(targetIndicator);
-		} 
-		else
+		} else
 		{
-			if (!Cam) // Indicator relies on camera
-				return;
-
 			if (!targetIndicator)
 			{
 				if (targetIndicatorPrefab)
 					targetIndicator = Instantiate(targetIndicatorPrefab, Target.transform.position, Quaternion.LookRotation(Cam.transform.position - Target.transform.position));
-			} 
-			else
+			} else
 			{
 				targetIndicator.transform.position = Target.transform.position;
-				targetIndicator.transform.rotation = Quaternion.LookRotation(Cam.transform.position - Target.transform.position);
+				targetIndicator.transform.rotation = Quaternion.LookRotation(Cam.GetCurrentDirection());
 			}
 		}
-		// End of Indicator
+
 	}
 
-	
 	public bool SetTarget(CameraTargetingData data)
 	{
 		Transform oldTarget = Target;
@@ -131,11 +269,6 @@ public class PlayerController : MonoBehaviour
 		if (Target != null)
 		{
 			Target = null;
-			return true;
-		}
-		if (debugTarget)
-		{
-			Target = debugTarget;
 			return true;
 		}
 
@@ -176,33 +309,25 @@ public class PlayerController : MonoBehaviour
 
 	Transform FindBestTarget(CameraTargetingData camData, Transform[] allTheBoisToBeTargeted)
 	{
-		//TODO
-		//Find a target thats closest to the middle of the current view.
-		//Target must not be blocked from raycast.
-
 		Transform output = null;
 		float currentBestAngle = -1;
-		Debug.Log("alltheboys: " + allTheBoisToBeTargeted.Length);
 
 		for (int i = 0; i < allTheBoisToBeTargeted.Length; i++)
 		{
 			float angle = Vector3.Angle(camData.forward, (allTheBoisToBeTargeted[i].position - camData.position));
-			bool inView = angle < camData.fov*0.65f;
+			bool inView = angle < camData.fov*0.65f; 
 			if (inView)
 			{
-				Debug.Log("inView = true");
 				//Check if target is visible in camera.
 				RaycastHit hit;
 				Physics.Raycast(camData.position, (allTheBoisToBeTargeted[i].position - camData.position).normalized, out hit, maxDistToTarget, blockTargetLayerMask.value);
 				Debug.Log(hit.collider);
 				if (!hit.collider || hit.collider.transform == allTheBoisToBeTargeted[i])
 				{
-					Debug.Log("raycast succeeded");
 					//Check that the angle is better than currentBest.
 					if (currentBestAngle < 0 || angle < currentBestAngle)
 					{
 						//Its the fucking best so far so assign that mf to output.
-						Debug.Log("whole shit succeeded");
 						output = allTheBoisToBeTargeted[i];
 						currentBestAngle = angle;
 					}
@@ -214,42 +339,12 @@ public class PlayerController : MonoBehaviour
 
 		return output;
 	}
+
+	#endregion
+
+	#region HandleControls
 	
-
-	void Move()
-	{
-		Quaternion rot = Quaternion.Euler(0, Cam.CurAngle.y, 0);
-		Vector3 realMoveDirection = rot * new Vector3(-moveDirectionRaw.x, 0, -moveDirectionRaw.y);
-		transform.position += realMoveDirection * moveSpeed * Time.deltaTime;
-	}
-
-	void Rotate()
-	{
-		if (Target)
-		{
-			var lookpos = Target.transform.position - transform.position;
-			lookpos.y = 0;
-			var rot = Quaternion.LookRotation(lookpos);
-			transform.rotation = Quaternion.Slerp(transform.rotation, rot, Time.deltaTime * rotationSpeed);
-		}
-		else
-		{
-			if (moveDirectionRaw != Vector2.zero)
-			{
-				var lookpos = new Vector3(moveDirectionRaw.x, 0, moveDirectionRaw.y);
-				var dir = Quaternion.LookRotation(lookpos) * -Cam.GetCurrentFlatDirection();
-				transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
-			}
-		}
-	}
-
-	void ResetInputModifiers()
-	{
-		//These should be zero for next frame in case no input was given
-		moveDirectionRaw = Vector3.zero;
-
-	}
-
+	
 	void ControlsSubscribe()
     {
         if (inputs == null)
@@ -257,19 +352,41 @@ public class PlayerController : MonoBehaviour
 
         inputs.Player.Move.performed += InputMove;
 		inputs.Player.Move.Enable();
-    }
-    void ControlsUnsubscribe()
+		inputs.Player.TargetLock.performed += InputTargetLock;
+		inputs.Player.TargetLock.Enable();
+		inputs.Player.SwitchTarget.performed += InputTargetSwitch;
+		inputs.Player.SwitchTarget.Enable();
+	}
+	void ControlsUnsubscribe()
     {
         inputs.Player.Move.performed -= InputMove;
 		inputs.Player.Move.Disable();
+		inputs.Player.TargetLock.performed -= InputTargetLock;
+		inputs.Player.TargetLock.Disable();
+		inputs.Player.SwitchTarget.performed -= InputTargetSwitch;
+		inputs.Player.SwitchTarget.Disable();
 	}
 
+	void InputTargetLock(InputAction.CallbackContext context) {
 
-	#region HandleControls
+		bool success = SetTarget(Cam.GetTargetingData());
+		if (!success)
+			Cam.ResetCamera();
 
+	}
+	void InputTargetSwitch(InputAction.CallbackContext context) {
+
+		//TODO
+		//Get axis of target switch
+		//Look for all targets in chosen direction
+		//Pick the one with smallest angle if it is in view
+
+		//For mouse scroll, ignore verticality (vector1)
+
+	}
 	void InputMove(InputAction.CallbackContext context)
     {
-        moveDirectionRaw = context.ReadValue<Vector2>();
+        moveInputRaw = context.ReadValue<Vector2>();
 
     }
 	void InputJump(InputAction.CallbackContext context)
