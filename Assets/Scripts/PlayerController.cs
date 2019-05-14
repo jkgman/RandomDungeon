@@ -186,7 +186,7 @@ public class PlayerController : MonoBehaviour
 		else
 		{
 
-			Quaternion rot = Quaternion.LookRotation(-Cam.GetRawFlatDirection());
+			Quaternion rot = Quaternion.LookRotation(-Cam.GetCurrentFlatDirection());
 			Vector3 realMoveDirection = rot * new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
 			controller.Move(realMoveDirection * moveSpeed * Time.deltaTime);
 		}

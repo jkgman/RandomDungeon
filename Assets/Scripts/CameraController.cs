@@ -20,6 +20,18 @@ public struct CameraTargetingData
 
 public class CameraController : MonoBehaviour
 {
+	//Different lerp speeds for different situations/states
+	private const float LERP_ANGLE_DEFAULT = 2f;            //Angle determines which direction from player camera offsets. -> Affects positioning. good values 1-8, bigger value makes turn radius smaller
+	private const float LERP_ANGLE_TARGETING = 70f;			//Angle determines which direction from player camera offsets. -> Affects positioning. 
+	private const float LERP_DUMMY_DEFAULT = 10f;			//Dummy is a position that follows player & target. It is used to determine camera positioning
+	private const float LERP_DUMMY_TARGETING = 8f;          //Dummy is a position that follows player & target. It is used to determine camera positioning
+	private const float LERP_ROTATION_DEFAULT = 100f;		//Look rotation speed
+	private const float LERP_ROTATION_TARGETING = 30f;		//Look rotation speed
+	private const float LERP_LOOKAT_POS_DEFAULT = 100f;		//Dummy position for look rotation
+	private const float LERP_LOOKAT_POS_TARGETING = 70f;	//Dummy position for look rotation
+	private const float LERP_CAM_TO_DEFAULT = 2f;			//Speed of going back to default vertical angle when no inputs detected
+
+
 	[SerializeField] private float distDefault = 4f;
 	[SerializeField] private float distTargeting = 4f;
 
@@ -40,15 +52,6 @@ public class CameraController : MonoBehaviour
 	private readonly float maxVAngle = 40f;
 	private readonly float defaultVAngle = -15f;
 
-	//Different lerp speeds for different situations/states
-	private readonly float lerpDummyTargeting = 10f;
-	private readonly float lerpDirTargeting = 20f;
-	private readonly float lerpLookRotTargeting = 30f;
-	private readonly float lerpDummyDefault = 10f;
-	private readonly float lerpDirDefault = 5f;
-	private readonly float lerpLookRotDefault = 100f;
-	private readonly float lerpLookAtPosDefault = 200f;
-	private readonly float lerpCamToDefault = 2f;
 
 	private Vector3 dummyPos = Vector3.zero; // Position that follows player or its target, Camera always follows dummyPos and not player.
 	private Vector3 oldDummyPos = Vector3.zero; // Last Frame
@@ -215,12 +218,12 @@ public class CameraController : MonoBehaviour
 			//Weight towards player the further away target is
 			Vector3 goalPos = Vector3.Lerp(midPos, player.GetPos, player.GetMaxDistToTarget / vectorBetween.magnitude);
 			//Lerp determines how much camera lags behind player
-			dummyPos = Vector3.Lerp(dummyPos, goalPos, Time.smoothDeltaTime * lerpDummyTargeting);
+			dummyPos = Vector3.Lerp(dummyPos, goalPos, Time.smoothDeltaTime * LERP_DUMMY_TARGETING);
 		}
 		else
 		{
 			//Lerp determines how much camera lags behind player
-			dummyPos = Vector3.Lerp(dummyPos, player.GetPos, Time.smoothDeltaTime * lerpDummyDefault);
+			dummyPos = Vector3.Lerp(dummyPos, player.GetPos, Time.smoothDeltaTime * LERP_DUMMY_DEFAULT);
 		}
 	}
 
@@ -256,11 +259,13 @@ public class CameraController : MonoBehaviour
 	{
 		if (player.Target)
 		{
+			//"Lerp weight" when defaulting to new rotation after target has changed. (between 0.5 and 1)
+			float lerpWeight = Mathf.Clamp01((Time.time - targetChangeTime) / 1f);
 			//Because of angles being between -180 and 180, quaternion is needed to lerp between eulers.
-			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.smoothDeltaTime * lerpDirTargeting);
+			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.smoothDeltaTime * LERP_ANGLE_TARGETING * lerpWeight);
 			var y = Vector3.SignedAngle(Vector3.forward, yRot * Vector3.forward, Vector3.up);
 			//Vertical angles are ok with mathf.lerp
-			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.smoothDeltaTime * lerpDirTargeting);
+			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.smoothDeltaTime * LERP_ANGLE_TARGETING);
 
 			CurAngle = new Vector2(x, y);
 		}
@@ -271,14 +276,14 @@ public class CameraController : MonoBehaviour
 			{
 				//Lerp towards default angle (vertical angles are never extreme -> mathf.lerp is ok)
 				float lerpWeight = Mathf.Clamp01((Time.time - (lastLookInput + autoCameraDelayAfterLookInput)) / 3f); //Takes 3s to be full strength
-				RawAngle = new Vector2(Mathf.Lerp(RawAngle.x, defaultVAngle, Time.smoothDeltaTime * lerpCamToDefault * lerpWeight), RawAngle.y);
+				RawAngle = new Vector2(Mathf.Lerp(RawAngle.x, defaultVAngle, Time.smoothDeltaTime * LERP_CAM_TO_DEFAULT * lerpWeight), RawAngle.y);
 			}
 
 			//Because of angles being between -180 and 180, quaternion is needed to lerp between eulers.
-			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.smoothDeltaTime * lerpDirDefault);
+			Quaternion yRot = Quaternion.Slerp(Quaternion.Euler(0, CurAngle.y, 0), Quaternion.Euler(0, RawAngle.y, 0), Time.smoothDeltaTime * LERP_ANGLE_DEFAULT);
 			var y = Vector3.SignedAngle(Vector3.forward, yRot * Vector3.forward, Vector3.up);
 			//Vertical angles are ok with mathf.lerp
-			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.smoothDeltaTime * lerpDirDefault);
+			var x = Mathf.Lerp(CurAngle.x, RawAngle.x, Time.smoothDeltaTime * LERP_ANGLE_DEFAULT);
 
 			CurAngle = new Vector2(x, y);
 		}
@@ -307,7 +312,10 @@ public class CameraController : MonoBehaviour
 		}
 		else
 		{
-			currentDistance = Mathf.Lerp(currentDistance, distDefault, Time.smoothDeltaTime*lerpDirDefault);
+			if (player.Target)
+				currentDistance = Mathf.Lerp(currentDistance, distTargeting, Time.smoothDeltaTime*LERP_CAM_TO_DEFAULT);
+			else
+				currentDistance = Mathf.Lerp(currentDistance, distDefault, Time.smoothDeltaTime*LERP_CAM_TO_DEFAULT);
 		}
 	}
 
@@ -335,23 +343,26 @@ public class CameraController : MonoBehaviour
 
 		if (player.Target)
 		{
-			lookAtPoint = (player.Target.position + player.GetPos) / 2f;
+			//"Lerp weight" when defaulting to new position after target has changed.
+			float lerpWeight = Mathf.Clamp01((Time.time - targetChangeTime) / 1f);
+			Vector3 newPoint = (player.Target.position + player.GetPos) / 2f;
+			lookAtPoint = Vector3.Lerp(lookAtPoint, newPoint, Time.smoothDeltaTime * LERP_LOOKAT_POS_TARGETING * lerpWeight);
 			//The goal to look at
 			rawLookRot = Quaternion.LookRotation((lookAtPoint - transform.position).normalized);
 			//The real direction we look at
-			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.smoothDeltaTime * lerpLookRotTargeting);
+			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.smoothDeltaTime * LERP_ROTATION_TARGETING);
 		}
 		else
 		{
 			//"Lerp weight" when defaulting to new position after target has changed.
-			float defaultingTime = Mathf.Clamp01((Time.time - targetChangeTime) / 5f);
-			lookAtPoint = Vector3.Lerp(lookAtPoint, dummyPos, Time.smoothDeltaTime * lerpLookAtPosDefault * defaultingTime);
+			float lerpWeight = Mathf.Clamp01((Time.time - targetChangeTime) / 5f);
+			lookAtPoint = Vector3.Lerp(lookAtPoint, dummyPos, Time.smoothDeltaTime * LERP_LOOKAT_POS_DEFAULT * lerpWeight);
 
 			//The goal to look at
 			rawLookRot = Quaternion.LookRotation((lookAtPoint - transform.position).normalized);
 
 			//The real direction we look at
-			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.smoothDeltaTime * lerpLookRotDefault);
+			newRot = Quaternion.Slerp(newRot, rawLookRot, Time.smoothDeltaTime * LERP_ROTATION_DEFAULT);
 		}
 
 		transform.rotation = newRot;
