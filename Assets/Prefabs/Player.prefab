@@ -137,8 +137,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugVisuals: 1
+  keepMomentumInAir: 1
+  gravity: 3
   moveSpeed: 8
   rotationSpeed: 8
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
   targetIndicatorPrefab: {fileID: 2182517120718306254, guid: 3c1f1ef38d5839841897c7d13fb496d7,
     type: 3}
   maxDistToTarget: 10
@@ -147,7 +152,7 @@ MonoBehaviour:
     m_Bits: 1024
   blockTargetLayerMask:
     serializedVersion: 2
-    m_Bits: 1335
+    m_Bits: 311
   targetChangedEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -169,7 +174,7 @@ CharacterController:
   m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.1
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6221907372546217487
@@ -231,7 +236,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6855847510135036217}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.00000023841858, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 3100024206320026715}

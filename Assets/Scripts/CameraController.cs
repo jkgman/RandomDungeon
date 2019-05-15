@@ -306,9 +306,10 @@ public class CameraController : MonoBehaviour
 	void PhysicsCheck()
 	{
 		Physics.SphereCast(dummyPos, 0.5f, GetCurrentDirection(), out RaycastHit hit, distDefault, collidingLayers.value);
+		float magnitude = (dummyPos - hit.point).magnitude;
 		if (hit.collider)
 		{
-			currentDistance = (dummyPos-hit.point).magnitude;
+			currentDistance = magnitude;
 		}
 		else
 		{

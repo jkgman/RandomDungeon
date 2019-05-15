@@ -53,6 +53,12 @@ MonoBehaviour:
   collidingLayers:
     serializedVersion: 2
     m_Bits: 311
+  CameraTransformsUpdated:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  debugVisuals: 1
 --- !u!1 &7496383073002038917
 GameObject:
   m_ObjectHideFlags: 0
