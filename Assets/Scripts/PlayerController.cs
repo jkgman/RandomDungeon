@@ -111,96 +111,21 @@ public class PlayerController : MonoBehaviour
 
 	#endregion
 
+	#region Tests & Checks & Calculations
 
-	void OnEnable()
-    {
-		
-		if (targetChangedEvent == null)
-			targetChangedEvent = new UnityEvent();
-
-		if (Cam && Cam.CameraTransformsUpdated != null)
-			Cam.CameraTransformsUpdated.AddListener(CameraReadyEvent);
-		
-        ControlsSubscribe();
-    }
-    void OnDisable()
-    {
-		targetChangedEvent = null;
-
-		if (Cam && Cam.CameraTransformsUpdated != null)
-			Cam.CameraTransformsUpdated.RemoveListener(CameraReadyEvent);
-
-		ControlsUnsubscribe();
-    }
-
-
-	void Update()
-	{
-		if (!Controller)
-			return;
-
-		SetBooleans();
-		UpdateTarget();
-
-		if (!(!isGrounded && keepMomentumInAir))
-		{
-			currentMoveOffset = Vector3.zero;
-			Move();
-		}
-
-		Rotate();
-		ApplyGravity();
-		MoveAlongSlope();
-		ApplyMovementToController();
-
-		ResetInputModifiers();
-
-	}
-
-	void SetBooleans()
-	{
-		updateGizmos = true;
-
-		isGrounded = CheckGrounded();
-		slopeNormal = CheckSlopeNormal();
-	}
-
-	//Is called after camera has updated its transform.
-	void CameraReadyEvent()
-	{
-		// Target indicator needs the latest camera position, otherwise looks bad at low fps.
-		SetTargetIndicator();
-	}
-
-	void ApplyGravity()
-	{
-		if (isGrounded)
-		{
-			vSpeed = -gravity * Time.deltaTime;
-		}
-		else
-		{
-			// apply gravity acceleration to vertical speed:
-			vSpeed += -gravity * Time.deltaTime;
-			currentMoveOffset += Vector3.up*vSpeed * Time.deltaTime;
-		}
-	}
-
-	bool CheckGrounded()
+	bool CheckGrounded() 
 	{
 		bool g = RaycastGrounded() || ControllerGrounded();
 		return g;
 	}
 
-	bool ControllerGrounded()
-	{
+	bool ControllerGrounded() {
 		return (Controller.isGrounded || Controller.collisionFlags.HasFlag(CollisionFlags.Below) || Controller.collisionFlags.HasFlag(CollisionFlags.CollidedBelow));
 	}
-
-	//Vector3 groundCheckPosition = Vector3.zero;
-	bool RaycastGrounded()
+	
+	bool RaycastGrounded() 
 	{
-		float distance = Controller.height*0.5f + Controller.skinWidth - Controller.radius*0.9f;
+		float distance = Controller.height * 0.5f + Controller.skinWidth - Controller.radius * 0.9f;
 		//groundCheckPosition = transform.position + (Vector3.down * distance);
 		bool check1 = Physics.SphereCastAll(transform.position, Controller.radius, Vector3.down, distance, groundLayerMask).Length > 0;
 		//bool check2 = Physics.CheckSphere(groundCheckPosition, Controller.radius, groundLayerMask.value);
@@ -210,7 +135,7 @@ public class PlayerController : MonoBehaviour
 		//return Physics.Raycast(transform.position + Controller.center, Vector3.down, Controller.height/2f + Controller.skinWidth, groundLayerMask.value);
 	}
 
-	Vector3 CheckSlopeNormal()
+	Vector3 CheckSlopeNormal() 
 	{
 		Vector3 output = Vector3.up;
 
@@ -243,6 +168,117 @@ public class PlayerController : MonoBehaviour
 		return output;
 	}
 
+	Vector3 GetFlatDirectionToTarget() 
+	{
+		if (Target)
+		{
+			var dirToTarget = Target.transform.position - transform.position;
+			dirToTarget.y = 0;
+			return dirToTarget.normalized;
+		} else
+		{
+			return -Cam.GetCurrentFlatDirection();
+		}
+	}
+
+	Vector2 MovePointAlongCircle(float currentAngle, Vector2 currentPoint, Vector2 centerPoint, float distance) 
+	{
+		var r = Vector2.Distance(currentPoint, centerPoint);
+		var a1 = currentAngle * (Mathf.PI / 180);
+		var a2 = a1 + distance / r;
+		var p2 = Vector2.zero;
+		p2.x = centerPoint.x + r * Mathf.Sin(a2);
+		p2.y = centerPoint.y + r * Mathf.Cos(a2);
+		return p2;
+	}
+
+	#endregion
+
+	#region Events
+	//Is called after camera has updated its transform.
+	void CameraReadyEvent()
+	{
+		// Target indicator needs the latest camera position, otherwise looks bad at low fps.
+		SetTargetIndicator();
+	}
+
+	#endregion
+
+	#region Initialization
+
+	void OnEnable()
+    {
+		
+		if (targetChangedEvent == null)
+			targetChangedEvent = new UnityEvent();
+
+		if (Cam && Cam.CameraTransformsUpdated != null)
+			Cam.CameraTransformsUpdated.AddListener(CameraReadyEvent);
+		
+        ControlsSubscribe();
+    }
+    void OnDisable()
+    {
+		targetChangedEvent = null;
+
+		if (Cam && Cam.CameraTransformsUpdated != null)
+			Cam.CameraTransformsUpdated.RemoveListener(CameraReadyEvent);
+
+		ControlsUnsubscribe();
+    }
+
+	#endregion
+
+
+
+	void Update()
+	{
+		if (!Controller)
+			return;
+
+		UpdateBooleans();
+		UpdateTarget();
+
+		if (!(!isGrounded && keepMomentumInAir))
+		{
+			currentMoveOffset = Vector3.zero;
+			Move();
+		}
+
+		Rotate();
+		ApplyGravity();
+		MoveAlongSlope();
+		ApplyMovementToController();
+
+		ResetInputModifiers();
+
+	}
+
+
+	void UpdateBooleans()
+	{
+		updateGizmos = true;
+
+		isGrounded = CheckGrounded();
+		slopeNormal = CheckSlopeNormal();
+	}
+
+	#region Movement
+
+	void ApplyGravity()
+	{
+		if (isGrounded)
+		{
+			vSpeed = -gravity * Time.deltaTime;
+		}
+		else
+		{
+			// apply gravity acceleration to vertical speed:
+			vSpeed += -gravity * Time.deltaTime;
+			currentMoveOffset += Vector3.up*vSpeed * Time.deltaTime;
+		}
+	}
+
 	void Move()
 	{
 		Vector3 newMoveOffset = Vector3.zero;
@@ -253,7 +289,7 @@ public class PlayerController : MonoBehaviour
 			Vector2 targetPos = new Vector2(Target.transform.position.x, Target.transform.position.z);
 
 			float currentAngle = Vector3.SignedAngle(Vector3.forward, -GetFlatDirectionToTarget(), Vector3.up);
-			Vector2 newPosWithSidewaysOffset = MoveAlongCircle(currentAngle, pos,targetPos, -moveInputRaw.x * moveSpeed * Time.deltaTime);
+			Vector2 newPosWithSidewaysOffset = MovePointAlongCircle(currentAngle, pos,targetPos, -moveInputRaw.x * moveSpeed * Time.deltaTime);
 
 			//Apply sideways inputs to transform position
 			if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y)) // Apparently this happens too
@@ -304,16 +340,13 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
-
-	Vector3 relativeRight = Vector3.zero; //TEMP
-	Vector3 newForward = Vector3.zero;
 	void MoveAlongSlope()
 	{
 		if (isGrounded && currentMoveOffset.magnitude > 0)
 		{
 			
-			relativeRight = Vector3.Cross(currentMoveOffset, Vector3.up);
-			newForward = Vector3.Cross(slopeNormal, relativeRight);
+			Vector3 relativeRight = Vector3.Cross(currentMoveOffset, Vector3.up);
+			Vector3 newForward = Vector3.Cross(slopeNormal, relativeRight);
 			
 			if (newForward.magnitude > 0)
 			{
@@ -336,35 +369,12 @@ public class PlayerController : MonoBehaviour
 	{
 		//These should be zero for next frame in case no input was given
 		moveInputRaw = Vector3.zero;
-
 	}
 
+	#endregion
 
 
 
-	Vector3 GetFlatDirectionToTarget()
-	{
-		if (Target)
-		{
-			var dirToTarget = Target.transform.position - transform.position;
-			dirToTarget.y = 0;
-			return dirToTarget.normalized;
-		}
-		else
-		{
-			return -Cam.GetCurrentFlatDirection();
-		}
-	}
-	Vector2 MoveAlongCircle(float currentAngle, Vector2 currentPoint, Vector2 centerPoint, float distance)
-	{
-		var r = Vector2.Distance(currentPoint, centerPoint);
-		var a1 = currentAngle * (Mathf.PI / 180);
-		var a2 = a1 + distance / r;
-		var p2 = Vector2.zero;
-		p2.x = centerPoint.x + r * Mathf.Sin(a2);
-		p2.y = centerPoint.y + r * Mathf.Cos(a2);
-		return p2;
-	}
 
 
 
@@ -517,7 +527,10 @@ public class PlayerController : MonoBehaviour
 
 	#endregion
 
-	#region HandleControls
+	#region HandleInputs
+
+	float inputTargetSwitchTime = 0;
+	readonly float inputTargetSwitchInterval = 0.1f;
 
 
 	void ControlsSubscribe()
@@ -529,16 +542,17 @@ public class PlayerController : MonoBehaviour
 		inputs.Player.Move.Enable();
 		inputs.Player.TargetLock.performed += InputTargetLock;
 		inputs.Player.TargetLock.Enable();
-		inputs.Player.SwitchTarget.started += InputTargetSwitchStarted;
+		inputs.Player.SwitchTarget.started += InputTargetSwitch;
 		inputs.Player.SwitchTarget.Enable();
 	}
+
 	void ControlsUnsubscribe()
     {
         inputs.Player.Move.performed -= InputMove;
 		inputs.Player.Move.Disable();
 		inputs.Player.TargetLock.performed -= InputTargetLock;
 		inputs.Player.TargetLock.Disable();
-		inputs.Player.SwitchTarget.started -= InputTargetSwitchStarted;
+		inputs.Player.SwitchTarget.started -= InputTargetSwitch;
 		inputs.Player.SwitchTarget.Disable();
 	}
 
@@ -550,9 +564,7 @@ public class PlayerController : MonoBehaviour
 
 	}
 
-	float inputTargetSwitchTime = 0;
-	float inputTargetSwitchInterval = 0.1f;
-	void InputTargetSwitchStarted(InputAction.CallbackContext context) 
+	void InputTargetSwitch(InputAction.CallbackContext context) 
 	{
 		if (!Target)
 			return;
@@ -589,14 +601,7 @@ public class PlayerController : MonoBehaviour
         moveInputRaw = context.ReadValue<Vector2>();
 
     }
-	void InputJump(InputAction.CallbackContext context)
-	{
-	
-	}
-	void InputLook(InputAction.CallbackContext context)
-	{
 
-	}
 
 
 	void Dodge(InputAction.CallbackContext context)
@@ -611,24 +616,30 @@ public class PlayerController : MonoBehaviour
 	{
 
 	}
-	void ChargeAttack(InputAction.CallbackContext context)
-	{
-
-	}
 
 
 	#endregion
 
 
-	Vector3[] guiPositions = new Vector3[200];
-	int guiPosIndex = 0;
+	#region Debug
+
+	//Vector3[] gizmoPositions = new Vector3[200];
+	//int gizmoPosIndex = 0;
 	bool updateGizmos = false;
 
 	void OnDrawGizmos()
 	{
 		if (!debugVisuals)
 			return;
+
 		Gizmos.color = Color.red;
+
+		Gizmos.DrawRay(transform.position, Vector3.down * Controller.height * 0.5f);
+		//Gizmos.DrawLine(transform.position, transform.position + relativeRight.normalized);
+		//Gizmos.DrawRay(transform.position, newForward.normalized*3f);
+		//Gizmos.DrawWireSphere(groundCheckPosition, Controller.radius);
+		
+		
 		//if (Application.isPlaying && updateGizmos)
 		//	guiPositions[guiPosIndex] = transform.position;
 		//for (int i = 0; i < guiPositions.Length; i++)
@@ -641,14 +652,9 @@ public class PlayerController : MonoBehaviour
 		//	guiPosIndex = 0;
 
 
-
-
-		Gizmos.DrawLine(transform.position, transform.position + relativeRight.normalized);
-		Gizmos.DrawRay(transform.position, newForward.normalized*3f);
-		Gizmos.DrawRay(transform.position, Vector3.down * Controller.height * 0.5f);
-		//Gizmos.DrawWireSphere(groundCheckPosition, Controller.radius);
-
 		updateGizmos = false;
 	}
+
+	#endregion
 
 }
