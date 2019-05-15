@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!319 &31900000
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: MCK_UP_MASK_TOP
+  m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+  m_Elements:
+  - m_Path: 
+    m_Weight: 1
+  - m_Path: armature
+    m_Weight: 1
+  - m_Path: armature/BASE
+    m_Weight: 1
+  - m_Path: armature/BASE/back
+    m_Weight: 1
+  - m_Path: armature/BASE/back/HEAD
+    m_Weight: 1
+  - m_Path: armature/BASE/back/HEAD/HEAD_end
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_L
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_L/ARM_L
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_L/ARM_L/HAND_L
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_L/ARM_L/HAND_L/HAND_L_end
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_R
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_R/ARM_R
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_R/ARM_R/HAND_R
+    m_Weight: 1
+  - m_Path: armature/BASE/back/SHOULDER_R/ARM_R/HAND_R/HAND_R_end
+    m_Weight: 1
+  - m_Path: armature/BASE/HIP_L
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_L/THIGH_L.
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_L/THIGH_L./CALF_L
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_L/THIGH_L./CALF_L/FOOT_L
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_L/THIGH_L./CALF_L/FOOT_L/FOOT_L_end
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_R
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_R/THIGH_R.
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_R/THIGH_R./CALF_R
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_R/THIGH_R./CALF_R/FOOT_R
+    m_Weight: 0
+  - m_Path: armature/BASE/HIP_R/THIGH_R./CALF_R/FOOT_R/FOOT_R_end
+    m_Weight: 0
+  - m_Path: Cube
+    m_Weight: 0
