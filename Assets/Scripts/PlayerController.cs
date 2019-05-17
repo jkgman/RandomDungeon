@@ -168,7 +168,7 @@ namespace Dungeon.Player
 			ApplyGravity();
 			MoveAlongSlope();
 			ApplyMovementToController();
-
+			UpdateAnimationData();
 			ResetInputModifiers();
 
 		}
@@ -327,9 +327,31 @@ namespace Dungeon.Player
 
 		#endregion
 
+		#region Animations
+
+		Animator Anim {
+			get { return GetComponentInChildren<Animator>(); }
+		}
+		void UpdateAnimationData() {
+			Anim.SetBool("move", moveInputRaw != Vector2.zero);
+
+			if (moveInputRaw.magnitude == 0)
+			{
+				Anim.SetFloat("sidewaysMove", Mathf.Lerp(Anim.GetFloat("sidewaysMove"), moveInputRaw.x, Time.deltaTime));
+				Anim.SetFloat("forwardMove", Mathf.Lerp(Anim.GetFloat("forwardMove"), moveInputRaw.y, Time.deltaTime));
+			}
+			else
+			{
+				Anim.SetFloat("sidewaysMove", moveInputRaw.x);
+				Anim.SetFloat("forwardMove", moveInputRaw.y);
+			}
+
+		}
+
+		#endregion
 
 		#region Debug
-		
+
 		bool updateGizmos = false;
 
 		void OnDrawGizmos()
