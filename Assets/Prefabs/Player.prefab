@@ -9,7 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5036150936471246257}
+  - component: {fileID: 3680647838422055352}
   - component: {fileID: 3680647838422055351}
+  - component: {fileID: 3402086241507262298}
+  - component: {fileID: 3680647838422055353}
   - component: {fileID: 3766095293103317566}
   m_Layer: 9
   m_Name: Player
@@ -33,6 +36,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3680647838422055352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3953715977821950901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 354bf1e29917262499ee3706a312dd3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &3680647838422055351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53,6 +68,18 @@ MonoBehaviour:
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 1
+--- !u!114 &3402086241507262298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3953715977821950901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2df62c502a427840afd42483f6543e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   targetIndicatorPrefab: {fileID: 2182517120718306254, guid: 3c1f1ef38d5839841897c7d13fb496d7,
     type: 3}
   maxDistToTarget: 10
@@ -68,6 +95,18 @@ MonoBehaviour:
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   currentWeapon: {fileID: 0}
+--- !u!114 &3680647838422055353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3953715977821950901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24761e59d4106a14da9855bdf18ca94f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!143 &3766095293103317566
 CharacterController:
   m_ObjectHideFlags: 0
