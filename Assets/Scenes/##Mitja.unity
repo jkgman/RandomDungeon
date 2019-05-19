@@ -1831,7 +1831,7 @@ PrefabInstance:
     - target: {fileID: 3680647838422055353, guid: d15be6b0d70a905439d7341bb469164f,
         type: 3}
       propertyPath: dodgeAnimName
-      value: DodgeBlend
+      value: DODGE
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d15be6b0d70a905439d7341bb469164f, type: 3}

@@ -352,7 +352,7 @@ namespace Dungeon.Player
 			if (inputs == null)
 				inputs = new Inputs();
 
-			Debug.Log("ADsaGSDkphdfskjsjiäoagsäjkasr");
+
 			inputs.Player.TargetLock.performed += InputTargetLock;
 			inputs.Player.TargetLock.Enable();
 			inputs.Player.SwitchTarget.started += InputTargetSwitch;

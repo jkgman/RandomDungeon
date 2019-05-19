@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEditor.Animations;
 public class PlayerAnimationHandler : MonoBehaviour
 {
 	[SerializeField] private float blendSpeed = 5f;
@@ -10,42 +10,70 @@ public class PlayerAnimationHandler : MonoBehaviour
 
 	Vector2 currentMoveBlend = Vector2.zero;
 
-	private Animator _anim;
-	private Animator Anim
+	private Animator _animator;
+	private Animator Animator
 	{
 		get
 		{
-			if (!_anim)
-				_anim = GetComponentInChildren<Animator>();
+			if (!_animator)
+				_animator = GetComponentInChildren<Animator>();
 
-			return _anim;
+			return _animator;
 		}
 	}
 
+	private AnimatorController ac;
+	public List<string> AnimStateNames;
+
+	void Awake()
+	{
+		GetAllStates();
+	}
+
+	void GetAllStates()
+	{
+		ac = Animator.runtimeAnimatorController as AnimatorController;
+		ChildAnimatorState[] ch_animStates;
+		AnimatorStateMachine stateMachine;
+
+		foreach (AnimatorControllerLayer i in ac.layers) //for each layer
+		{
+			stateMachine = i.stateMachine;
+			ch_animStates = stateMachine.states;
+			foreach (ChildAnimatorState j in ch_animStates) //for each state
+			{
+				AnimStateNames.Add(j.state.name);
+			}
+		}
+
+
+	}
 
 
 	public void SetMovement(Vector2 blendParam)
 	{
 		currentMoveBlend = Vector2.Lerp(currentMoveBlend, blendParam, Time.deltaTime * blendSpeed);
 
-		Anim.SetBool("move", blendParam != Vector2.zero);
-		Anim.SetFloat("sidewaysMove",currentMoveBlend.x);
-		Anim.SetFloat("forwardMove", currentMoveBlend.y);
+		Animator.SetBool("move", blendParam != Vector2.zero);
+		Animator.SetFloat("sidewaysMove",currentMoveBlend.x);
+		Animator.SetFloat("forwardMove", currentMoveBlend.y);
 
 	}
 
 	public void SetDodgeStart(Vector2 direction, bool backstep = false, float duration = -1f)
 	{
-		Anim.SetBool("dodge", true);
+		Animator.SetBool("dodge", true);
 		float d = duration;
 		if (d <= 0)
 			d = dodgeDefaultDuration;
 
-		AnimationClip dodgeClip = GetAnimationClip(dodgeAnimName);
-		if (dodgeClip)
+		AnimatorState dodgeState = GetAnimStateByName(dodgeAnimName);
+
+		if (dodgeState)
 		{
-			int frames = (int)(dodgeClip.frameRate * dodgeClip.length);
-			dodgeClip.frameRate = frames / duration;
+			Motion motion = dodgeState.motion;
+			float defaultDuration = motion.averageDuration;
+			dodgeState.speed = defaultDuration / duration;
 		}
 		else
 			Debug.LogWarning("Dodge clip was not found with name: " + dodgeAnimName);
@@ -53,34 +81,39 @@ public class PlayerAnimationHandler : MonoBehaviour
 
 		if (backstep)
 		{
-			Anim.SetFloat("sidewaysDodge", 0);
-			Anim.SetFloat("forwardsDodge", -1);
+			Animator.SetFloat("sidewaysDodge", 0);
+			Animator.SetFloat("forwardsDodge", -1);
 		}
 		else
 		{
-			Anim.SetFloat("sidewaysDodge", direction.x);
-			Anim.SetFloat("forwardsDodge", direction.y);
+			Animator.SetFloat("sidewaysDodge", direction.x);
+			Animator.SetFloat("forwardsDodge", direction.y);
 		}
 	}
 
 	public void SetDodgeEnd()
 	{
-		Anim.SetBool("dodge", false);
+		Animator.SetBool("dodge", false);
 	}
 
 
-	public AnimationClip GetAnimationClip(string name)
+	AnimatorState GetAnimStateByName(string name)
 	{
-		if (!Anim) return null; // no animator
+		ChildAnimatorState[] ch_animStates;
+		AnimatorStateMachine stateMachine;
 
-		foreach (AnimationClip clip in Anim.runtimeAnimatorController.animationClips)
+		foreach (AnimatorControllerLayer i in ac.layers) //for each layer
 		{
-			Debug.Log("Clip name:: " + clip.name);
-			if (clip.name == name)
+			stateMachine = i.stateMachine;
+			ch_animStates = stateMachine.states;
+
+			foreach (ChildAnimatorState j in ch_animStates) //for each state
 			{
-				return clip;
+				if (j.state.name == name)
+					return j.state;
 			}
 		}
-		return null; // no clip by that name
+		return null;
 	}
+	
 }
