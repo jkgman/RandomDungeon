@@ -16,8 +16,17 @@ namespace Dungeon.Player
 		[SerializeField] private bool keepMomentumInAir = true;
 		[SerializeField] private float gravity = 5f;
 		[SerializeField] private float moveSpeed = 15f;
+		[SerializeField, Range(0f, 1f)] private float accelerationSpeed = 0.2f;
+		[SerializeField, Range(0f, 1f)] private float deaccelerationSpeed = 0.5f;
+		[SerializeField] private float runSpeedMultiplier = 1.5f;
 		[SerializeField] private float rotationSpeed = 10f;
 		[SerializeField] private LayerMask groundLayerMask;
+
+
+		private float moveInputToggleTime;
+		private Vector3 currentMoveVelocity;
+		private Vector3 moveVelocityAtToggle;
+		private Vector3 currentForward;
 
 		private Vector3 currentMoveOffset;
 		private float vSpeed = 0;
@@ -57,6 +66,11 @@ namespace Dungeon.Player
 			return transform.position;
 		}
 
+		public float GetMaxSpeed()
+		{
+			return moveSpeed * runSpeedMultiplier;
+		}
+
 		Vector3 GetFlatMoveDirection()
 		{
 			var lookDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
@@ -72,6 +86,7 @@ namespace Dungeon.Player
 		bool CheckGrounded() 
 		{
 			bool g = RaycastGrounded() || ControllerGrounded();
+			isGrounded = g;
 			return g;
 		}
 
@@ -118,6 +133,7 @@ namespace Dungeon.Player
 
 			Debug.Log("No slope");
 
+			slopeNormal = output;
 			return output;
 		}
 
@@ -153,38 +169,49 @@ namespace Dungeon.Player
 
 		void Update()
 		{
-			if (!Controller)
-				return;
-
-			UpdateBooleans();
-
-			if (!(!isGrounded && keepMomentumInAir))
-			{
-				currentMoveOffset = Vector3.zero;
-				Move();
-			}
-
-			Rotate();
-			ApplyGravity();
-			MoveAlongSlope();
-			ApplyMovementToController();
-			UpdateAnimationData();
-			ResetInputModifiers();
-
+			UpdateDebug();
+			SetCurrentForward();
+			CheckGrounded();                //Makes ground checks so they do not need to be repeated multiple times
+			CalculateMoveSpeed();           //Assigns acceleration to inputs
+			UpdateVelocity();				//Sets movementOffset (velocity) from input's moveSpeed
+			Rotate();						//Rotates towards movement direction or towards target
+			ApplyGravity();					//Set Y offset to moveSpeed
+			MoveAlongSlope();				//Calculate modified move direction for smooth slope movement
+			ApplyMovementToController();	//Gives movement to Unity Character Controller
+			UpdateAnimationData();			//Send movement data for animation handling
 		}
 
-
-		void UpdateBooleans()
+		void UpdateDebug()
 		{
-			updateGizmos = true;
-
-			isGrounded = CheckGrounded();
-			slopeNormal = CheckSlopeNormal();
+			setGizmos = true;
 		}
 
 		#endregion
 
 		#region Movement
+
+		void SetCurrentForward()
+		{
+			if (moveInputRaw.magnitude > 0)
+			{
+				currentForward = -PManager.GetCam.GetCurrentFlatDirection();
+			}
+		}
+
+		void CalculateMoveSpeed()
+		{
+			if (moveInputRaw.magnitude > 0)
+			{
+				Vector3 newMoveSpeed = new Vector3(moveInputRaw.x, 0, moveInputRaw.y) * moveSpeed * (_isRunning ? runSpeedMultiplier : 1f);
+				currentMoveVelocity = Vector3.Lerp(moveVelocityAtToggle, newMoveSpeed, (Time.time - moveInputToggleTime) / accelerationSpeed);
+			}
+			else
+			{
+				currentMoveVelocity = Vector3.Lerp(moveVelocityAtToggle, Vector3.zero, (Time.time - moveInputToggleTime) / deaccelerationSpeed);
+
+			}
+
+		}
 
 		void ApplyGravity()
 		{
@@ -200,45 +227,50 @@ namespace Dungeon.Player
 			}
 		}
 
-		void Move()
+		void UpdateVelocity()
 		{
-			Vector3 newMoveOffset = Vector3.zero;
-			if (PManager.PCombat.Target)
+			if (isGrounded || !keepMomentumInAir)
 			{
-				//This calculation moves along circular path around target according to sideways input (moveInputRaw.x)
-				Vector2 pos = new Vector2(transform.position.x, transform.position.z);
-				Vector2 targetPos = new Vector2(PManager.PCombat.Target.transform.position.x, PManager.PCombat.Target.transform.position.z);
+				Vector3 newMoveOffset = Vector3.zero;
 
-				float currentAngle = Vector3.SignedAngle(Vector3.forward, -PManager.PCombat.GetFlatDirectionToTarget(), Vector3.up);
-				Vector2 newPosWithSidewaysOffset = MovePointAlongCircle(currentAngle, pos,targetPos, -moveInputRaw.x * moveSpeed * Time.deltaTime);
-
-				//Apply sideways inputs to transform position
-				if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y)) // Apparently this happens too
-					newMoveOffset += new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y) - transform.position;
-
-				//Add forward input and apply to transform position as well
-				Quaternion rot = Quaternion.LookRotation(PManager.PCombat.GetFlatDirectionToTarget());
-				Vector3 forwardMoveDir = rot * new Vector3(0, 0, moveInputRaw.y);
-				newMoveOffset += forwardMoveDir * moveSpeed * Time.deltaTime;
-
-				//Prevent from going too close. This might become problematic for combat but we'll see.
-				float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(PManager.PCombat.Target.transform.position.x, 0, PManager.PCombat.Target.transform.position.z));
-				if (flatDistanceToTarget < 0.5f)
+				if (PManager.PCombat.Target)
 				{
-					Vector3 newPos = new Vector3(PManager.PCombat.Target.transform.position.x, transform.position.y, PManager.PCombat.Target.transform.position.z) - PManager.PCombat.GetFlatDirectionToTarget().normalized*0.5f;
-					newMoveOffset += newPos - transform.position;
+					//This calculation moves along circular path around target according to sideways input (moveInputRaw.x)
+					Vector2 pos = new Vector2(transform.position.x, transform.position.z);
+					Vector2 targetPos = new Vector2(PManager.PCombat.Target.transform.position.x, PManager.PCombat.Target.transform.position.z);
+
+					float currentAngle = Vector3.SignedAngle(Vector3.forward, -PManager.PCombat.GetFlatDirectionToTarget(), Vector3.up);
+					Vector2 newPosWithSidewaysOffset = MovePointAlongCircle(currentAngle, pos,targetPos, -currentMoveVelocity.x * Time.deltaTime);
+
+					//Apply sideways inputs to transform position
+					if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y)) // Apparently this happens too
+						newMoveOffset += new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y) - transform.position;
+
+					//Add forward input and apply to transform position as well
+					Quaternion rot = Quaternion.LookRotation(PManager.PCombat.GetFlatDirectionToTarget());
+					Vector3 forwardMoveDir = rot * new Vector3(0, 0, currentMoveVelocity.z);
+					newMoveOffset += forwardMoveDir * Time.deltaTime;
+
+					//Prevent from going too close. This might become problematic for combat but we'll see.
+					float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(PManager.PCombat.Target.transform.position.x, 0, PManager.PCombat.Target.transform.position.z));
+					if (flatDistanceToTarget < 0.5f)
+					{
+						Vector3 newPos = new Vector3(PManager.PCombat.Target.transform.position.x, transform.position.y, PManager.PCombat.Target.transform.position.z) - PManager.PCombat.GetFlatDirectionToTarget().normalized*0.5f;
+						newMoveOffset += newPos - transform.position;
+					}
 				}
-			}
-			else
-			{
+				else
+				{
 
-				Quaternion rot = Quaternion.LookRotation(-PManager.GetCam.GetCurrentFlatDirection());
-				Vector3 realMoveDirection = rot * new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
-				newMoveOffset += realMoveDirection * moveSpeed * Time.deltaTime;
+					Quaternion rot = Quaternion.LookRotation(currentForward);
+					Vector3 realMoveDirection = rot * new Vector3(currentMoveVelocity.x, 0, currentMoveVelocity.z);
+					newMoveOffset += realMoveDirection * Time.deltaTime;
+				}
+	
+				newMoveOffset.y = 0;
+				currentMoveOffset = newMoveOffset;
 			}
 
-			newMoveOffset.y = 0;
-			currentMoveOffset = newMoveOffset;
 		}
 
 		void Rotate()
@@ -252,10 +284,10 @@ namespace Dungeon.Player
 			}
 			else
 			{
-				if (moveInputRaw != Vector2.zero)
+				if (currentMoveVelocity.magnitude > 0)
 				{
-					var lookDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
-					var dir = Quaternion.LookRotation(lookDir) * -PManager.GetCam.GetCurrentFlatDirection();
+					var lookDir = new Vector3(currentMoveVelocity.x, 0, currentMoveVelocity.z);
+					var dir = Quaternion.LookRotation(lookDir) * currentForward;
 					transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
 				}
 			}
@@ -263,13 +295,15 @@ namespace Dungeon.Player
 
 		void MoveAlongSlope()
 		{
-			if (isGrounded && currentMoveOffset.magnitude > 0)
+			if (Controller && isGrounded && currentMoveOffset.magnitude > 0)
 			{
-			
+				CheckSlopeNormal();
+				
 				Vector3 relativeRight = Vector3.Cross(currentMoveOffset, Vector3.up);
 				Vector3 newForward = Vector3.Cross(slopeNormal, relativeRight);
-			
-				if (newForward.magnitude > 0)
+				bool goingUp = Vector3.Angle(new Vector3(slopeNormal.x,0,slopeNormal.z).normalized, new Vector3(currentMoveOffset.x,0,currentMoveOffset.z).normalized) > 45f;
+				bool withinSlopeLimit = Vector3.Angle(slopeNormal, Vector3.up) < Controller.slopeLimit;
+				if (newForward.magnitude > 0 && (!goingUp || withinSlopeLimit))
 				{
 					float magnitude = new Vector3(currentMoveOffset.x, 0, currentMoveOffset.z).magnitude;
 					float storeY = currentMoveOffset.y;
@@ -282,7 +316,10 @@ namespace Dungeon.Player
 
 		void ApplyMovementToController()
 		{
-			Controller.Move(currentMoveOffset);
+			if (Controller)
+				Controller.Move(currentMoveOffset);
+			else
+				Debug.LogWarning("No Unity Character Controller found in Player. Movement not applied.");
 		}
 
 
@@ -305,21 +342,42 @@ namespace Dungeon.Player
 			if (inputs == null)
 				inputs = new Inputs();
 
-			inputs.Player.Move.performed += InputMove;
+			inputs.Player.Move.started += InputMoveStarted;
+			inputs.Player.Move.performed += InputMovePerformed;
+			inputs.Player.Move.cancelled += InputMoveCancelled;
 			inputs.Player.Move.Enable();
 		}
 
 		void ControlsUnsubscribe()
 		{
-			inputs.Player.Move.performed -= InputMove;
+			inputs.Player.Move.started += InputMoveStarted;
+			inputs.Player.Move.performed -= InputMovePerformed;
+			inputs.Player.Move.cancelled -= InputMoveCancelled;
 			inputs.Player.Move.Disable();
 		}
 
 
 
-		void InputMove(InputAction.CallbackContext context)
-		{
+		void InputMoveStarted(InputAction.CallbackContext context) {
 			moveInputRaw = context.ReadValue<Vector2>();
+			moveInputToggleTime = Time.time;
+			moveVelocityAtToggle = currentMoveVelocity;
+			Debug.Log("InputMoveStarted");
+
+		}
+
+		void InputMovePerformed(InputAction.CallbackContext context) {
+			moveInputRaw = context.ReadValue<Vector2>();
+			Debug.Log("InputMovePerformed");
+
+		}
+
+		void InputMoveCancelled(InputAction.CallbackContext context) 
+		{
+			moveInputRaw = Vector2.zero;
+			moveInputToggleTime = Time.time;
+			moveVelocityAtToggle = currentMoveVelocity;
+			Debug.Log("InputMoveCancelled");
 
 		}
 
@@ -332,7 +390,9 @@ namespace Dungeon.Player
 		Animator Anim {
 			get { return GetComponentInChildren<Animator>(); }
 		}
-		void UpdateAnimationData() {
+
+		void UpdateAnimationData()
+		{
 			Anim.SetBool("move", moveInputRaw != Vector2.zero);
 
 			if (moveInputRaw.magnitude == 0)
@@ -352,7 +412,7 @@ namespace Dungeon.Player
 
 		#region Debug
 
-		bool updateGizmos = false;
+		bool setGizmos = false;
 
 		void OnDrawGizmos()
 		{
@@ -379,7 +439,7 @@ namespace Dungeon.Player
 			//	guiPosIndex = 0;
 
 
-			updateGizmos = false;
+			setGizmos = false;
 		}
 
 		#endregion
