@@ -7,7 +7,7 @@ namespace Dungeon.Player {
 		
 		//If same key uses multiple bindings depending on the length of input, this is used.
 		//Example: Running=Press&Hold - Dodge=Press&Release
-		public readonly float inputMaxPressTime = 0.2f;
+		public readonly float inputMaxPressTime = 0.3f;
 
 
 
@@ -42,10 +42,19 @@ namespace Dungeon.Player {
 		}
 		public bool AllowDodge()
 		{
-			bool output = false;
+			bool output = true;
 
 			output = PController.AllowDodge() ? output : false;
 			output = PCombat.AllowDodge() ? output : false;
+
+			return output;
+		}
+		public bool AllowRotate()
+		{
+			bool output = true;
+
+			output = PController.AllowRotate() ? output : false;
+			output = PCombat.AllowRotate() ? output : false;
 
 			return output;
 		}

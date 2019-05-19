@@ -23,6 +23,12 @@ namespace Dungeon.Player
 
 		[SerializeField] private Weapon currentWeapon;
 
+		[SerializeField] private float dodgeDirectionalDistance = 3f;
+		[SerializeField] private float dodgeDirectionalDuration = 0.35f;
+		[SerializeField] private float dodgeBackstepDistance = 1.5f;
+		[SerializeField] private float dodgeBackstepDuration = 0.2f;
+		[SerializeField, Range(0f,1f)] private float dodgeInvincibilityPercentage = 0.75f;
+
 		public bool isBlocking
 		{
 			get;
@@ -91,8 +97,6 @@ namespace Dungeon.Player
 
 		#endregion
 
-
-
 		#region Getters & Setters
 
 		private Transform _target;
@@ -123,7 +127,6 @@ namespace Dungeon.Player
 		}
 		#endregion
 
-
 		#region Events
 
 		//Is called after camera has updated its transform.
@@ -133,7 +136,6 @@ namespace Dungeon.Player
 		}
 
 		#endregion
-
 
 		void Update() 
 		{
@@ -283,6 +285,63 @@ namespace Dungeon.Player
 
 		#endregion
 
+		#region Combat
+
+		void Doge()
+		{
+			if (PManager.AllowDodge())
+			{
+				Vector3 dodgeDir = PManager.PController.GetFlatMoveDirection();
+				if (dodgeDir.magnitude > 0)
+				{
+					dodgeDir.y = 0;
+					StartCoroutine(DodgeRoutine(dodgeDir.normalized, false));
+				}
+				else
+				{
+					dodgeDir = -transform.forward;
+					dodgeDir.y = 0;
+					StartCoroutine(DodgeRoutine(dodgeDir.normalized, true));
+
+				}
+			}
+		}
+
+
+
+		IEnumerator DodgeRoutine(Vector3 direction, bool backstep)
+		{
+			isDodging = true;
+
+			float t = 0;
+			float duration = backstep ? dodgeBackstepDuration : dodgeDirectionalDuration;
+			float distance = backstep ? dodgeBackstepDistance : dodgeDirectionalDistance;
+			float invincibilityMargin = (1f - dodgeInvincibilityPercentage) / 2;
+			
+			Vector3 relativeDirection = transform.rotation * direction;
+			PManager.PAnimation.SetDodgeStart(new Vector2(relativeDirection.x, relativeDirection.z), backstep, duration);
+
+			while (isDodging && t < duration)
+			{
+				isInvincible = (t / duration > invincibilityMargin) && (t / duration < 1 - invincibilityMargin);
+				Debug.Log("Invincible: " + isInvincible);
+				float distThisFrame = (distance / duration) * Time.smoothDeltaTime;
+				Vector3 offset = direction * distThisFrame;
+				PManager.PController.ExternalMove(offset);
+
+				yield return null;
+				t += Time.smoothDeltaTime;
+			}
+
+			isDodging = false;
+			PManager.PAnimation.SetDodgeEnd();
+
+			yield return null;
+		}
+
+		#endregion
+
+
 		#region HandleInputs
 
 		float inputTargetSwitchTime = 0;
@@ -298,6 +357,9 @@ namespace Dungeon.Player
 			inputs.Player.TargetLock.Enable();
 			inputs.Player.SwitchTarget.started += InputTargetSwitch;
 			inputs.Player.SwitchTarget.Enable();
+			inputs.Player.RunAndDodge.started += InputDodgeStarted;
+			inputs.Player.RunAndDodge.cancelled += InputDodgeCancelled;
+			inputs.Player.RunAndDodge.Enable();
 		}
 
 		void ControlsUnsubscribe() {
@@ -305,6 +367,9 @@ namespace Dungeon.Player
 			inputs.Player.TargetLock.Disable();
 			inputs.Player.SwitchTarget.started -= InputTargetSwitch;
 			inputs.Player.SwitchTarget.Disable();
+			inputs.Player.RunAndDodge.started -= InputDodgeStarted;
+			inputs.Player.RunAndDodge.cancelled -= InputDodgeCancelled;
+			inputs.Player.RunAndDodge.Enable();
 		}
 
 		void InputTargetLock(InputAction.CallbackContext context) {
@@ -345,12 +410,19 @@ namespace Dungeon.Player
 			SwitchTarget(targetSwitchDirection);
 
 		}
-	
 
 
-		void Dodge(InputAction.CallbackContext context) 
+		float inputDodgeStartTime = 0;
+		void InputDodgeStarted(InputAction.CallbackContext context) 
 		{
-
+			inputDodgeStartTime = Time.time;
+		}
+		void InputDodgeCancelled(InputAction.CallbackContext context) 
+		{
+			if (Time.time - inputDodgeStartTime < PManager.inputMaxPressTime)
+			{
+				Doge();
+			}
 		}
 		void Block(InputAction.CallbackContext context) 
 		{
@@ -411,7 +483,16 @@ namespace Dungeon.Player
 
 			return output;
 		}
+		public bool AllowRotate()
+		{
+			bool output = true;
 
+			output = isDodging ? false : output;
+			output = isAttacking ? false : output;
+			output = isStunned ? false : output;
+
+			return output;
+		}
 		#endregion
 
 	}

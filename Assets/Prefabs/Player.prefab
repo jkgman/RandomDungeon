@@ -64,6 +64,9 @@ MonoBehaviour:
   keepMomentumInAir: 1
   gravity: 3
   moveSpeed: 8
+  accelerationSpeed: 0.2
+  deaccelerationSpeed: 0.5
+  runSpeedMultiplier: 1.5
   rotationSpeed: 8
   groundLayerMask:
     serializedVersion: 2
@@ -88,13 +91,18 @@ MonoBehaviour:
     m_Bits: 1024
   blockTargetLayerMask:
     serializedVersion: 2
-    m_Bits: 311
+    m_Bits: 1335
   targetChangedEvent:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
   currentWeapon: {fileID: 0}
+  dodgeDirectionalDistance: 3
+  dodgeDirectionalDuration: 0.35
+  dodgeBackstepDistance: 1.5
+  dodgeBackstepDuration: 0.2
+  dodgeInvincibilityPercentage: 0.75
 --- !u!114 &3680647838422055353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +115,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24761e59d4106a14da9855bdf18ca94f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  blendSpeed: 5
+  dodgeDefaultDuration: 1
+  dodgeAnimName: DODGE
 --- !u!143 &3766095293103317566
 CharacterController:
   m_ObjectHideFlags: 0

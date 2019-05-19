@@ -27,6 +27,7 @@ namespace Dungeon.Player
 		private Vector3 currentMoveSpeedRaw;
 		private Vector3 moveVelocityAtToggle;
 		private Vector3 currentForward;
+		private Vector3 lastMoveDirection;
 
 		private Vector3 currentMoveOffset;
 		private float vSpeed = 0;
@@ -80,15 +81,32 @@ namespace Dungeon.Player
 			return moveSpeed * runSpeedMultiplier;
 		}
 
-		Vector3 GetFlatMoveDirection()
+		public Vector3 GetFlatMoveInputDirection()
 		{
 			var lookDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
-			var dir = Quaternion.LookRotation(lookDir) * -PManager.GetCam.GetCurrentFlatDirection();
-			return dir.normalized;
+			
+			
+			if (lookDir.magnitude == 0)
+			{
+				return Vector3.zero;
+			}
+			else
+			{
+				var dir = Quaternion.LookRotation(lookDir) * -PManager.GetCam.GetCurrentFlatDirection();
+				return dir.normalized;
+			}
+		}
+
+		public Vector3 GetFlatMoveDirection(bool allowZero = true)
+		{
+			if (allowZero || currentMoveOffset.magnitude > 0)
+				return new Vector3(currentMoveOffset.x, 0, currentMoveOffset.z).normalized;
+			else
+				return new Vector3(lastMoveDirection.x, 0, lastMoveDirection.z).normalized;
 		}
 
 
-		bool SetRunning(bool value)
+		private bool SetRunning(bool value)
 		{
 			if (PManager.AllowRun())
 			{
@@ -145,7 +163,7 @@ namespace Dungeon.Player
 			{
 				output = hit.normal;
 
-				RaycastHit[] hits = Physics.RaycastAll(hit.point + GetFlatMoveDirection() * 0.05f + Vector3.up, Vector3.down, 2f, groundLayerMask.value);
+				RaycastHit[] hits = Physics.RaycastAll(hit.point + GetFlatMoveInputDirection() * 0.05f + Vector3.up, Vector3.down, 2f, groundLayerMask.value);
 				for (int i = 0; i < hits.Length; i++)
 				{
 					if (hits[i].collider == hit.collider)
@@ -156,7 +174,6 @@ namespace Dungeon.Player
 				}
 			}
 
-			Debug.Log("No slope");
 
 			slopeNormal = output;
 			return output;
@@ -202,7 +219,8 @@ namespace Dungeon.Player
 			Rotate();						//Rotates towards movement direction or towards target
 			ApplyGravity();					//Set Y offset to moveSpeed
 			MoveAlongSlope();				//Calculate modified move direction for smooth slope movement
-			ApplyMovementToController();	//Gives movement to Unity Character Controller
+			ApplyMovementToController();    //Gives movement to Unity Character Controller
+			SetMovementVariables();
 			UpdateAnimationData();			//Send movement data for animation handling
 		}
 
@@ -228,6 +246,7 @@ namespace Dungeon.Player
 		{
 			if (!PManager.AllowMove())
 			{
+				moveInputRaw = Vector2.zero;
 				currentMoveSpeedRaw = Vector3.zero;
 			}
 			else if (moveInputRaw.magnitude > 0)
@@ -307,20 +326,23 @@ namespace Dungeon.Player
 
 		void Rotate()
 		{
-			if (PManager.PCombat.Target)
+			if (PManager.AllowRotate())
 			{
-				var lookpos = PManager.PCombat.Target.transform.position - transform.position;
-				lookpos.y = 0;
-				var rot = Quaternion.LookRotation(lookpos);
-				transform.rotation = Quaternion.Slerp(transform.rotation, rot, Time.deltaTime * rotationSpeed);
-			}
-			else
-			{
-				if (currentMoveSpeedRaw.magnitude > 0)
+				if (PManager.PCombat.Target)
 				{
-					var lookDir = new Vector3(currentMoveSpeedRaw.x, 0, currentMoveSpeedRaw.z);
-					var dir = Quaternion.LookRotation(lookDir) * currentForward;
-					transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
+					var lookpos = PManager.PCombat.Target.transform.position - transform.position;
+					lookpos.y = 0;
+					var rot = Quaternion.LookRotation(lookpos);
+					transform.rotation = Quaternion.Slerp(transform.rotation, rot, Time.deltaTime * rotationSpeed);
+				}
+				else
+				{
+					if (currentMoveSpeedRaw.magnitude > 0)
+					{
+						var lookDir = new Vector3(currentMoveSpeedRaw.x, 0, currentMoveSpeedRaw.z);
+						var dir = Quaternion.LookRotation(lookDir) * currentForward;
+						transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
+					}
 				}
 			}
 		}
@@ -354,17 +376,31 @@ namespace Dungeon.Player
 				Debug.LogWarning("No Unity Character Controller found in Player. Movement not applied.");
 		}
 
+		void SetMovementVariables()
+		{
+			if (currentMoveOffset.magnitude > 0)
+				lastMoveDirection = currentMoveOffset.normalized;
+		}
+
+		public void ExternalMove(Vector3 offset)
+		{
+			if (Controller)
+			{
+				Controller.Move(offset);
+			}
+		}
+
+
+
+		#endregion
+
+		#region HandleInputs
 
 		void ResetInputModifiers()
 		{
 			//These should be zero for next frame in case no input was given
 			moveInputRaw = Vector3.zero;
 		}
-
-		#endregion
-
-		#region HandleInputs
-
 
 
 
@@ -405,14 +441,12 @@ namespace Dungeon.Player
 			moveInputRaw = context.ReadValue<Vector2>();
 			moveInputToggleTime = Time.time;
 			moveVelocityAtToggle = currentMoveSpeedRaw;
-			Debug.Log("InputMoveStarted");
 
 		}
 
 		void InputMovePerformed(InputAction.CallbackContext context) 
 		{
 			moveInputRaw = context.ReadValue<Vector2>();
-			Debug.Log("InputMovePerformed");
 
 		}
 
@@ -421,7 +455,6 @@ namespace Dungeon.Player
 			moveInputRaw = Vector2.zero;
 			moveInputToggleTime = Time.time;
 			moveVelocityAtToggle = currentMoveSpeedRaw;
-			Debug.Log("InputMoveCancelled");
 
 		}
 
@@ -461,7 +494,7 @@ namespace Dungeon.Player
 			float movePercentage = currentMoveSpeedRaw.magnitude / GetMaxSpeed();
 			Vector3 relativeMoveDirection = (transform.rotation * currentForward);
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
-			Debug.Log("BLend: " + blend);
+
 			AnimHandler.SetMovement(blend);
 
 		}
@@ -517,7 +550,11 @@ namespace Dungeon.Player
 			//This script currently does not have anything disabling its own actions.
 			return true;
 		}
-
+		public bool AllowRotate()
+		{
+			//This script currently does not have anything disabling its own actions.
+			return true;
+		}
 		public bool AllowAttack() 
 		{
 			//This script currently does not have anything disabling other classes' actions.

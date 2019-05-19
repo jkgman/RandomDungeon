@@ -5,6 +5,7 @@ using UnityEngine;
 public interface IAllowedActions
 {
 	bool AllowMove();
+	bool AllowRotate();
 	bool AllowRun();
 	bool AllowAttack();
 	bool AllowDodge();
