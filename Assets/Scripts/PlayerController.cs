@@ -6,7 +6,7 @@ using System.Collections;
 
 namespace Dungeon.Player
 {
-	public class PlayerController : MonoBehaviour
+	public class PlayerController : MonoBehaviour, IAllowedActions
 	{
 
 		[SerializeField] private bool debugVisuals = false;
@@ -24,7 +24,7 @@ namespace Dungeon.Player
 
 
 		private float moveInputToggleTime;
-		private Vector3 currentMoveVelocity;
+		private Vector3 currentMoveSpeedRaw;
 		private Vector3 moveVelocityAtToggle;
 		private Vector3 currentForward;
 
@@ -34,8 +34,17 @@ namespace Dungeon.Player
 		private bool isGrounded;
 		private Vector3 slopeNormal;
 
+
+		[Header("Inputs")]
+
+
+		private float inputTargetSwitchTime = 0;
+		private float inputTargetSwitchInterval = 0.1f;
+		private float inputRunStartTime = 0;
+
 		private Inputs inputs;
 		private Vector2 moveInputRaw;
+
 
 
 		#region Getters & Setters
@@ -66,7 +75,7 @@ namespace Dungeon.Player
 			return transform.position;
 		}
 
-		public float GetMaxSpeed()
+		private float GetMaxSpeed()
 		{
 			return moveSpeed * runSpeedMultiplier;
 		}
@@ -78,6 +87,22 @@ namespace Dungeon.Player
 			return dir.normalized;
 		}
 
+
+		bool SetRunning(bool value)
+		{
+			if (PManager.AllowRun())
+			{
+				_isRunning = value;
+				return _isRunning;
+			}
+			else
+			{
+				_isRunning = false;
+				return _isRunning;
+			}
+
+			
+		}
 
 		#endregion
 
@@ -187,6 +212,7 @@ namespace Dungeon.Player
 		}
 
 		#endregion
+		
 
 		#region Movement
 
@@ -200,15 +226,21 @@ namespace Dungeon.Player
 
 		void CalculateMoveSpeed()
 		{
-			if (moveInputRaw.magnitude > 0)
+			if (!PManager.AllowMove())
+			{
+				currentMoveSpeedRaw = Vector3.zero;
+			}
+			else if (moveInputRaw.magnitude > 0)
 			{
 				Vector3 newMoveSpeed = new Vector3(moveInputRaw.x, 0, moveInputRaw.y) * moveSpeed * (_isRunning ? runSpeedMultiplier : 1f);
-				currentMoveVelocity = Vector3.Lerp(moveVelocityAtToggle, newMoveSpeed, (Time.time - moveInputToggleTime) / accelerationSpeed);
+				currentMoveSpeedRaw = Vector3.Lerp(moveVelocityAtToggle, newMoveSpeed, (Time.time - moveInputToggleTime) / accelerationSpeed);
 			}
 			else
 			{
-				currentMoveVelocity = Vector3.Lerp(moveVelocityAtToggle, Vector3.zero, (Time.time - moveInputToggleTime) / deaccelerationSpeed);
-
+				if (moveVelocityAtToggle.magnitude < currentMoveSpeedRaw.magnitude)
+					moveVelocityAtToggle = currentMoveSpeedRaw;
+				
+				currentMoveSpeedRaw = Vector3.Lerp(moveVelocityAtToggle, Vector3.zero, (Time.time - moveInputToggleTime) / deaccelerationSpeed);
 			}
 
 		}
@@ -240,7 +272,7 @@ namespace Dungeon.Player
 					Vector2 targetPos = new Vector2(PManager.PCombat.Target.transform.position.x, PManager.PCombat.Target.transform.position.z);
 
 					float currentAngle = Vector3.SignedAngle(Vector3.forward, -PManager.PCombat.GetFlatDirectionToTarget(), Vector3.up);
-					Vector2 newPosWithSidewaysOffset = MovePointAlongCircle(currentAngle, pos,targetPos, -currentMoveVelocity.x * Time.deltaTime);
+					Vector2 newPosWithSidewaysOffset = MovePointAlongCircle(currentAngle, pos,targetPos, -currentMoveSpeedRaw.x * Time.deltaTime);
 
 					//Apply sideways inputs to transform position
 					if (!float.IsNaN(newPosWithSidewaysOffset.x) && !float.IsNaN(newPosWithSidewaysOffset.y)) // Apparently this happens too
@@ -248,7 +280,7 @@ namespace Dungeon.Player
 
 					//Add forward input and apply to transform position as well
 					Quaternion rot = Quaternion.LookRotation(PManager.PCombat.GetFlatDirectionToTarget());
-					Vector3 forwardMoveDir = rot * new Vector3(0, 0, currentMoveVelocity.z);
+					Vector3 forwardMoveDir = rot * new Vector3(0, 0, currentMoveSpeedRaw.z);
 					newMoveOffset += forwardMoveDir * Time.deltaTime;
 
 					//Prevent from going too close. This might become problematic for combat but we'll see.
@@ -263,7 +295,7 @@ namespace Dungeon.Player
 				{
 
 					Quaternion rot = Quaternion.LookRotation(currentForward);
-					Vector3 realMoveDirection = rot * new Vector3(currentMoveVelocity.x, 0, currentMoveVelocity.z);
+					Vector3 realMoveDirection = rot * new Vector3(currentMoveSpeedRaw.x, 0, currentMoveSpeedRaw.z);
 					newMoveOffset += realMoveDirection * Time.deltaTime;
 				}
 	
@@ -284,9 +316,9 @@ namespace Dungeon.Player
 			}
 			else
 			{
-				if (currentMoveVelocity.magnitude > 0)
+				if (currentMoveSpeedRaw.magnitude > 0)
 				{
-					var lookDir = new Vector3(currentMoveVelocity.x, 0, currentMoveVelocity.z);
+					var lookDir = new Vector3(currentMoveSpeedRaw.x, 0, currentMoveSpeedRaw.z);
 					var dir = Quaternion.LookRotation(lookDir) * currentForward;
 					transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
 				}
@@ -333,8 +365,7 @@ namespace Dungeon.Player
 
 		#region HandleInputs
 
-		float inputTargetSwitchTime = 0;
-		readonly float inputTargetSwitchInterval = 0.1f;
+
 
 
 		void ControlsSubscribe()
@@ -346,6 +377,11 @@ namespace Dungeon.Player
 			inputs.Player.Move.performed += InputMovePerformed;
 			inputs.Player.Move.cancelled += InputMoveCancelled;
 			inputs.Player.Move.Enable();
+
+			inputs.Player.RunAndDodge.started += InputRunStarted;
+			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
+			inputs.Player.RunAndDodge.cancelled += InputRunCancelled;
+			inputs.Player.RunAndDodge.Disable();
 		}
 
 		void ControlsUnsubscribe()
@@ -354,19 +390,27 @@ namespace Dungeon.Player
 			inputs.Player.Move.performed -= InputMovePerformed;
 			inputs.Player.Move.cancelled -= InputMoveCancelled;
 			inputs.Player.Move.Disable();
+
+
+			inputs.Player.RunAndDodge.started -= InputRunStarted;
+			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
+			inputs.Player.RunAndDodge.cancelled -= InputRunCancelled;
+			inputs.Player.RunAndDodge.Disable();
 		}
 
 
 
-		void InputMoveStarted(InputAction.CallbackContext context) {
+		void InputMoveStarted(InputAction.CallbackContext context) 
+		{
 			moveInputRaw = context.ReadValue<Vector2>();
 			moveInputToggleTime = Time.time;
-			moveVelocityAtToggle = currentMoveVelocity;
+			moveVelocityAtToggle = currentMoveSpeedRaw;
 			Debug.Log("InputMoveStarted");
 
 		}
 
-		void InputMovePerformed(InputAction.CallbackContext context) {
+		void InputMovePerformed(InputAction.CallbackContext context) 
+		{
 			moveInputRaw = context.ReadValue<Vector2>();
 			Debug.Log("InputMovePerformed");
 
@@ -376,35 +420,49 @@ namespace Dungeon.Player
 		{
 			moveInputRaw = Vector2.zero;
 			moveInputToggleTime = Time.time;
-			moveVelocityAtToggle = currentMoveVelocity;
+			moveVelocityAtToggle = currentMoveSpeedRaw;
 			Debug.Log("InputMoveCancelled");
 
 		}
 
 
+		void InputRunStarted(InputAction.CallbackContext context) 
+		{
+			inputRunStartTime = Time.time;
+
+		}
+		void InputRunPerformed(InputAction.CallbackContext context) 
+		{
+			if (Time.time - inputRunStartTime > PManager.inputMaxPressTime)
+			{
+				SetRunning(true);
+			}
+		}
+		void InputRunCancelled(InputAction.CallbackContext context) 
+		{
+			SetRunning(false);
+		}
 
 		#endregion
 
 		#region Animations
+		PlayerAnimationHandler _animHandler;
+		PlayerAnimationHandler AnimHandler {
+			get {
+				if (!_animHandler)
+					_animHandler = GetComponentInChildren<PlayerAnimationHandler>();
 
-		Animator Anim {
-			get { return GetComponentInChildren<Animator>(); }
+				return _animHandler;
+			}
 		}
 
 		void UpdateAnimationData()
 		{
-			Anim.SetBool("move", moveInputRaw != Vector2.zero);
-
-			if (moveInputRaw.magnitude == 0)
-			{
-				Anim.SetFloat("sidewaysMove", Mathf.Lerp(Anim.GetFloat("sidewaysMove"), moveInputRaw.x, Time.deltaTime));
-				Anim.SetFloat("forwardMove", Mathf.Lerp(Anim.GetFloat("forwardMove"), moveInputRaw.y, Time.deltaTime));
-			}
-			else
-			{
-				Anim.SetFloat("sidewaysMove", moveInputRaw.x);
-				Anim.SetFloat("forwardMove", moveInputRaw.y);
-			}
+			float movePercentage = currentMoveSpeedRaw.magnitude / GetMaxSpeed();
+			Vector3 relativeMoveDirection = (transform.rotation * currentForward);
+			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
+			Debug.Log("BLend: " + blend);
+			AnimHandler.SetMovement(blend);
 
 		}
 
@@ -442,7 +500,36 @@ namespace Dungeon.Player
 			setGizmos = false;
 		}
 
+
+
 		#endregion
 
+		#region IAllowedActions
+
+		public bool AllowMove() 
+		{
+			//This script currently does not have anything disabling its own actions.
+			return true;
+		}
+
+		public bool AllowRun() 
+		{
+			//This script currently does not have anything disabling its own actions.
+			return true;
+		}
+
+		public bool AllowAttack() 
+		{
+			//This script currently does not have anything disabling other classes' actions.
+			return true;
+		}
+
+		public bool AllowDodge() 
+		{
+			//This script currently does not have anything disabling other classes' actions.
+			return true;
+		}
+
+		#endregion
 	}
 }

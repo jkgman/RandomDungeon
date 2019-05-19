@@ -1,11 +1,59 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Dungeon.Player
-{
-	public class PlayerManager : MonoBehaviour
+namespace Dungeon.Player {
+
+	public class PlayerManager : MonoBehaviour, IAllowedActions
 	{
+		
+		//If same key uses multiple bindings depending on the length of input, this is used.
+		//Example: Running=Press&Hold - Dodge=Press&Release
+		public readonly float inputMaxPressTime = 0.2f;
+
+
+
+		#region IAllowedActions
+
+		public bool AllowMove() 
+		{
+			bool output = true;
+			
+			output = PController.AllowMove() ? output : false;
+			output = PCombat.AllowMove() ? output : false;
+
+			return output;
+		}
+		public bool AllowRun() 
+		{
+			bool output = true;
+			
+			output = PController.AllowRun() ? output : false;
+			output = PCombat.AllowRun() ? output : false;
+
+			return output;
+		}
+		public bool AllowAttack() 
+		{
+			bool output = true;
+
+			output = PController.AllowAttack() ? output : false;
+			output = PCombat.AllowAttack() ? output : false;
+
+			return output;
+		}
+		public bool AllowDodge()
+		{
+			bool output = false;
+
+			output = PController.AllowDodge() ? output : false;
+			output = PCombat.AllowDodge() ? output : false;
+
+			return output;
+		}
+
+		#endregion
+
+		#region Getters & Setters
+
 		private PlayerController _pController;
 		public PlayerController PController
 		{
@@ -52,5 +100,7 @@ namespace Dungeon.Player
 				return _cam;
 			}
 		}
+
+		#endregion
 	}
 }

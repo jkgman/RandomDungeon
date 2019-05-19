@@ -310,8 +310,19 @@ public class Inputs : IInputActionCollection
                     ""bindings"": []
                 },
                 {
-                    ""name"": ""Look"",
+                    ""name"": ""RunAndDodge"",
                     ""id"": ""67109cc3-8494-471a-af17-866b08a57c0e"",
+                    ""expectedControlLayout"": """",
+                    ""continuous"": false,
+                    ""passThrough"": false,
+                    ""initialStateCheck"": false,
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""bindings"": []
+                },
+                {
+                    ""name"": ""Look"",
+                    ""id"": ""ab8714b4-3a20-491a-9868-7318b9b71c93"",
                     ""expectedControlLayout"": ""Vector2"",
                     ""continuous"": true,
                     ""passThrough"": false,
@@ -322,7 +333,7 @@ public class Inputs : IInputActionCollection
                 },
                 {
                     ""name"": ""Attack"",
-                    ""id"": ""ab8714b4-3a20-491a-9868-7318b9b71c93"",
+                    ""id"": ""a775e4fd-e153-4bd2-b010-4c35c28c90b3"",
                     ""expectedControlLayout"": ""Button"",
                     ""continuous"": false,
                     ""passThrough"": false,
@@ -333,7 +344,7 @@ public class Inputs : IInputActionCollection
                 },
                 {
                     ""name"": ""TargetLock"",
-                    ""id"": ""a775e4fd-e153-4bd2-b010-4c35c28c90b3"",
+                    ""id"": ""1106d524-5dc4-4b2f-960e-67d3c74592c0"",
                     ""expectedControlLayout"": """",
                     ""continuous"": false,
                     ""passThrough"": false,
@@ -344,7 +355,7 @@ public class Inputs : IInputActionCollection
                 },
                 {
                     ""name"": ""SwitchTarget"",
-                    ""id"": ""1106d524-5dc4-4b2f-960e-67d3c74592c0"",
+                    ""id"": ""6335f20a-254b-4f3f-92d4-87d3e7a2bba9"",
                     ""expectedControlLayout"": """",
                     ""continuous"": false,
                     ""passThrough"": false,
@@ -594,6 +605,30 @@ public class Inputs : IInputActionCollection
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""dbad367d-0b5c-4b9c-a589-1ab95e3d17f9"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";KBM"",
+                    ""action"": ""RunAndDodge"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0741c4b7-d735-486c-b029-f6cb4b592c9b"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""RunAndDodge"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
                 }
             ]
         }
@@ -640,6 +675,7 @@ public class Inputs : IInputActionCollection
         // Player
         m_Player = asset.GetActionMap("Player");
         m_Player_Move = m_Player.GetAction("Move");
+        m_Player_RunAndDodge = m_Player.GetAction("RunAndDodge");
         m_Player_Look = m_Player.GetAction("Look");
         m_Player_Attack = m_Player.GetAction("Attack");
         m_Player_TargetLock = m_Player.GetAction("TargetLock");
@@ -758,6 +794,7 @@ public class Inputs : IInputActionCollection
     private InputActionMap m_Player;
     private IPlayerActions m_PlayerActionsCallbackInterface;
     private InputAction m_Player_Move;
+    private InputAction m_Player_RunAndDodge;
     private InputAction m_Player_Look;
     private InputAction m_Player_Attack;
     private InputAction m_Player_TargetLock;
@@ -767,6 +804,7 @@ public class Inputs : IInputActionCollection
         private Inputs m_Wrapper;
         public PlayerActions(Inputs wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move { get { return m_Wrapper.m_Player_Move; } }
+        public InputAction @RunAndDodge { get { return m_Wrapper.m_Player_RunAndDodge; } }
         public InputAction @Look { get { return m_Wrapper.m_Player_Look; } }
         public InputAction @Attack { get { return m_Wrapper.m_Player_Attack; } }
         public InputAction @TargetLock { get { return m_Wrapper.m_Player_TargetLock; } }
@@ -784,6 +822,9 @@ public class Inputs : IInputActionCollection
                 Move.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
                 Move.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
                 Move.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
+                RunAndDodge.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnRunAndDodge;
+                RunAndDodge.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnRunAndDodge;
+                RunAndDodge.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnRunAndDodge;
                 Look.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
                 Look.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
                 Look.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
@@ -803,6 +844,9 @@ public class Inputs : IInputActionCollection
                 Move.started += instance.OnMove;
                 Move.performed += instance.OnMove;
                 Move.cancelled += instance.OnMove;
+                RunAndDodge.started += instance.OnRunAndDodge;
+                RunAndDodge.performed += instance.OnRunAndDodge;
+                RunAndDodge.cancelled += instance.OnRunAndDodge;
                 Look.started += instance.OnLook;
                 Look.performed += instance.OnLook;
                 Look.cancelled += instance.OnLook;
@@ -854,6 +898,7 @@ public class Inputs : IInputActionCollection
     public interface IPlayerActions
     {
         void OnMove(InputAction.CallbackContext context);
+        void OnRunAndDodge(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnTargetLock(InputAction.CallbackContext context);

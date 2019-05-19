@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Dungeon.Player
 {
-	public class PlayerCombatHandler : MonoBehaviour
+	public class PlayerCombatHandler : MonoBehaviour, IAllowedActions
 	{
 		[Header("Target crap")]
 
@@ -23,10 +23,31 @@ namespace Dungeon.Player
 
 		[SerializeField] private Weapon currentWeapon;
 
-		private bool _isBlocking;
-		private bool _isStunned;
-		private bool _isAttacking;
-		private bool _isInvincible;
+		public bool isBlocking
+		{
+			get;
+			private set;
+		}
+		public bool isDodging 
+		{
+			get;
+			private set;
+		}
+		public bool isStunned
+		{
+			get;
+			private set;
+		}
+		public bool isAttacking
+		{
+			get;
+			private set;
+		}
+		public bool isInvincible
+		{
+			get;
+			private set;
+		}
 
 		private PlayerManager _pManager;
 		private PlayerManager PManager
@@ -327,20 +348,71 @@ namespace Dungeon.Player
 	
 
 
-		void Dodge(InputAction.CallbackContext context) {
+		void Dodge(InputAction.CallbackContext context) 
+		{
 
 		}
-		void Block(InputAction.CallbackContext context) {
+		void Block(InputAction.CallbackContext context) 
+		{
 
 		}
-		void Attack(InputAction.CallbackContext context) {
+		void Attack(InputAction.CallbackContext context)
+		{
 
 		}
+
+
 
 
 		#endregion
 
+		#region IAllowedActions
+		
+		public bool AllowMove() 
+		{
+			bool output = true;
 
+			output = isDodging ? false : output;
+			output = isAttacking ? false : output;
+			output = isStunned ? false : output;
+
+			return output;
+		}
+
+		public bool AllowRun() 
+		{
+			bool output = true;
+
+			output = isDodging ? false : output;
+			output = isAttacking ? false : output;
+			output = isStunned ? false : output;
+			output = isBlocking ? false : output;
+
+			return output;
+		}
+
+		public bool AllowAttack() 
+		{
+			bool output = true;
+
+			output = isDodging ? false : output;
+			output = isStunned ? false : output;
+
+			return output;
+		}
+
+		public bool AllowDodge() 
+		{
+			bool output = true;
+
+			output = isDodging ? false : output;
+			output = isAttacking ? false : output;
+			output = isStunned ? false : output;
+
+			return output;
+		}
+
+		#endregion
 
 	}
 }
