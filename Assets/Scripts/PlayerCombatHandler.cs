@@ -376,7 +376,7 @@ namespace Dungeon.Player
 			isAttacking = true;
 			float t = 0;
 
-			PManager.PAnimation.SetAttackStarted();
+			PManager.PAnimation.SetAttackStarted(currentWeapon.GetAttackDuration());
 
 			while (isAttacking && t < currentWeapon.GetAttackDuration())
 			{
