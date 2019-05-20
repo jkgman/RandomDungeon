@@ -63,9 +63,9 @@ MonoBehaviour:
   debugVisuals: 1
   keepMomentumInAir: 1
   gravity: 3
-  moveSpeed: 8
-  accelerationSpeed: 0.2
-  deaccelerationSpeed: 0.5
+  moveSpeed: 7
+  accelerationSpeed: 0.1
+  deaccelerationSpeed: 0.25
   runSpeedMultiplier: 1.5
   rotationSpeed: 8
   groundLayerMask:
@@ -99,7 +99,7 @@ MonoBehaviour:
       Culture=neutral, PublicKeyToken=null
   currentWeapon: {fileID: 0}
   dodgeDirectionalDistance: 3
-  dodgeDirectionalDuration: 0.35
+  dodgeDirectionalDuration: 0.3
   dodgeBackstepDistance: 1.5
   dodgeBackstepDuration: 0.2
   dodgeInvincibilityPercentage: 0.75
@@ -118,6 +118,7 @@ MonoBehaviour:
   blendSpeed: 5
   dodgeDefaultDuration: 1
   dodgeAnimName: DODGE
+  AnimStateNames: []
 --- !u!143 &3766095293103317566
 CharacterController:
   m_ObjectHideFlags: 0

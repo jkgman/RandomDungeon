@@ -492,7 +492,8 @@ namespace Dungeon.Player
 		void UpdateAnimationData()
 		{
 			float movePercentage = currentMoveSpeedRaw.magnitude / GetMaxSpeed();
-			Vector3 relativeMoveDirection = (transform.rotation * currentForward);
+			float angle = Vector3.SignedAngle(transform.forward, Vector3.forward, Vector3.up);
+			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * GetFlatMoveDirection();
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
 
 			AnimHandler.SetMovement(blend);

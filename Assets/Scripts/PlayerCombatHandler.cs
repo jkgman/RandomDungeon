@@ -307,8 +307,6 @@ namespace Dungeon.Player
 			}
 		}
 
-
-
 		IEnumerator DodgeRoutine(Vector3 direction, bool backstep)
 		{
 			isDodging = true;
@@ -318,13 +316,14 @@ namespace Dungeon.Player
 			float distance = backstep ? dodgeBackstepDistance : dodgeDirectionalDistance;
 			float invincibilityMargin = (1f - dodgeInvincibilityPercentage) / 2;
 			
-			Vector3 relativeDirection = transform.rotation * direction;
-			PManager.PAnimation.SetDodgeStart(new Vector2(relativeDirection.x, relativeDirection.z), backstep, duration);
+			float angle = Vector3.SignedAngle(transform.forward, Vector3.forward, Vector3.up);
+			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * direction;
+			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized;
+			PManager.PAnimation.SetDodgeStart(blend, backstep, duration);
 
 			while (isDodging && t < duration)
 			{
 				isInvincible = (t / duration > invincibilityMargin) && (t / duration < 1 - invincibilityMargin);
-				Debug.Log("Invincible: " + isInvincible);
 				float distThisFrame = (distance / duration) * Time.smoothDeltaTime;
 				Vector3 offset = direction * distThisFrame;
 				PManager.PController.ExternalMove(offset);
