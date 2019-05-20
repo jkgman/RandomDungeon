@@ -496,7 +496,7 @@ namespace Dungeon.Player
 			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * GetFlatMoveDirection();
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
 
-			AnimHandler.SetMovement(blend);
+			AnimHandler.SetMovementPerformed(blend);
 
 		}
 

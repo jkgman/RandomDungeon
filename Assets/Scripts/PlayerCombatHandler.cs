@@ -6,6 +6,17 @@ using UnityEngine;
 
 namespace Dungeon.Player
 {
+	public enum AttackType
+	{
+		lightAttack,
+		heavyAttack
+		//lightChargedAttack,
+		//heavyChargedAttack
+	}
+
+
+
+
 	public class PlayerCombatHandler : MonoBehaviour, IAllowedActions
 	{
 		[Header("Target crap")]
@@ -19,15 +30,28 @@ namespace Dungeon.Player
 		public UnityEvent targetChangedEvent;
 
 
-		[Header("Combat shit")]
+		[Header("Attack shit")]
+		[SerializeField] private Transform rightHand;
+		[SerializeField] private Transform leftHand;
+		[SerializeField] private Items.Weapon currentWeapon;
 
-		[SerializeField] private Weapon currentWeapon;
-
+		[Header("Dodge shit")]
 		[SerializeField] private float dodgeDirectionalDistance = 3f;
 		[SerializeField] private float dodgeDirectionalDuration = 0.35f;
 		[SerializeField] private float dodgeBackstepDistance = 1.5f;
 		[SerializeField] private float dodgeBackstepDuration = 0.2f;
 		[SerializeField, Range(0f,1f)] private float dodgeInvincibilityPercentage = 0.75f;
+
+		[Header("Block shit")]
+
+		[Header("Other shit")]
+
+
+
+		float inputDodgeStartTime = 0;
+		float inputTargetSwitchTime = 0;
+		readonly float inputTargetSwitchInterval = 0.1f;
+
 
 		public bool isBlocking
 		{
@@ -319,7 +343,7 @@ namespace Dungeon.Player
 			float angle = Vector3.SignedAngle(transform.forward, Vector3.forward, Vector3.up);
 			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * direction;
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized;
-			PManager.PAnimation.SetDodgeStart(blend, backstep, duration);
+			PManager.PAnimation.SetDodgeStarted(blend, backstep, duration);
 
 			while (isDodging && t < duration)
 			{
@@ -333,8 +357,36 @@ namespace Dungeon.Player
 			}
 
 			isDodging = false;
-			PManager.PAnimation.SetDodgeEnd();
+			PManager.PAnimation.SetDodgeCancelled();
 
+			yield return null;
+		}
+
+
+		void Attack()
+		{
+			if (PManager.AllowAttack())
+			{
+				StartCoroutine(AttackRoutine());
+			}
+		}
+
+		IEnumerator AttackRoutine()
+		{
+			isAttacking = true;
+			float t = 0;
+
+			PManager.PAnimation.SetAttackStarted();
+
+			while (isAttacking && t < currentWeapon.GetAttackDuration())
+			{
+				t += Time.smoothDeltaTime;
+				yield return null;
+			}
+
+			PManager.PAnimation.SetAttackCancelled();
+
+			isAttacking = false;
 			yield return null;
 		}
 
@@ -343,11 +395,11 @@ namespace Dungeon.Player
 
 		#region HandleInputs
 
-		float inputTargetSwitchTime = 0;
-		readonly float inputTargetSwitchInterval = 0.1f;
 
 
-		void ControlsSubscribe() {
+
+		void ControlsSubscribe() 
+		{
 			if (inputs == null)
 				inputs = new Inputs();
 
@@ -359,9 +411,13 @@ namespace Dungeon.Player
 			inputs.Player.RunAndDodge.started += InputDodgeStarted;
 			inputs.Player.RunAndDodge.cancelled += InputDodgeCancelled;
 			inputs.Player.RunAndDodge.Enable();
+			inputs.Player.Attack.started += InputAttackStarted;
+			inputs.Player.Attack.cancelled += InputAttackCancelled;
+			inputs.Player.Attack.Enable();
 		}
 
-		void ControlsUnsubscribe() {
+		void ControlsUnsubscribe() 
+		{
 			inputs.Player.TargetLock.performed -= InputTargetLock;
 			inputs.Player.TargetLock.Disable();
 			inputs.Player.SwitchTarget.started -= InputTargetSwitch;
@@ -371,7 +427,8 @@ namespace Dungeon.Player
 			inputs.Player.RunAndDodge.Enable();
 		}
 
-		void InputTargetLock(InputAction.CallbackContext context) {
+		void InputTargetLock(InputAction.CallbackContext context) 
+		{
 
 			bool success = SetTarget(PManager.GetCam.GetTargetingData());
 			Debug.Log("InputTargetLock: " + success);
@@ -380,7 +437,8 @@ namespace Dungeon.Player
 
 		}
 
-		void InputTargetSwitch(InputAction.CallbackContext context) {
+		void InputTargetSwitch(InputAction.CallbackContext context) 
+		{
 			if (!Target)
 				return;
 
@@ -411,7 +469,6 @@ namespace Dungeon.Player
 		}
 
 
-		float inputDodgeStartTime = 0;
 		void InputDodgeStarted(InputAction.CallbackContext context) 
 		{
 			inputDodgeStartTime = Time.time;
@@ -423,15 +480,15 @@ namespace Dungeon.Player
 				Doge();
 			}
 		}
-		void Block(InputAction.CallbackContext context) 
+
+		void InputAttackStarted(InputAction.CallbackContext context)
+		{
+			Attack();
+		}
+		void InputAttackCancelled(InputAction.CallbackContext context)
 		{
 
 		}
-		void Attack(InputAction.CallbackContext context)
-		{
-
-		}
-
 
 
 
@@ -492,6 +549,7 @@ namespace Dungeon.Player
 
 			return output;
 		}
+		
 		#endregion
 
 	}

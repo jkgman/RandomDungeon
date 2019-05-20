@@ -525,7 +525,7 @@ public class Inputs : IInputActionCollection
                 {
                     ""name"": """",
                     ""id"": ""6b48650e-1177-45a0-a8b5-4a9036e4fa03"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",

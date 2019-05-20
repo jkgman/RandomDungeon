@@ -2,118 +2,154 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Animations;
-public class PlayerAnimationHandler : MonoBehaviour
+
+namespace Dungeon.Player
 {
-	[SerializeField] private float blendSpeed = 5f;
-	[SerializeField] private float dodgeDefaultDuration = 1f;
-	[SerializeField] private string dodgeAnimName = "Dodge";
-
-	Vector2 currentMoveBlend = Vector2.zero;
-
-	private Animator _animator;
-	private Animator Animator
+	public class PlayerAnimationHandler : MonoBehaviour
 	{
-		get
+		private const float ANIM_DEFAULT_SPEED = 1f;
+
+		[SerializeField] private float blendSpeed = 5f;
+		[SerializeField] private string dodgeAnimName = "DODGE";
+		[SerializeField] private string attackAnimName = "ATTACK";
+
+
+
+		private Vector2 currentMoveBlend = Vector2.zero;
+		private AnimatorController ac;
+		private List<AnimatorState> allStates;
+
+
+
+		#region Getters & Setters
+
+		private Animator _animator;
+		private Animator Animator
 		{
-			if (!_animator)
-				_animator = GetComponentInChildren<Animator>();
-
-			return _animator;
-		}
-	}
-
-	private AnimatorController ac;
-	public List<string> AnimStateNames;
-
-	void Awake()
-	{
-		GetAllStates();
-	}
-
-	void GetAllStates()
-	{
-		ac = Animator.runtimeAnimatorController as AnimatorController;
-		ChildAnimatorState[] ch_animStates;
-		AnimatorStateMachine stateMachine;
-
-		foreach (AnimatorControllerLayer i in ac.layers) //for each layer
-		{
-			stateMachine = i.stateMachine;
-			ch_animStates = stateMachine.states;
-			foreach (ChildAnimatorState j in ch_animStates) //for each state
+			get
 			{
-				AnimStateNames.Add(j.state.name);
+				if (!_animator)
+					_animator = GetComponentInChildren<Animator>();
+
+				return _animator;
 			}
 		}
 
-
-	}
-
-
-	public void SetMovement(Vector2 blendParam)
-	{
-		currentMoveBlend = Vector2.Lerp(currentMoveBlend, blendParam, Time.deltaTime * blendSpeed);
-
-		Animator.SetBool("move", blendParam != Vector2.zero);
-		Animator.SetFloat("sidewaysMove",currentMoveBlend.x);
-		Animator.SetFloat("forwardMove", currentMoveBlend.y);
-
-	}
-
-	public void SetDodgeStart(Vector2 direction, bool backstep = false, float duration = -1f)
-	{
-		Animator.SetBool("dodge", true);
-		float d = duration;
-		if (d <= 0)
-			d = dodgeDefaultDuration;
-
-		AnimatorState dodgeState = GetAnimStateByName(dodgeAnimName);
-
-		if (dodgeState)
+		void GetAllStates()
 		{
-			Motion motion = dodgeState.motion;
-			float defaultDuration = motion.averageDuration;
-			dodgeState.speed = defaultDuration / duration;
-		}
-		else
-			Debug.LogWarning("Dodge clip was not found with name: " + dodgeAnimName);
-		
+			ac = Animator.runtimeAnimatorController as AnimatorController;
+			ChildAnimatorState[] ch_animStates;
+			AnimatorStateMachine stateMachine;
+			allStates = new List<AnimatorState>();
 
-		if (backstep)
-		{
-			Animator.SetFloat("sidewaysDodge", 0);
-			Animator.SetFloat("forwardsDodge", -1);
-		}
-		else
-		{
-			Animator.SetFloat("sidewaysDodge", direction.x);
-			Animator.SetFloat("forwardsDodge", direction.y);
-		}
-	}
-
-	public void SetDodgeEnd()
-	{
-		Animator.SetBool("dodge", false);
-	}
-
-
-	AnimatorState GetAnimStateByName(string name)
-	{
-		ChildAnimatorState[] ch_animStates;
-		AnimatorStateMachine stateMachine;
-
-		foreach (AnimatorControllerLayer i in ac.layers) //for each layer
-		{
-			stateMachine = i.stateMachine;
-			ch_animStates = stateMachine.states;
-
-			foreach (ChildAnimatorState j in ch_animStates) //for each state
+			foreach (AnimatorControllerLayer i in ac.layers) //for each layer
 			{
-				if (j.state.name == name)
-					return j.state;
+				stateMachine = i.stateMachine;
+				ch_animStates = stateMachine.states;
+				foreach (ChildAnimatorState j in ch_animStates) //for each state
+				{
+					allStates.Add(j.state);
+				}
+			}
+
+
+		}
+
+		AnimatorState GetAnimStateByName(string name)
+		{
+
+			foreach (AnimatorState j in allStates) //for each state
+			{
+				if (j.name == name)
+					return j;
+			}
+			
+			return null;
+		}
+
+		#endregion
+
+
+		void Awake()
+		{
+			GetAllStates();
+		}
+
+
+
+		public void SetMovementPerformed(Vector2 blendParam)
+		{
+			currentMoveBlend = Vector2.Lerp(currentMoveBlend, blendParam, Time.deltaTime * blendSpeed);
+
+			Animator.SetBool("move", blendParam != Vector2.zero);
+			Animator.SetFloat("sidewaysMove", currentMoveBlend.x);
+			Animator.SetFloat("forwardMove", currentMoveBlend.y);
+
+		}
+
+		public void SetDodgeStarted(Vector2 direction, bool backstep = false, float duration = -1f)
+		{
+			Animator.SetBool("dodge", true);
+			float d = duration;
+
+			AnimatorState dodgeState = GetAnimStateByName(dodgeAnimName);
+
+			if (dodgeState)
+			{
+				Motion motion = dodgeState.motion;
+				float currentDuration = motion.averageDuration;
+
+				if (d > 0)
+					dodgeState.speed = currentDuration / d;
+				else
+					dodgeState.speed = ANIM_DEFAULT_SPEED;
+			}
+			else
+				Debug.LogWarning("Dodge clip was not found with name: " + dodgeAnimName);
+
+
+			if (backstep)
+			{
+				Animator.SetFloat("sidewaysDodge", 0);
+				Animator.SetFloat("forwardsDodge", -1);
+			}
+			else
+			{
+				Animator.SetFloat("sidewaysDodge", direction.x);
+				Animator.SetFloat("forwardsDodge", direction.y);
 			}
 		}
-		return null;
+
+		public void SetDodgeCancelled()
+		{
+			Animator.SetBool("dodge", false);
+		}
+
+		public void SetAttackStarted(float duration = -1f)
+		{
+			Animator.SetBool("attack", true);
+
+			float d = duration;
+
+			AnimatorState attackState = GetAnimStateByName(attackAnimName);
+
+			if (attackState)
+			{
+				Motion motion = attackState.motion;
+				float currentDuration = motion.averageDuration;
+
+				if (d > 0)
+					attackState.speed = currentDuration / d;
+				else
+					attackState.speed = ANIM_DEFAULT_SPEED;
+			}
+			else
+				Debug.LogWarning("Dodge clip was not found with name: " + attackAnimName);
+
+		}
+		public void SetAttackCancelled()
+		{
+			Animator.SetBool("attack", false);
+		}
 	}
-	
 }
