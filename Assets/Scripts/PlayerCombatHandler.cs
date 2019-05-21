@@ -14,9 +14,9 @@ namespace Dungeon.Player
 		//heavyChargedAttack
 	}
 
-
-
-
+	/// <summary>
+	/// Handles Inputs and actions related to combat such as attacks, dodges and blocks
+	/// </summary>
 	public class PlayerCombatHandler : MonoBehaviour, IAllowedActions
 	{
 		[Header("Target crap")]
@@ -36,10 +36,8 @@ namespace Dungeon.Player
 		[SerializeField] private Items.Weapon currentWeapon;
 
 		[Header("Dodge shit")]
-		[SerializeField] private float dodgeDirectionalDistance = 3f;
-		[SerializeField] private float dodgeDirectionalDuration = 0.35f;
-		[SerializeField] private float dodgeBackstepDistance = 1.5f;
-		[SerializeField] private float dodgeBackstepDuration = 0.2f;
+		[SerializeField] private float dodgeDistance = 3f;
+		[SerializeField] private float dodgeDuration = 0.35f;
 		[SerializeField, Range(0f,1f)] private float dodgeInvincibilityPercentage = 0.75f;
 
 		[Header("Block shit")]
@@ -134,19 +132,22 @@ namespace Dungeon.Player
 			}
 		}
 
-		public float GetMaxDistToTarget {
+		public float GetMaxDistToTarget 
+		{
 			get { return maxDistToTarget; }
 		}
 
-		public Vector3 GetFlatDirectionToTarget() {
+		public Vector3 GetFlatDirectionToTarget() 
+		{
 			if (Target)
 			{
 				var dirToTarget = Target.transform.position - transform.position;
 				dirToTarget.y = 0;
 				return dirToTarget.normalized;
-			} else
+			} 
+			else
 			{
-				return -PManager.GetCam.GetCurrentFlatDirection();
+				return -PManager.PController.GetFlatMoveDirection();
 			}
 		}
 		#endregion
@@ -315,40 +316,29 @@ namespace Dungeon.Player
 		{
 			if (PManager.AllowDodge())
 			{
-				Vector3 dodgeDir = PManager.PController.GetFlatMoveDirection();
-				if (dodgeDir.magnitude > 0)
-				{
-					dodgeDir.y = 0;
-					StartCoroutine(DodgeRoutine(dodgeDir.normalized, false));
-				}
-				else
-				{
-					dodgeDir = -transform.forward;
-					dodgeDir.y = 0;
-					StartCoroutine(DodgeRoutine(dodgeDir.normalized, true));
-
-				}
+				Vector3 dodgeDir = PManager.PController.GetFlatMoveDirection(false);
+				dodgeDir.y = 0;
+				StartCoroutine(DodgeRoutine(dodgeDir.normalized));
+				
 			}
 		}
 
-		IEnumerator DodgeRoutine(Vector3 direction, bool backstep)
+		IEnumerator DodgeRoutine(Vector3 direction)
 		{
 			isDodging = true;
 
 			float t = 0;
-			float duration = backstep ? dodgeBackstepDuration : dodgeDirectionalDuration;
-			float distance = backstep ? dodgeBackstepDistance : dodgeDirectionalDistance;
 			float invincibilityMargin = (1f - dodgeInvincibilityPercentage) / 2;
 			
 			float angle = Vector3.SignedAngle(transform.forward, Vector3.forward, Vector3.up);
 			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * direction;
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized;
-			PManager.PAnimation.SetDodgeStarted(blend, backstep, duration);
+			PManager.PAnimation.SetDodgeStarted(blend, dodgeDuration);
 
-			while (isDodging && t < duration)
+			while (isDodging && t < dodgeDuration)
 			{
-				isInvincible = (t / duration > invincibilityMargin) && (t / duration < 1 - invincibilityMargin);
-				float distThisFrame = (distance / duration) * Time.smoothDeltaTime;
+				isInvincible = (t / dodgeDuration > invincibilityMargin) && (t / dodgeDuration < 1 - invincibilityMargin);
+				float distThisFrame = (dodgeDistance / dodgeDuration) * Time.smoothDeltaTime;
 				Vector3 offset = direction * distThisFrame;
 				PManager.PController.ExternalMove(offset);
 
@@ -374,12 +364,44 @@ namespace Dungeon.Player
 		IEnumerator AttackRoutine()
 		{
 			isAttacking = true;
+			currentWeapon.IsAttacking = true;
 			float t = 0;
+			float t01 = 0;
+			Vector3 moveOffset = Vector3.zero;
 
 			PManager.PAnimation.SetAttackStarted(currentWeapon.GetAttackDuration());
 
+
+			Vector3 moveDirection = transform.forward;
+			if (Target)
+				moveDirection = GetFlatDirectionToTarget();
+			else
+				moveDirection = PManager.PController.GetFlatMoveDirection(false);
+
+
 			while (isAttacking && t < currentWeapon.GetAttackDuration())
 			{
+				t01 = Mathf.Clamp01(t / currentWeapon.GetAttackDuration());
+				currentWeapon.IsDamaging = t01 > currentWeapon.GetHitStart() && t01 < currentWeapon.GetHitEnd();
+
+				if (Target)
+				{
+					if (currentWeapon.CanRotate(true))
+						moveDirection = GetFlatDirectionToTarget();
+				}
+				else
+				{
+					if (currentWeapon.CanRotate(false))
+						moveDirection = PManager.PController.GetFlatMoveDirection(false); 
+				}
+
+				PManager.PController.ExternalMove(moveDirection.normalized * currentWeapon.CurrentAttackMoveSpeed(t01) * Time.smoothDeltaTime);
+				
+				//TODO
+				//Movement along curve/smoothstep
+				//Decide if rotation allowed during attack and how fast
+				//Decide if movement allowed at any point of attack (and implement)
+
 				t += Time.smoothDeltaTime;
 				yield return null;
 			}
@@ -387,6 +409,8 @@ namespace Dungeon.Player
 			PManager.PAnimation.SetAttackCancelled();
 
 			isAttacking = false;
+			currentWeapon.IsAttacking = false;
+
 			yield return null;
 		}
 
@@ -501,8 +525,9 @@ namespace Dungeon.Player
 			bool output = true;
 
 			output = isDodging ? false : output;
-			output = isAttacking ? false : output;
 			output = isStunned ? false : output;
+			if (currentWeapon)
+				output = currentWeapon.CanMove(Target != null) ? output : false;
 
 			return output;
 		}
@@ -544,9 +569,10 @@ namespace Dungeon.Player
 			bool output = true;
 
 			output = isDodging ? false : output;
-			output = isAttacking ? false : output;
 			output = isStunned ? false : output;
-
+			if (currentWeapon)
+				output = currentWeapon.CanRotate(Target != null) ? output : false;
+				
 			return output;
 		}
 		

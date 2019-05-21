@@ -89,7 +89,7 @@ namespace Dungeon
 		}
 		private Vector3 PlayerPos
 		{
-			get { return PlayerManager.PController.GetPos(); }
+			get { return PlayerManager.transform.position; }
 		}
 		private Transform PlayerTarget
 		{

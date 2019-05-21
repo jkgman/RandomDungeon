@@ -6,6 +6,9 @@ using System.Collections;
 
 namespace Dungeon.Player
 {
+/// <summary>
+/// Handles player movement and rotation.
+/// </summary>
 	public class PlayerController : MonoBehaviour, IAllowedActions
 	{
 
@@ -26,8 +29,10 @@ namespace Dungeon.Player
 		private float moveInputToggleTime;
 		private Vector3 currentMoveSpeedRaw;
 		private Vector3 moveVelocityAtToggle;
-		private Vector3 currentForward;
-		private Vector3 lastMoveDirection;
+		private Vector3 lastNonZeroMoveDirection = Vector3.forward;
+
+		bool lookRotFromInput = true;
+		private Vector3 lookDirRaw = Vector3.forward;
 
 		private Vector3 currentMoveOffset;
 		private float vSpeed = 0;
@@ -48,7 +53,7 @@ namespace Dungeon.Player
 
 
 
-		#region Getters & Setters
+		#region References
 
 		private PlayerManager _pManager;
 		private PlayerManager PManager {
@@ -70,56 +75,95 @@ namespace Dungeon.Player
 				return _controller;
 			}
 		}
-	
-		public Vector3 GetPos()
+
+		PlayerAnimationHandler _animHandler;
+		PlayerAnimationHandler AnimHandler
 		{
-			return transform.position;
+			get
+			{
+				if (!_animHandler)
+					_animHandler = GetComponentInChildren<PlayerAnimationHandler>();
+
+				return _animHandler;
+			}
 		}
 
+		#endregion
+
+
+		#region Getters & Setters
+
+		/// <summary>
+		/// MoveSpeed with runMultiplier
+		/// </summary>
+		/// <returns></returns>
 		private float GetMaxSpeed()
 		{
 			return moveSpeed * runSpeedMultiplier;
 		}
 
-		public Vector3 GetFlatMoveInputDirection()
+		/// <summary>
+		/// Gets input direction relative to camera's flat forward direction.
+		/// </summary>
+		/// <param name="allowZero">If no input, returns transform.forward instead of zero</param>
+		public Vector3 GetTransformedInputDirection(bool allowZero = true)
 		{
-			var lookDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
-			
-			
-			if (lookDir.magnitude == 0)
+			if (moveInputRaw.magnitude == 0)
 			{
-				return Vector3.zero;
+				if (allowZero)
+					return Vector3.zero;
+				else
+				{
+					return transform.forward;
+				}
 			}
 			else
 			{
-				var dir = Quaternion.LookRotation(lookDir) * -PManager.GetCam.GetCurrentFlatDirection();
+				var moveDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
+				var dir = Quaternion.LookRotation(moveDir) * -PManager.GetCam.GetCurrentFlatDirection();
 				return dir.normalized;
 			}
 		}
 
+		/// <summary>
+		/// Last non-zero direction where player has moved.
+		/// </summary>
+		private Vector3 GetLastFlatMoveDirection()
+		{
+			Vector3 output = lastNonZeroMoveDirection;
+			output.y = 0;
+			if (output.magnitude == 0)
+				return Vector3.forward;
+			else
+				return output.normalized;
+		}
+
+		/// <summary>
+		/// Gets direction from CurrentMoveOffset. If allowZero is false, last non-zero flat move direction is returned.
+		/// </summary>
 		public Vector3 GetFlatMoveDirection(bool allowZero = true)
 		{
 			if (allowZero || currentMoveOffset.magnitude > 0)
 				return new Vector3(currentMoveOffset.x, 0, currentMoveOffset.z).normalized;
 			else
-				return new Vector3(lastMoveDirection.x, 0, lastMoveDirection.z).normalized;
+				return GetLastFlatMoveDirection();
 		}
 
 
-		private bool SetRunning(bool value)
+		private bool IsRunning
 		{
-			if (PManager.AllowRun())
+			get { return _isRunning; }
+			set
 			{
-				_isRunning = value;
-				return _isRunning;
+				if (PManager.AllowRun())
+				{
+					_isRunning = value;
+				}
+				else
+				{
+					_isRunning = false;
+				}
 			}
-			else
-			{
-				_isRunning = false;
-				return _isRunning;
-			}
-
-			
 		}
 
 		#endregion
@@ -163,7 +207,7 @@ namespace Dungeon.Player
 			{
 				output = hit.normal;
 
-				RaycastHit[] hits = Physics.RaycastAll(hit.point + GetFlatMoveInputDirection() * 0.05f + Vector3.up, Vector3.down, 2f, groundLayerMask.value);
+				RaycastHit[] hits = Physics.RaycastAll(hit.point + GetTransformedInputDirection() * 0.05f + Vector3.up, Vector3.down, 2f, groundLayerMask.value);
 				for (int i = 0; i < hits.Length; i++)
 				{
 					if (hits[i].collider == hit.collider)
@@ -212,7 +256,6 @@ namespace Dungeon.Player
 		void Update()
 		{
 			UpdateDebug();
-			SetCurrentForward();
 			CheckGrounded();                //Makes ground checks so they do not need to be repeated multiple times
 			CalculateMoveSpeed();           //Assigns acceleration to inputs
 			UpdateVelocity();				//Sets movementOffset (velocity) from input's moveSpeed
@@ -220,8 +263,12 @@ namespace Dungeon.Player
 			ApplyGravity();					//Set Y offset to moveSpeed
 			MoveAlongSlope();				//Calculate modified move direction for smooth slope movement
 			ApplyMovementToController();    //Gives movement to Unity Character Controller
-			SetMovementVariables();
 			UpdateAnimationData();			//Send movement data for animation handling
+		}
+
+		void LateUpdate()
+		{
+			LateSetMovementVariables();
 		}
 
 		void UpdateDebug()
@@ -233,20 +280,11 @@ namespace Dungeon.Player
 		
 
 		#region Movement
-
-		void SetCurrentForward()
-		{
-			if (moveInputRaw.magnitude > 0)
-			{
-				currentForward = -PManager.GetCam.GetCurrentFlatDirection();
-			}
-		}
-
+		
 		void CalculateMoveSpeed()
 		{
 			if (!PManager.AllowMove())
 			{
-				moveInputRaw = Vector2.zero;
 				currentMoveSpeedRaw = Vector3.zero;
 			}
 			else if (moveInputRaw.magnitude > 0)
@@ -313,7 +351,7 @@ namespace Dungeon.Player
 				else
 				{
 
-					Quaternion rot = Quaternion.LookRotation(currentForward);
+					Quaternion rot = Quaternion.LookRotation(-PManager.GetCam.GetCurrentFlatDirection());
 					Vector3 realMoveDirection = rot * new Vector3(currentMoveSpeedRaw.x, 0, currentMoveSpeedRaw.z);
 					newMoveOffset += realMoveDirection * Time.deltaTime;
 				}
@@ -326,6 +364,8 @@ namespace Dungeon.Player
 
 		void Rotate()
 		{
+			UpdateLookDirRaw();
+
 			if (PManager.AllowRotate())
 			{
 				if (PManager.PCombat.Target)
@@ -337,14 +377,27 @@ namespace Dungeon.Player
 				}
 				else
 				{
-					if (currentMoveSpeedRaw.magnitude > 0)
-					{
-						var lookDir = new Vector3(currentMoveSpeedRaw.x, 0, currentMoveSpeedRaw.z);
-						var dir = Quaternion.LookRotation(lookDir) * currentForward;
-						transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * rotationSpeed);
-					}
+					transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDirRaw), Time.deltaTime * rotationSpeed);
+
 				}
 			}
+		}
+
+		private void UpdateLookDirRaw()
+		{
+			if (PManager.AllowRotate() && GetTransformedInputDirection().magnitude > 0)
+				lookRotFromInput = true;
+
+			if (PManager.AllowRotate() && lookRotFromInput)
+			{
+				lookDirRaw = GetTransformedInputDirection(false);
+			}
+			else
+			{
+				lookDirRaw = transform.forward;
+				lookRotFromInput = false;
+			}
+
 		}
 
 		void MoveAlongSlope()
@@ -376,11 +429,17 @@ namespace Dungeon.Player
 				Debug.LogWarning("No Unity Character Controller found in Player. Movement not applied.");
 		}
 
-		void SetMovementVariables()
+		void LateSetMovementVariables()
 		{
-			if (currentMoveOffset.magnitude > 0)
-				lastMoveDirection = currentMoveOffset.normalized;
+			if (PManager.AllowMove())
+			{
+				if (currentMoveOffset.magnitude > 0)
+					lastNonZeroMoveDirection = currentMoveOffset.normalized;
+				else if (moveInputRaw.magnitude > 0)
+					lastNonZeroMoveDirection = GetTransformedInputDirection();
+			}
 		}
+
 
 		public void ExternalMove(Vector3 offset)
 		{
@@ -389,19 +448,25 @@ namespace Dungeon.Player
 				Controller.Move(offset);
 			}
 		}
+		public void ExternalRotate(Vector3 lookDirection, bool instant = false)
+		{
+			lookDirection.y = 0;
 
+			if (instant)
+			{
+				transform.rotation = Quaternion.LookRotation(lookDirection);	
+			}
+			else
+			{
+				
+			}
+		}
 
 
 		#endregion
 
 		#region HandleInputs
-
-		void ResetInputModifiers()
-		{
-			//These should be zero for next frame in case no input was given
-			moveInputRaw = Vector3.zero;
-		}
-
+		
 
 
 		void ControlsSubscribe()
@@ -468,26 +533,18 @@ namespace Dungeon.Player
 		{
 			if (Time.time - inputRunStartTime > PManager.inputMaxPressTime)
 			{
-				SetRunning(true);
+				IsRunning = true;
 			}
 		}
 		void InputRunCancelled(InputAction.CallbackContext context) 
 		{
-			SetRunning(false);
+			IsRunning = false;
 		}
 
 		#endregion
 
 		#region Animations
-		PlayerAnimationHandler _animHandler;
-		PlayerAnimationHandler AnimHandler {
-			get {
-				if (!_animHandler)
-					_animHandler = GetComponentInChildren<PlayerAnimationHandler>();
 
-				return _animHandler;
-			}
-		}
 
 		void UpdateAnimationData()
 		{

@@ -377,7 +377,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: DODGE
-  m_Speed: 0.020833462
+  m_Speed: 0.011904836
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1554866682121772444}
@@ -405,7 +405,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ATTACK
-  m_Speed: 0.625
+  m_Speed: 1.25
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 8070832588483374957}
@@ -463,10 +463,10 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 1102704202624941210}
-    m_Position: {x: 260, y: 140, z: 0}
+    m_Position: {x: 270, y: 70, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102394043446044912}
-    m_Position: {x: 264, y: 228, z: 0}
+    m_Position: {x: 270, y: 170, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102796959440730972}
     m_Position: {x: 550, y: 70, z: 0}

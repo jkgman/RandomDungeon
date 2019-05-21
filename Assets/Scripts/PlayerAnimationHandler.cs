@@ -63,7 +63,8 @@ namespace Dungeon.Player
 				if (j.name == name)
 					return j;
 			}
-			
+
+			Debug.LogWarning("Anim state was not found with name: " + name);
 			return null;
 		}
 
@@ -87,7 +88,7 @@ namespace Dungeon.Player
 
 		}
 
-		public void SetDodgeStarted(Vector2 direction, bool backstep = false, float duration = -1f)
+		public void SetDodgeStarted(Vector2 direction, float duration = -1f)
 		{
 			Animator.SetBool("dodge", true);
 			float d = duration;
@@ -104,20 +105,11 @@ namespace Dungeon.Player
 				else
 					dodgeState.speed = ANIM_DEFAULT_SPEED;
 			}
-			else
-				Debug.LogWarning("Dodge clip was not found with name: " + dodgeAnimName);
 
-
-			if (backstep)
-			{
-				Animator.SetFloat("sidewaysDodge", 0);
-				Animator.SetFloat("forwardsDodge", -1);
-			}
-			else
-			{
-				Animator.SetFloat("sidewaysDodge", direction.x);
-				Animator.SetFloat("forwardsDodge", direction.y);
-			}
+			
+			Animator.SetFloat("sidewaysDodge", direction.x);
+			Animator.SetFloat("forwardsDodge", direction.y);
+			
 		}
 
 		public void SetDodgeCancelled()
@@ -142,9 +134,9 @@ namespace Dungeon.Player
 					attackState.speed = currentDuration / d;
 				else
 					attackState.speed = ANIM_DEFAULT_SPEED;
+
+			
 			}
-			else
-				Debug.LogWarning("Dodge clip was not found with name: " + attackAnimName);
 
 		}
 		public void SetAttackCancelled()

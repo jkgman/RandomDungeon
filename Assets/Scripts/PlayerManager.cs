@@ -2,6 +2,9 @@
 
 namespace Dungeon.Player {
 
+/// <summary>
+/// Master script of player that holds references to sub-scripts.
+/// </summary>
 	public class PlayerManager : MonoBehaviour, IAllowedActions
 	{
 		

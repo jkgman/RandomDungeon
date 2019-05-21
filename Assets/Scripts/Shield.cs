@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Dungeon.Items
 {
+/// <summary>
+/// Item that has blocking properties and can absorb damage
+/// </summary>
 	public class Shield : MonoBehaviour, ITakeDamage
 	{
 		[SerializeField] private Collider blockCollider;
@@ -19,12 +22,14 @@ namespace Dungeon.Items
 		{
 			pCombat = in_pCombat;
 			isEquipped = true;
+			blockCollider.isTrigger = true;
 		}
 
 		public void UnEquip()
 		{
 			isEquipped = false;
 			pCombat = null;
+			blockCollider.isTrigger = false;
 		}
 
 		void StartBlocking()

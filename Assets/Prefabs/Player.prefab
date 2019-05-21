@@ -12,12 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7348df94cbe5ec449adeec2e1af44dd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canBeCharged: 1
-  canHeavyAttack: 0
+  type: 0
   chargeDuration: 0.5
   attackDuration: 0.5
   attackDamage: 5
-  type: 0
+  forwardMoveCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  allowStaggerDuringAttack: 1
+  rotateDuringTargetAttack: 1
+  rotateDuringTargetDamaging: 0
+  rotateDuringFreeAttack: 1
+  rotateDuringFreeDamaging: 0
+  moveDuringFreeAttack: 0
+  moveDuringFreeDamaging: 0
+  moveDuringTargetAttack: 0
+  moveDuringTargetDamaging: 0
+  damageStart: 0.4
+  damageEnd: 0.85
 --- !u!114 &8906402387385726201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,7 +116,7 @@ MonoBehaviour:
   accelerationSpeed: 0.1
   deaccelerationSpeed: 0.25
   runSpeedMultiplier: 1.5
-  rotationSpeed: 8
+  rotationSpeed: 15
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -134,10 +149,8 @@ MonoBehaviour:
   rightHand: {fileID: 354772170972014739}
   leftHand: {fileID: 355060205216975471}
   currentWeapon: {fileID: 253779982945200879}
-  dodgeDirectionalDistance: 3
-  dodgeDirectionalDuration: 0.3
-  dodgeBackstepDistance: 1.5
-  dodgeBackstepDuration: 0.2
+  dodgeDistance: 3
+  dodgeDuration: 0.35
   dodgeInvincibilityPercentage: 0.75
 --- !u!114 &3680647838422055353
 MonoBehaviour:
