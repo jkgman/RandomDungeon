@@ -5,124 +5,249 @@ using UnityEngine;
 
 namespace Dungeon.Items
 {
-	public enum WeaponType
-	{
-		lightSword
-		//heavySword,
-		//axe,
-		//hammer,
-		//club
-	}
 
 	/// <summary>
 	/// Attached to weapons to give them individual properties.
 	/// </summary>
 	public class Weapon : MonoBehaviour
 	{
-		[SerializeField] private WeaponType type;
-		[SerializeField] private float chargeDuration;
-		[SerializeField] private float attackDuration;
-		[SerializeField] private float attackDamage;
-		[SerializeField] private AnimationCurve forwardMoveCurve;
-
-		//[SerializeField] private bool canBeCharged;
-		//[SerializeField] private bool canHeavyAttack;
-		[SerializeField] private bool allowStaggerDuringAttack;
-		[SerializeField] private bool rotateDuringTargetAttack;
-		[SerializeField] private bool rotateDuringTargetDamaging;
-		[SerializeField] private bool rotateDuringFreeAttack;
-		[SerializeField] private bool rotateDuringFreeDamaging;
-		[SerializeField] private bool moveDuringFreeAttack;
-		[SerializeField] private bool moveDuringFreeDamaging;
-		[SerializeField] private bool moveDuringTargetAttack;
-		[SerializeField] private bool moveDuringTargetDamaging;
-
-		//During hit time weapon is dealing damage and attack combo is allowed.
-		[SerializeField, Range(0, 1f)] private float damageStart = 0.4f;
-		[SerializeField, Range(0, 1f)] private float damageEnd = 0.85f;
-
-		void OnValidate()
+		private enum AttackType
 		{
-			if (damageStart > damageEnd)
-				damageEnd = damageStart;
+			lightAttack,
+			heavyAttack
 		}
-		
-		public WeaponType GetWeaponType()
+		private enum AttackState
 		{
-			return type;
+			charge,
+			attack,
+			recovery
 		}
 
-		public float CurrentAttackMoveSpeed(float evaluationTime)
+		[System.Serializable]
+		private struct AttackData
 		{
-			return forwardMoveCurve.Evaluate(evaluationTime);
+			public float chargeDuration;                 //Anticipation should be the longest part of attack
+			public float attackDuration;                 //Fast part where contact happens
+			public float recoveryDuration;              //Added juiciness is given through recovery
+			public float attackDamage;
+			public AnimationCurve chargeMoveCurve;
+			public AnimationCurve attackMoveCurve;
+			public AnimationCurve recoveryMoveCurve;
+			public Player.AttackAnimationData animData;
 		}
 
+		[System.Serializable]
+		private struct AllowedActions
+		{
+			public bool rotatableDuringCharge;
+			public bool rotatableDuringAttack;
+			public bool rotatableDuringRecovery;
+			public bool movableDuringCharge;
+			public bool movableDuringAttack;
+			public bool movableDuringRecovery;
+		}
+
+
+		[Header("General data")]
+		[SerializeField] private bool isEquipped;
+		[SerializeField] private bool staggerableDuringAction;
+		[SerializeField] private float stackInterval;
+		[SerializeField] private List<AttackData> lightAttacks = new List<AttackData>();
+		[SerializeField] private List<AttackData> heavyAttacks = new List<AttackData>();
+		[SerializeField] private AllowedActions actionsDuringTargeting;
+		[SerializeField] private AllowedActions actionsDuringFree;
+
+		private AttackType currentAttackType;
+		private AttackState currentAttackState;
+		private int attackIndex = 0;
+
+		public float CurrentMoveDistance(float evaluationTime)
+		{
+			switch (currentAttackType)
+			{
+				case AttackType.lightAttack:
+				{
+					switch (currentAttackState)
+					{
+						case AttackState.charge:
+							return lightAttacks[attackIndex].chargeMoveCurve.Evaluate(evaluationTime);
+						case AttackState.attack:
+							return lightAttacks[attackIndex].attackMoveCurve.Evaluate(evaluationTime);
+						case AttackState.recovery:
+							return lightAttacks[attackIndex].recoveryMoveCurve.Evaluate(evaluationTime);
+						default:
+							return 0;
+					}
+
+				}
+
+				case AttackType.heavyAttack:
+				{
+					switch (currentAttackState)
+					{
+						case AttackState.charge:
+							return heavyAttacks[attackIndex].chargeMoveCurve.Evaluate(evaluationTime);
+						case AttackState.attack:
+							return heavyAttacks[attackIndex].attackMoveCurve.Evaluate(evaluationTime);
+						case AttackState.recovery:
+							return heavyAttacks[attackIndex].recoveryMoveCurve.Evaluate(evaluationTime);
+						default:
+							return 0;
+					}
+				}
+				default:
+					return 0;
+			}
+		}
 
 		public bool CanRotate(bool hasTarget)
 		{
-			if (IsDamaging)
+			switch (currentAttackState)
 			{
-				return hasTarget ? rotateDuringTargetDamaging : rotateDuringFreeDamaging;
-			}
-			if (IsAttacking)
-			{
-				return hasTarget ? rotateDuringTargetAttack : rotateDuringFreeAttack;
+				case AttackState.charge:
+					if (hasTarget)
+						return actionsDuringTargeting.rotatableDuringCharge;
+					else
+						return actionsDuringFree.rotatableDuringCharge;
+
+				case AttackState.attack:
+					if (hasTarget)
+						return actionsDuringTargeting.rotatableDuringAttack;
+					else
+						return actionsDuringFree.rotatableDuringAttack;
+
+				case AttackState.recovery:
+					if (hasTarget)
+						return actionsDuringTargeting.rotatableDuringRecovery;
+					else
+						return actionsDuringFree.rotatableDuringRecovery;
+
+				default:
+					return true;
 			}
 
-			return true;
 		}
 
 		public bool CanMove(bool hasTarget)
 		{
-			if (IsDamaging)
+			switch (currentAttackState)
 			{
-				return hasTarget ? moveDuringTargetDamaging : moveDuringFreeDamaging;
+				case AttackState.charge:
+					if (hasTarget)
+						return actionsDuringTargeting.movableDuringCharge;
+					else
+						return actionsDuringFree.movableDuringCharge;
+
+				case AttackState.attack:
+					if (hasTarget)
+						return actionsDuringTargeting.movableDuringAttack;
+					else
+						return actionsDuringFree.movableDuringAttack;
+
+				case AttackState.recovery:
+					if (hasTarget)
+						return actionsDuringTargeting.movableDuringRecovery;
+					else
+						return actionsDuringFree.movableDuringRecovery;
+				default:
+				return true;
 			}
-			if (IsAttacking)
+		}
+
+		//public Player.AttackAnimationData GetAttackAnimationData(AttackType attackType, AttackState attackState)
+		//{
+		//	AnimationClip clip;
+		//	switch (attackType)
+		//	{
+		//		case AttackType.lightAttack:
+		//			clip = lightAttacks
+		//	}
+		//	Player.AttackAnimationData newData = new Player.AttackAnimationData()
+		//	{
+						
+		//	}
+		//}
+
+		public float GetCurrentDamage()
+		{
+			switch (currentAttackType)
 			{
-				return hasTarget ? moveDuringTargetAttack : moveDuringFreeAttack;
+				case AttackType.lightAttack:
+					return lightAttacks[attackIndex].attackDamage;
+
+				case AttackType.heavyAttack:
+					return heavyAttacks[attackIndex].attackDamage;
+
+				default:
+					return 0;
 			}
-
-			return true;
 		}
 
-
-
-
-		public float GetAttackDuration()
+		public float GetActionDuration()
 		{
-			return attackDuration;
+			switch (currentAttackType)
+			{
+				case AttackType.lightAttack:
+				{
+					switch (currentAttackState)
+					{
+						case AttackState.charge:
+							return lightAttacks[attackIndex].chargeDuration;
+						case AttackState.attack:
+							return lightAttacks[attackIndex].attackDuration;
+						case AttackState.recovery:
+							return lightAttacks[attackIndex].recoveryDuration;
+						default:
+							return 0;
+					}
+
+				}
+
+				case AttackType.heavyAttack:
+				{
+					switch (currentAttackState)
+					{
+						case AttackState.charge:
+							return heavyAttacks[attackIndex].chargeDuration;
+						case AttackState.attack:
+							return heavyAttacks[attackIndex].attackDuration;
+						case AttackState.recovery:
+							return heavyAttacks[attackIndex].recoveryDuration;
+						default:
+							return 0;
+					}
+				}
+				default:
+				return 0;
+			}
 		}
-		public float GetHitStart()
-		{
-			return damageStart;
-		}
-		public float GetHitEnd()
-		{
-			return damageEnd;
-		}
-		public bool IsDamaging
-		{
-			get;
-			set;
-		}
+
 		public bool IsAttacking
 		{
 			get;
 			set;
 		}
-
+		public bool IsCharging
+		{
+			get;
+			set;
+		}
+		public bool IsRecovering
+		{
+			get;
+			set;
+		}
 		void OnTriggerEnter(Collider other)
 		{
-			if (!IsDamaging)
+			if (!IsAttacking)
 				return;
 
 			ITakeDamage dmg = other.GetComponent<ITakeDamage>();
 
 			if (dmg != null)
 			{
-				Debug.Log("Weapon dealing damage to: " + other.gameObject.name);
-				dmg.TakeDamage(attackDamage);
+				Debug.Log("Weapon dealing "+ GetCurrentDamage() + " damage to: " + other.gameObject.name);
+				dmg.TakeDamage(GetCurrentDamage());
 			}
 		}
 

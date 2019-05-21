@@ -364,12 +364,12 @@ namespace Dungeon.Player
 		IEnumerator AttackRoutine()
 		{
 			isAttacking = true;
-			currentWeapon.IsAttacking = true;
+			currentWeapon.IsCharging = true;
 			float t = 0;
 			float t01 = 0;
 			Vector3 moveOffset = Vector3.zero;
 
-			PManager.PAnimation.SetAttackStarted(currentWeapon.GetAttackDuration());
+			PManager.PAnimation.SetAttackStarted(currentWeapon.GetActionDuration());
 
 
 			Vector3 moveDirection = transform.forward;
@@ -379,10 +379,9 @@ namespace Dungeon.Player
 				moveDirection = PManager.PController.GetFlatMoveDirection(false);
 
 
-			while (isAttacking && t < currentWeapon.GetAttackDuration())
+			while (isAttacking && t < currentWeapon.GetActionDuration())
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetAttackDuration());
-				currentWeapon.IsDamaging = t01 > currentWeapon.GetHitStart() && t01 < currentWeapon.GetHitEnd();
+				t01 = Mathf.Clamp01(t / currentWeapon.GetActionDuration());
 
 				if (Target)
 				{
@@ -395,7 +394,7 @@ namespace Dungeon.Player
 						moveDirection = PManager.PController.GetFlatMoveDirection(false); 
 				}
 
-				PManager.PController.ExternalMove(moveDirection.normalized * currentWeapon.CurrentAttackMoveSpeed(t01) * Time.smoothDeltaTime);
+				//PManager.PController.ExternalMove(moveDirection.normalized * currentWeapon.CurrentAttackMoveSpeed(t01) * Time.smoothDeltaTime);
 				
 				//TODO
 				//Movement along curve/smoothstep
@@ -409,7 +408,7 @@ namespace Dungeon.Player
 			PManager.PAnimation.SetAttackCancelled();
 
 			isAttacking = false;
-			currentWeapon.IsAttacking = false;
+			currentWeapon.IsCharging = false;
 
 			yield return null;
 		}

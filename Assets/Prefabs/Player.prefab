@@ -12,27 +12,105 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7348df94cbe5ec449adeec2e1af44dd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 0
-  chargeDuration: 0.5
-  attackDuration: 0.5
-  attackDamage: 5
-  forwardMoveCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  allowStaggerDuringAttack: 1
-  rotateDuringTargetAttack: 1
-  rotateDuringTargetDamaging: 0
-  rotateDuringFreeAttack: 1
-  rotateDuringFreeDamaging: 0
-  moveDuringFreeAttack: 0
-  moveDuringFreeDamaging: 0
-  moveDuringTargetAttack: 0
-  moveDuringTargetDamaging: 0
-  damageStart: 0.4
-  damageEnd: 0.85
+  isEquipped: 1
+  staggerableDuringAction: 1
+  stackInterval: 0.2
+  lightAttacks:
+  - chargeDuration: 0.5
+    attackDuration: 0.1
+    recoveryDuration: 0.3
+    attackDamage: 10
+    chargeMoveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    attackMoveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.0062561035
+        inSlope: 1.2374634
+        outSlope: 1.2374634
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.16666667
+      - serializedVersion: 3
+        time: 1
+        value: 0.51250076
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    recoveryMoveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.006248474
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.006248474
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    animData:
+      chargeClip: {fileID: 0}
+      attackClip: {fileID: 0}
+      recoveryClip: {fileID: 0}
+  heavyAttacks: []
+  actionsDuringTargeting:
+    rotatableDuringCharge: 0
+    rotatableDuringAttack: 0
+    rotatableDuringRecovery: 0
+    movableDuringCharge: 1
+    movableDuringAttack: 0
+    movableDuringRecovery: 1
+  actionsDuringFree:
+    rotatableDuringCharge: 1
+    rotatableDuringAttack: 0
+    rotatableDuringRecovery: 1
+    movableDuringCharge: 1
+    movableDuringAttack: 0
+    movableDuringRecovery: 1
 --- !u!114 &8906402387385726201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,8 +243,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blendSpeed: 5
-  dodgeAnimName: DODGE
-  attackAnimName: ATTACK
 --- !u!143 &3766095293103317566
 CharacterController:
   m_ObjectHideFlags: 0
