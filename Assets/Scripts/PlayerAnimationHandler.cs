@@ -36,7 +36,7 @@ namespace Dungeon.Player
 
 		private Vector2 currentMoveBlend = Vector2.zero;
 		private AnimatorController ac;
-		private List<AnimatorState> allStates;
+		private List<AnimatorState> animatorStates;
 
 
 
@@ -54,49 +54,81 @@ namespace Dungeon.Player
 			}
 		}
 
-		void GetAllStates()
+		/// <summary>Get All states in current AnimatorController.</summary>
+		List<AnimatorState> GetAllStates()
 		{
+			List<AnimatorState> output = new List<AnimatorState>();
+
 			ac = Animator.runtimeAnimatorController as AnimatorController;
-			ChildAnimatorState[] ch_animStates;
-			AnimatorStateMachine stateMachine;
-			allStates = new List<AnimatorState>();
 
 			foreach (AnimatorControllerLayer i in ac.layers) //for each layer
 			{
-				stateMachine = i.stateMachine;
-				ch_animStates = stateMachine.states;
-				foreach (ChildAnimatorState j in ch_animStates) //for each state
+				AnimatorStateMachine stateMachine = i.stateMachine;
+				List<AnimatorState> states = GetAllStatesInMachine(stateMachine);
+
+				foreach (var s in states)
 				{
-					allStates.Add(j.state);
-					if (j.state.name == DODGE_STATE)
+					if (!output.Contains(s))
+						output.Add(s);
+				}
+			}
+			return output;
+		}
+		/// <summary>Get all states in a state machine.</summary>
+		List<AnimatorState> GetAllStatesInMachine(AnimatorStateMachine stateMachine)
+		{
+			List<AnimatorState> output = new List<AnimatorState>();
+
+			if (stateMachine.stateMachines.Length > 0)
+			{
+				foreach (var sm in stateMachine.stateMachines)
+				{
+					List<AnimatorState> foundStates = GetStatesInChildMachine(sm);
+					for (int i = 0; i < foundStates.Count; i++)
 					{
-						dodgeState = j.state;
-					}
-					if (j.state.name == CHARGE_STATE)
-					{
-						currentChargeClipName = j.state.motion.name;
-						chargeState = j.state;
-					}
-					if (j.state.name == ATTACK_STATE)
-					{
-						currentAttackClipName = j.state.motion.name;
-						attackState = j.state;
-					}
-					if (j.state.name == RECOVERY_STATE)
-					{
-						currentRecoveryClipName = j.state.motion.name;
-						recoveryState = j.state;
+						if (!output.Contains(foundStates[i]))
+							output.Add(foundStates[i]);
 					}
 				}
 			}
+			foreach (var state in stateMachine.states)
+			{
+				if (!output.Contains(state.state))
+					output.Add(state.state);
+			}
 
 
+			return output;
+		}
+		/// <summary>Get all states in a child state machine. Works Recursively. </summary>
+		List<AnimatorState> GetStatesInChildMachine(ChildAnimatorStateMachine childMachine)
+		{
+			List<AnimatorState> output = new List<AnimatorState>();
+			if (childMachine.stateMachine.stateMachines.Length >0)
+			{
+				foreach(var sm in childMachine.stateMachine.stateMachines)
+				{
+					List<AnimatorState> childStates = GetStatesInChildMachine(sm);
+					for (int i = 0; i < childStates.Count; i++)
+					{
+						if (!output.Contains(childStates[i]))
+							output.Add(childStates[i]);
+					}
+				}
+			}
+			foreach (var state in childMachine.stateMachine.states)
+			{
+				if (!output.Contains(state.state))
+					output.Add(state.state);
+			}
+
+			return output;
 		}
 
 		AnimatorState GetAnimStateByName(string name)
 		{
 
-			foreach (AnimatorState j in allStates) //for each state
+			foreach (AnimatorState j in animatorStates) //for each state
 			{
 				if (j.name == name)
 					return j;
@@ -111,24 +143,50 @@ namespace Dungeon.Player
 
 		void Awake()
 		{
-			GetAllStates();
+			animatorStates = GetAllStates();
+			SetStateVariables();
 		}
 
+		void SetStateVariables()
+		{
+			for (int i = 0; i < animatorStates.Count; i++)
+			{
+				if (animatorStates[i].name == DODGE_STATE)
+				{
+					dodgeState = animatorStates[i];
+				}
+				if (animatorStates[i].name == CHARGE_STATE)
+				{
+					currentChargeClipName = animatorStates[i].motion.name;
+					chargeState = animatorStates[i];
+				}
+				if (animatorStates[i].name == ATTACK_STATE)
+				{
+					currentAttackClipName = animatorStates[i].motion.name;
+					attackState = animatorStates[i];
+				}
+				if (animatorStates[i].name == RECOVERY_STATE)
+				{
+					currentRecoveryClipName = animatorStates[i].motion.name;
+					recoveryState = animatorStates[i];
+				}
+			}
+		}
 
 
 		public void SetMovementPerformed(Vector2 blendParam)
 		{
 			currentMoveBlend = Vector2.Lerp(currentMoveBlend, blendParam, Time.deltaTime * blendSpeed);
 
-			Animator.SetBool("move", blendParam != Vector2.zero);
-			Animator.SetFloat("sidewaysMove", currentMoveBlend.x);
-			Animator.SetFloat("forwardMove", currentMoveBlend.y);
+			Animator.SetBool("isMoving", blendParam != Vector2.zero);
+			Animator.SetFloat("xMove", currentMoveBlend.x);
+			Animator.SetFloat("yMove", currentMoveBlend.y);
 
 		}
 
 		public void SetDodgeStarted(Vector2 direction, float duration = -1f)
 		{
-			Animator.SetBool("dodge", true);
+			Animator.SetBool("isDodging", true);
 			float d = duration;
 
 			if (dodgeState)
@@ -143,14 +201,13 @@ namespace Dungeon.Player
 			}
 
 			
-			Animator.SetFloat("sidewaysDodge", direction.x);
-			Animator.SetFloat("forwardsDodge", direction.y);
+			Animator.SetFloat("xDodge", direction.x);
 			
 		}
 
 		public void SetDodgeCancelled()
 		{
-			Animator.SetBool("dodge", false);
+			Animator.SetBool("isDodging", false);
 		}
 
 		public void SetAttackAnimations (AttackAnimationData data)
@@ -158,11 +215,28 @@ namespace Dungeon.Player
 			OverrideClips(currentChargeClipName, data.chargeClip);
 			OverrideClips(currentAttackClipName, data.attackClip);
 			OverrideClips(currentRecoveryClipName, data.recoveryClip);
+
+			currentChargeClipName = data.chargeClip.name;
+			currentAttackClipName = data.attackClip.name;
+			currentRecoveryClipName = data.recoveryClip.name;
 		}
 
-		public void SetChargeStarted(AnimationClip clip, float duration)
+		public void SetChargeStarted(float duration)
 		{
 			Animator.SetBool("isCharging", true);
+
+			float d = duration;
+
+			if (chargeState)
+			{
+				Motion motion = chargeState.motion;
+				float currentDuration = motion.averageDuration;
+
+				if (d > 0)
+					chargeState.speed = currentDuration / d;
+				else
+					chargeState.speed = ANIM_DEFAULT_SPEED;
+			}
 		}
 		public void SetChargeCancelled()
 		{
@@ -171,11 +245,9 @@ namespace Dungeon.Player
 
 		public void SetAttackStarted(float duration = -1f)
 		{
-			Animator.SetBool("attack", true);
+			Animator.SetBool("isAttacking", true);
 
 			float d = duration;
-
-			//AnimatorState attackState = GetAnimStateByName(attackAnimName);
 
 			if (attackState)
 			{
@@ -186,15 +258,37 @@ namespace Dungeon.Player
 					attackState.speed = currentDuration / d;
 				else
 					attackState.speed = ANIM_DEFAULT_SPEED;
-
-			
 			}
 
 		}
 		public void SetAttackCancelled()
 		{
-			Animator.SetBool("attack", false);
+			Animator.SetBool("isAttacking", false);
 		}
+
+		public void SetRecoveryStarted(float duration = -1f)
+		{
+			Animator.SetBool("isRecovering", true);
+
+			float d = duration;
+
+			if (recoveryState)
+			{
+				Motion motion = recoveryState.motion;
+				float currentDuration = motion.averageDuration;
+
+				if (d > 0)
+					recoveryState.speed = currentDuration / d;
+				else
+					recoveryState.speed = ANIM_DEFAULT_SPEED;
+			}
+
+		}
+		public void SetRecoveryCancelled()
+		{
+			Animator.SetBool("isRecovering", false);
+		}
+
 
 
 		private void OverrideClips(string animName, AnimationClip in_clip)

@@ -93,9 +93,11 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     animData:
-      chargeClip: {fileID: 0}
-      attackClip: {fileID: 0}
-      recoveryClip: {fileID: 0}
+      chargeClip: {fileID: 7400002, guid: c3e3e6e9d603f59448ec48c17012927f, type: 3}
+      attackClip: {fileID: 3047056581966694513, guid: c3e3e6e9d603f59448ec48c17012927f,
+        type: 3}
+      recoveryClip: {fileID: -2888854659357403076, guid: c3e3e6e9d603f59448ec48c17012927f,
+        type: 3}
   heavyAttacks: []
   actionsDuringTargeting:
     rotatableDuringCharge: 0

@@ -3,6 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+namespace Dungeon
+{
+	public enum AttackType
+	{
+		lightAttack,
+		heavyAttack
+		//lightChargedAttack,
+		//heavyChargedAttack
+	}
+	public enum AttackState
+	{
+		charge,
+		attack,
+		recovery
+	}
+}
+
 namespace Dungeon.Items
 {
 
@@ -11,17 +28,7 @@ namespace Dungeon.Items
 	/// </summary>
 	public class Weapon : MonoBehaviour
 	{
-		private enum AttackType
-		{
-			lightAttack,
-			heavyAttack
-		}
-		private enum AttackState
-		{
-			charge,
-			attack,
-			recovery
-		}
+
 
 		[System.Serializable]
 		private struct AttackData
@@ -57,17 +64,17 @@ namespace Dungeon.Items
 		[SerializeField] private AllowedActions actionsDuringTargeting;
 		[SerializeField] private AllowedActions actionsDuringFree;
 
-		private AttackType currentAttackType;
-		private AttackState currentAttackState;
+		private AttackType _currentAttackType;
+		private AttackState _currentAttackState;
 		private int attackIndex = 0;
 
 		public float CurrentMoveDistance(float evaluationTime)
 		{
-			switch (currentAttackType)
+			switch (_currentAttackType)
 			{
 				case AttackType.lightAttack:
 				{
-					switch (currentAttackState)
+					switch (_currentAttackState)
 					{
 						case AttackState.charge:
 							return lightAttacks[attackIndex].chargeMoveCurve.Evaluate(evaluationTime);
@@ -83,7 +90,7 @@ namespace Dungeon.Items
 
 				case AttackType.heavyAttack:
 				{
-					switch (currentAttackState)
+					switch (_currentAttackState)
 					{
 						case AttackState.charge:
 							return heavyAttacks[attackIndex].chargeMoveCurve.Evaluate(evaluationTime);
@@ -102,7 +109,7 @@ namespace Dungeon.Items
 
 		public bool CanRotate(bool hasTarget)
 		{
-			switch (currentAttackState)
+			switch (_currentAttackState)
 			{
 				case AttackState.charge:
 					if (hasTarget)
@@ -130,7 +137,7 @@ namespace Dungeon.Items
 
 		public bool CanMove(bool hasTarget)
 		{
-			switch (currentAttackState)
+			switch (_currentAttackState)
 			{
 				case AttackState.charge:
 					if (hasTarget)
@@ -154,6 +161,23 @@ namespace Dungeon.Items
 			}
 		}
 
+		public AttackType CurrentAttackType
+		{
+			get{ return _currentAttackType; }
+			set{ _currentAttackType = value; }
+		}
+		public AttackState CurrentAttackState
+		{
+			get { return _currentAttackState; }
+			set { _currentAttackState = value; }
+		}
+
+		public bool IsAttacking
+		{
+			get;
+			set;
+		}
+
 		//public Player.AttackAnimationData GetAttackAnimationData(AttackType attackType, AttackState attackState)
 		//{
 		//	AnimationClip clip;
@@ -170,7 +194,7 @@ namespace Dungeon.Items
 
 		public float GetCurrentDamage()
 		{
-			switch (currentAttackType)
+			switch (_currentAttackType)
 			{
 				case AttackType.lightAttack:
 					return lightAttacks[attackIndex].attackDamage;
@@ -185,11 +209,11 @@ namespace Dungeon.Items
 
 		public float GetActionDuration()
 		{
-			switch (currentAttackType)
+			switch (_currentAttackType)
 			{
 				case AttackType.lightAttack:
 				{
-					switch (currentAttackState)
+					switch (_currentAttackState)
 					{
 						case AttackState.charge:
 							return lightAttacks[attackIndex].chargeDuration;
@@ -205,7 +229,7 @@ namespace Dungeon.Items
 
 				case AttackType.heavyAttack:
 				{
-					switch (currentAttackState)
+					switch (_currentAttackState)
 					{
 						case AttackState.charge:
 							return heavyAttacks[attackIndex].chargeDuration;
@@ -222,21 +246,6 @@ namespace Dungeon.Items
 			}
 		}
 
-		public bool IsAttacking
-		{
-			get;
-			set;
-		}
-		public bool IsCharging
-		{
-			get;
-			set;
-		}
-		public bool IsRecovering
-		{
-			get;
-			set;
-		}
 		void OnTriggerEnter(Collider other)
 		{
 			if (!IsAttacking)

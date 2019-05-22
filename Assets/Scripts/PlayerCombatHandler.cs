@@ -6,13 +6,7 @@ using UnityEngine;
 
 namespace Dungeon.Player
 {
-	public enum AttackType
-	{
-		lightAttack,
-		heavyAttack
-		//lightChargedAttack,
-		//heavyChargedAttack
-	}
+
 
 	/// <summary>
 	/// Handles Inputs and actions related to combat such as attacks, dodges and blocks
@@ -51,27 +45,22 @@ namespace Dungeon.Player
 		readonly float inputTargetSwitchInterval = 0.1f;
 
 
-		public bool isBlocking
+		public bool IsBlocking
 		{
 			get;
 			private set;
 		}
-		public bool isDodging 
+		public bool IsDodging 
 		{
 			get;
 			private set;
 		}
-		public bool isStunned
+		public bool IsStunned
 		{
 			get;
 			private set;
 		}
-		public bool isAttacking
-		{
-			get;
-			private set;
-		}
-		public bool isInvincible
+		public bool IsInvincible
 		{
 			get;
 			private set;
@@ -325,7 +314,7 @@ namespace Dungeon.Player
 
 		IEnumerator DodgeRoutine(Vector3 direction)
 		{
-			isDodging = true;
+			IsDodging = true;
 
 			float t = 0;
 			float invincibilityMargin = (1f - dodgeInvincibilityPercentage) / 2;
@@ -335,9 +324,9 @@ namespace Dungeon.Player
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized;
 			PManager.PAnimation.SetDodgeStarted(blend, dodgeDuration);
 
-			while (isDodging && t < dodgeDuration)
+			while (IsDodging && t < dodgeDuration)
 			{
-				isInvincible = (t / dodgeDuration > invincibilityMargin) && (t / dodgeDuration < 1 - invincibilityMargin);
+				IsInvincible = (t / dodgeDuration > invincibilityMargin) && (t / dodgeDuration < 1 - invincibilityMargin);
 				float distThisFrame = (dodgeDistance / dodgeDuration) * Time.smoothDeltaTime;
 				Vector3 offset = direction * distThisFrame;
 				PManager.PController.ExternalMove(offset);
@@ -346,7 +335,7 @@ namespace Dungeon.Player
 				t += Time.smoothDeltaTime;
 			}
 
-			isDodging = false;
+			IsDodging = false;
 			PManager.PAnimation.SetDodgeCancelled();
 
 			yield return null;
@@ -357,14 +346,41 @@ namespace Dungeon.Player
 		{
 			if (PManager.AllowAttack())
 			{
-				StartCoroutine(AttackRoutine());
+				StartCoroutine(LightAttackRoutine());
 			}
 		}
 
-		IEnumerator AttackRoutine()
+		IEnumerator LightAttackRoutine()
 		{
-			isAttacking = true;
-			currentWeapon.IsCharging = true;
+			currentWeapon.CurrentAttackType = AttackType.lightAttack;
+			currentWeapon.IsAttacking = true;
+			yield return StartCoroutine(LightAttackCharge());
+			yield return StartCoroutine(LightAttackAttack());
+			yield return StartCoroutine(LightAttackRecovery());
+			currentWeapon.IsAttacking = false;
+
+			yield return null;
+
+		}
+
+		IEnumerator LightAttackCharge()
+		{
+			currentWeapon.CurrentAttackState = AttackState.charge;
+			float t = 0;
+			float t01 = 0;
+			Vector3 moveOffset = Vector3.zero;
+			PManager.PAnimation.SetChargeStarted(currentWeapon.GetActionDuration());
+
+			while (currentWeapon.CurrentAttackType == AttackType.lightAttack && currentWeapon.IsAttacking && t < currentWeapon.GetActionDuration())
+			{
+				
+				yield return null;
+			}
+
+		}
+		IEnumerator LightAttackAttack()
+		{
+			currentWeapon.CurrentAttackState = AttackState.attack;
 			float t = 0;
 			float t01 = 0;
 			Vector3 moveOffset = Vector3.zero;
@@ -379,7 +395,7 @@ namespace Dungeon.Player
 				moveDirection = PManager.PController.GetFlatMoveDirection(false);
 
 
-			while (isAttacking && t < currentWeapon.GetActionDuration())
+			while (currentWeapon.CurrentAttackType == AttackType.lightAttack && currentWeapon.IsAttacking && t < currentWeapon.GetActionDuration())
 			{
 				t01 = Mathf.Clamp01(t / currentWeapon.GetActionDuration());
 
@@ -391,11 +407,11 @@ namespace Dungeon.Player
 				else
 				{
 					if (currentWeapon.CanRotate(false))
-						moveDirection = PManager.PController.GetFlatMoveDirection(false); 
+						moveDirection = PManager.PController.GetFlatMoveDirection(false);
 				}
 
 				//PManager.PController.ExternalMove(moveDirection.normalized * currentWeapon.CurrentAttackMoveSpeed(t01) * Time.smoothDeltaTime);
-				
+
 				//TODO
 				//Movement along curve/smoothstep
 				//Decide if rotation allowed during attack and how fast
@@ -407,11 +423,14 @@ namespace Dungeon.Player
 
 			PManager.PAnimation.SetAttackCancelled();
 
-			isAttacking = false;
-			currentWeapon.IsCharging = false;
+		}
+		IEnumerator LightAttackRecovery()
+		{
+			currentWeapon.CurrentAttackState = AttackState.recovery;
 
 			yield return null;
 		}
+
 
 		#endregion
 
@@ -523,8 +542,8 @@ namespace Dungeon.Player
 		{
 			bool output = true;
 
-			output = isDodging ? false : output;
-			output = isStunned ? false : output;
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
 			if (currentWeapon)
 				output = currentWeapon.CanMove(Target != null) ? output : false;
 
@@ -535,10 +554,11 @@ namespace Dungeon.Player
 		{
 			bool output = true;
 
-			output = isDodging ? false : output;
-			output = isAttacking ? false : output;
-			output = isStunned ? false : output;
-			output = isBlocking ? false : output;
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
+			output = IsBlocking ? false : output;
+			if (currentWeapon)
+				output = currentWeapon.IsAttacking ? false : output;
 
 			return output;
 		}
@@ -547,8 +567,8 @@ namespace Dungeon.Player
 		{
 			bool output = true;
 
-			output = isDodging ? false : output;
-			output = isStunned ? false : output;
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
 
 			return output;
 		}
@@ -557,9 +577,10 @@ namespace Dungeon.Player
 		{
 			bool output = true;
 
-			output = isDodging ? false : output;
-			output = isAttacking ? false : output;
-			output = isStunned ? false : output;
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
+			if (currentWeapon)
+				output = currentWeapon.IsAttacking ? false : output;
 
 			return output;
 		}
@@ -567,8 +588,8 @@ namespace Dungeon.Player
 		{
 			bool output = true;
 
-			output = isDodging ? false : output;
-			output = isStunned ? false : output;
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
 			if (currentWeapon)
 				output = currentWeapon.CanRotate(Target != null) ? output : false;
 				
