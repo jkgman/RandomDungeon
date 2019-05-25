@@ -2092,6 +2092,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 253779982945200879, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: lightAttacks.Array.data[0].chargeDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 253779982945200879, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: lightAttacks.Array.data[0].attackDuration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 253779982945200879, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: lightAttacks.Array.data[0].recoveryDuration
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 253779982945200879, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: lightAttacks.Array.data[1].recoveryDuration
+      value: 0.7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
 --- !u!1001 &7496383071359217351

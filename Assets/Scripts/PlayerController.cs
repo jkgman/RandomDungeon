@@ -367,7 +367,6 @@ namespace Dungeon.Player
 			UpdateLookRotRaw();
 
 			transform.rotation = Quaternion.Slerp(transform.rotation, lookRotRaw, Time.deltaTime * rotationSpeed);
-			Debug.Log("lookrot is right: " + (Mathf.Approximately(transform.rotation.x, lookRotRaw.x) && Mathf.Approximately(transform.rotation.y, lookRotRaw.y) && Mathf.Approximately(transform.rotation.z, lookRotRaw.z)));
 			
 		}
 
@@ -429,13 +428,10 @@ namespace Dungeon.Player
 
 		void LateSetMovementVariables()
 		{
-			if (PManager.AllowMove())
-			{
-				if (currentMoveOffset.magnitude > 0)
-					lastNonZeroMoveDirection = currentMoveOffset.normalized;
-				else if (moveInputRaw.magnitude > 0)
-					lastNonZeroMoveDirection = GetTransformedInputDirection();
-			}
+			if (currentMoveOffset.magnitude > 0)
+				lastNonZeroMoveDirection = currentMoveOffset.normalized;
+			else if (moveInputRaw.magnitude > 0 && PManager.AllowMove())
+				lastNonZeroMoveDirection = GetTransformedInputDirection();
 		}
 
 
@@ -461,12 +457,30 @@ namespace Dungeon.Player
 				lookRotRaw = Quaternion.LookRotation(dir);
 			}
 		}
+		public void ExternalRotateToInputDirection(bool instant = false)
+		{
+			if (moveInputRaw.magnitude > 0)
+			{
+				Debug.Log("Should be updating rotation now");
+				var dir = GetTransformedInputDirection();
+				dir.y = 0;
 
+				if (instant)
+				{
+					lookRotRaw = Quaternion.LookRotation(dir);
+					transform.rotation = lookRotRaw;
+				}
+				else
+				{
+					lookRotRaw = Quaternion.LookRotation(dir);
+				}
+			}
+		}
 
 		#endregion
 
 		#region HandleInputs
-		
+
 
 
 		void ControlsSubscribe()

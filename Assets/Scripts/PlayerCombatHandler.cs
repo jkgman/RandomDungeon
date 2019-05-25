@@ -372,34 +372,33 @@ namespace Dungeon.Player
 				if (currentAttackCo != null)
 					StopCoroutine(currentAttackCo);
 
+
 				currentAttackCo = LightAttackRoutine();
 				StartCoroutine(currentAttackCo);
 			}
 		}
 
-		void SetAttackDurations(AttackType type)
+		void SetAttackDurations()
 		{
-			float charge = currentWeapon.GetChargeDuration(type);
-			float attack = currentWeapon.GetAttackDuration(type);
-			float recovery = currentWeapon.GetRecoveryDuration(type);
+			float charge = currentWeapon.GetChargeDuration();
+			float attack = currentWeapon.GetAttackDuration();
+			float recovery = currentWeapon.GetRecoveryDuration();
 
 			PManager.PAnimation.SetAttackDurations(charge, attack, recovery);
 		}
 
 		IEnumerator LightAttackRoutine()
 		{
-			currentWeapon.CurrentAttackType = AttackType.lightAttack;
-			currentWeapon.IsAttacking = true;
-			SetAttackDurations(currentWeapon.CurrentAttackType);
+			currentWeapon.StartAttacking(AttackType.lightAttack);
+			SetAttackDurations();
+
 			yield return null; //Wait for one frame because animator sucks ass (ignores booleans if setting durations in same frame)
 
 			yield return StartCoroutine(LightAttackCharge());
 			yield return StartCoroutine(LightAttackAttack());
 			yield return StartCoroutine(LightAttackRecovery());
 
-			currentWeapon.IsAttacking = false;
-
-			yield return null;
+			currentWeapon.EndAttacking();
 
 		}
 
@@ -424,7 +423,7 @@ namespace Dungeon.Player
 				PManager.PController.ExternalMove(moveDirection * moveOffset);
 
 				if (currentWeapon.CanRotate(Target != null))
-					PManager.PController.ExternalRotate(moveDirection, false);
+					PManager.PController.ExternalRotateToInputDirection();
 
 				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
 				t += Time.smoothDeltaTime;
@@ -458,7 +457,7 @@ namespace Dungeon.Player
 				PManager.PController.ExternalMove(transform.forward * moveOffset);
 
 				if (currentWeapon.CanRotate(Target != null))
-					PManager.PController.ExternalRotate(moveDirection, false);
+					PManager.PController.ExternalRotateToInputDirection();
 
 				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
 				t += Time.smoothDeltaTime;
@@ -494,7 +493,7 @@ namespace Dungeon.Player
 				PManager.PController.ExternalMove(transform.forward * moveOffset);
 
 				if (currentWeapon.CanRotate(Target != null))
-					PManager.PController.ExternalRotate(moveDirection, false);
+					PManager.PController.ExternalRotateToInputDirection();
 
 				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
 				t += Time.smoothDeltaTime;
@@ -516,7 +515,7 @@ namespace Dungeon.Player
 			else
 			{
 				if (currentWeapon.CanRotate(hasTarget: false))
-					output = PManager.PController.GetFlatMoveDirection(allowZero: false);
+					output = PManager.PController.GetTransformedInputDirection(allowZero: false);
 			}
 
 			return output;
@@ -659,6 +658,7 @@ namespace Dungeon.Player
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
+			output = currentWeapon.CanAttack(Target != null) ? output : false;
 
 			return output;
 		}
@@ -681,7 +681,7 @@ namespace Dungeon.Player
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			if (currentWeapon && currentWeapon.IsAttacking)
-				output = currentWeapon.CanRotate(Target != null) ? output : false;
+				output = false;
 				
 			return output;
 		}

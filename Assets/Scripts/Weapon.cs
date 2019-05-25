@@ -44,7 +44,19 @@ namespace Dungeon.Items
 		}
 
 		[System.Serializable]
-		private struct AllowedActions
+		private struct AllowedActionsGeneral
+		{
+			public bool allowAttackDuringCharge;
+			public bool allowAttackDuringAttack;
+			public bool allowAttackDuringRecovery;
+			public bool allowComboDuringCharge;
+			public bool allowComboDuringAttack;
+			public bool allowComboDuringRecovery;
+
+		}
+
+		[System.Serializable]
+		private struct AllowedActionsSpecific
 		{
 			public bool rotatableDuringCharge;
 			public bool rotatableDuringAttack;
@@ -61,27 +73,26 @@ namespace Dungeon.Items
 		[SerializeField] private float stackInterval;
 		[SerializeField] private List<AttackData> lightAttacks = new List<AttackData>();
 		[SerializeField] private List<AttackData> heavyAttacks = new List<AttackData>();
-		[SerializeField] private AllowedActions actionsDuringTargeting;
-		[SerializeField] private AllowedActions actionsDuringFree;
 
-		private AttackType _currentAttackType;
-		private AttackState _currentAttackState;
-		private int attackIndex = 0;
+		[SerializeField] private AllowedActionsSpecific actionsDuringTargeting;
+		[SerializeField] private AllowedActionsSpecific actionsDuringFree;
+		[SerializeField] private AllowedActionsGeneral actionsGeneral;
+
 
 		public float CurrentMoveDistance(float evaluationTime)
 		{
-			switch (_currentAttackType)
+			switch (CurrentAttackType)
 			{
 				case AttackType.lightAttack:
 				{
-					switch (_currentAttackState)
+					switch (CurrentAttackState)
 					{
 						case AttackState.charge:
-							return lightAttacks[attackIndex].chargeMoveCurve.Evaluate(evaluationTime);
+							return lightAttacks[CurrentAttackIndex].chargeMoveCurve.Evaluate(evaluationTime);
 						case AttackState.attack:
-							return lightAttacks[attackIndex].attackMoveCurve.Evaluate(evaluationTime);
+							return lightAttacks[CurrentAttackIndex].attackMoveCurve.Evaluate(evaluationTime);
 						case AttackState.recovery:
-							return lightAttacks[attackIndex].recoveryMoveCurve.Evaluate(evaluationTime);
+							return lightAttacks[CurrentAttackIndex].recoveryMoveCurve.Evaluate(evaluationTime);
 						default:
 							return 0;
 					}
@@ -90,14 +101,14 @@ namespace Dungeon.Items
 
 				case AttackType.heavyAttack:
 				{
-					switch (_currentAttackState)
+					switch (CurrentAttackState)
 					{
 						case AttackState.charge:
-							return heavyAttacks[attackIndex].chargeMoveCurve.Evaluate(evaluationTime);
+							return heavyAttacks[CurrentAttackIndex].chargeMoveCurve.Evaluate(evaluationTime);
 						case AttackState.attack:
-							return heavyAttacks[attackIndex].attackMoveCurve.Evaluate(evaluationTime);
+							return heavyAttacks[CurrentAttackIndex].attackMoveCurve.Evaluate(evaluationTime);
 						case AttackState.recovery:
-							return heavyAttacks[attackIndex].recoveryMoveCurve.Evaluate(evaluationTime);
+							return heavyAttacks[CurrentAttackIndex].recoveryMoveCurve.Evaluate(evaluationTime);
 						default:
 							return 0;
 					}
@@ -109,7 +120,7 @@ namespace Dungeon.Items
 
 		public bool CanRotate(bool hasTarget)
 		{
-			switch (_currentAttackState)
+			switch (CurrentAttackState)
 			{
 				case AttackState.charge:
 					if (hasTarget)
@@ -137,7 +148,7 @@ namespace Dungeon.Items
 
 		public bool CanMove(bool hasTarget)
 		{
-			switch (_currentAttackState)
+			switch (CurrentAttackState)
 			{
 				case AttackState.charge:
 					if (hasTarget)
@@ -161,46 +172,74 @@ namespace Dungeon.Items
 			}
 		}
 
+		public bool CanAttack(bool hasTarget)
+		{
+			if (IsAttacking)
+			{
+				switch (CurrentAttackState)
+			{
+				case AttackState.charge:
+					return hasTarget ? actionsGeneral.allowAttackDuringCharge : actionsGeneral.allowAttackDuringCharge;
+					
+				case AttackState.attack:
+					return hasTarget ? actionsGeneral.allowAttackDuringAttack : actionsGeneral.allowAttackDuringAttack;
+					
+				case AttackState.recovery:
+					return hasTarget ? actionsGeneral.allowAttackDuringRecovery : actionsGeneral.allowAttackDuringRecovery;
+					
+				default:
+					return true;
+			}
+			}
+			else
+			{
+				return true;
+			}
+		}
+
 		public AttackType CurrentAttackType
 		{
-			get{ return _currentAttackType; }
-			set{ _currentAttackType = value; }
+			get;
+			set;
 		}
 		public AttackState CurrentAttackState
 		{
-			get { return _currentAttackState; }
-			set { _currentAttackState = value; }
+			get;
+			set;
 		}
-
-		public bool IsAttacking
+		public int CurrentAttackIndex
 		{
 			get;
 			set;
 		}
 
-		//public Player.AttackAnimationData GetAttackAnimationData(AttackType attackType, AttackState attackState)
-		//{
-		//	AnimationClip clip;
-		//	switch (attackType)
-		//	{
-		//		case AttackType.lightAttack:
-		//			clip = lightAttacks
-		//	}
-		//	Player.AttackAnimationData newData = new Player.AttackAnimationData()
-		//	{
-						
-		//	}
-		//}
+		public bool IsAttacking
+		{
+			get;
+			private set;
+		}
+
+		public void StartAttacking(AttackType type)
+		{
+			CurrentAttackType = type;
+			CurrentAttackIndex = CanCombo() && IsAttacking ? CurrentAttackIndex + 1 : 0;
+			IsAttacking = true;
+		}
+
+		public void EndAttacking()
+		{
+			IsAttacking = false;
+		}
 
 		public float GetCurrentDamage()
 		{
-			switch (_currentAttackType)
+			switch (CurrentAttackType)
 			{
 				case AttackType.lightAttack:
-					return lightAttacks[attackIndex].attackDamage;
+					return lightAttacks[CurrentAttackIndex].attackDamage;
 
 				case AttackType.heavyAttack:
-					return heavyAttacks[attackIndex].attackDamage;
+					return heavyAttacks[CurrentAttackIndex].attackDamage;
 
 				default:
 					return 0;
@@ -209,18 +248,18 @@ namespace Dungeon.Items
 
 		public float GetCurrentActionDuration()
 		{
-			switch (_currentAttackType)
+			switch (CurrentAttackType)
 			{
 				case AttackType.lightAttack:
 				{
-					switch (_currentAttackState)
+					switch (CurrentAttackState)
 					{
 						case AttackState.charge:
-							return lightAttacks[attackIndex].chargeDuration;
+							return lightAttacks[CurrentAttackIndex].chargeDuration;
 						case AttackState.attack:
-							return lightAttacks[attackIndex].attackDuration;
+							return lightAttacks[CurrentAttackIndex].attackDuration;
 						case AttackState.recovery:
-							return lightAttacks[attackIndex].recoveryDuration;
+							return lightAttacks[CurrentAttackIndex].recoveryDuration;
 						default:
 							return 0;
 					}
@@ -229,14 +268,14 @@ namespace Dungeon.Items
 
 				case AttackType.heavyAttack:
 				{
-					switch (_currentAttackState)
+					switch (CurrentAttackState)
 					{
 						case AttackState.charge:
-							return heavyAttacks[attackIndex].chargeDuration;
+							return heavyAttacks[CurrentAttackIndex].chargeDuration;
 						case AttackState.attack:
-							return heavyAttacks[attackIndex].attackDuration;
+							return heavyAttacks[CurrentAttackIndex].attackDuration;
 						case AttackState.recovery:
-							return heavyAttacks[attackIndex].recoveryDuration;
+							return heavyAttacks[CurrentAttackIndex].recoveryDuration;
 						default:
 							return 0;
 					}
@@ -247,43 +286,72 @@ namespace Dungeon.Items
 			}
 		}
 
-		public float GetChargeDuration(AttackType type, int index = 0)
+		public float GetChargeDuration()
 		{
-			switch (type)
+			switch (CurrentAttackType)
 			{
 				case AttackType.lightAttack:
-					return lightAttacks[index].chargeDuration;
+					return lightAttacks[CurrentAttackIndex].chargeDuration;
 				case AttackType.heavyAttack:
-					return heavyAttacks[index].chargeDuration;
+					return heavyAttacks[CurrentAttackIndex].chargeDuration;
 				default:
 					return 0;
 			}
 		}
-		public float GetAttackDuration(AttackType type, int index = 0)
+		public float GetAttackDuration()
 		{
-			switch (type)
+			switch (CurrentAttackType)
 			{
 				case AttackType.lightAttack:
-					return lightAttacks[index].attackDuration;
+					return lightAttacks[CurrentAttackIndex].attackDuration;
 				case AttackType.heavyAttack:
-					return heavyAttacks[index].attackDuration;
+					return heavyAttacks[CurrentAttackIndex].attackDuration;
 				default:
 					return 0;
 			}
 		}
-		public float GetRecoveryDuration(AttackType type, int index = 0)
+		public float GetRecoveryDuration()
 		{
-			switch (type)
+			switch (CurrentAttackType)
 			{
 				case AttackType.lightAttack:
-					return lightAttacks[index].recoveryDuration;
+					return lightAttacks[CurrentAttackIndex].recoveryDuration;
 				case AttackType.heavyAttack:
-					return heavyAttacks[index].recoveryDuration;
+					return heavyAttacks[CurrentAttackIndex].recoveryDuration;
 				default:
 					return 0;
 			}
 		}
-		void OnTriggerEnter(Collider other)
+
+		private bool CanCombo()
+		{
+			bool rightTiming = false; //check against current allowed actions.
+			bool hasCombo = false; // check if attacktype has more attacks on list.
+
+			if (CurrentAttackType == AttackType.lightAttack)
+				hasCombo = CurrentAttackIndex < lightAttacks.Count - 1;
+			if (CurrentAttackType == AttackType.heavyAttack)
+				hasCombo = CurrentAttackIndex < heavyAttacks.Count - 1;
+
+			switch (CurrentAttackState)
+			{
+				case AttackState.charge:
+					rightTiming = actionsGeneral.allowComboDuringCharge;
+					break;
+				case AttackState.attack:
+					rightTiming = actionsGeneral.allowComboDuringAttack;
+					break;
+				case AttackState.recovery:
+					rightTiming = actionsGeneral.allowComboDuringRecovery;
+					break;
+				default:
+					break;
+			}
+
+			return rightTiming && hasCombo;
+		}
+
+		private void OnTriggerEnter(Collider other)
 		{
 			if (!IsAttacking)
 				return;
