@@ -221,44 +221,59 @@ namespace Dungeon.Player
 			currentRecoveryClipName = data.recoveryClip.name;
 		}
 
-		public void SetChargeStarted(float duration)
+		public void SetAttackDurations(float chargeDuration, float attackDuration, float recoveryDuration)
 		{
-			Animator.SetBool("isCharging", true);
-
-			float d = duration;
-
 			if (chargeState)
 			{
 				Motion motion = chargeState.motion;
 				float currentDuration = motion.averageDuration;
 
-				if (d > 0)
-					chargeState.speed = currentDuration / d;
+				if (chargeDuration > 0)
+					chargeState.speed = currentDuration / chargeDuration;
 				else
 					chargeState.speed = ANIM_DEFAULT_SPEED;
 			}
-		}
-		public void SetChargeCancelled()
-		{
-			Animator.SetBool("isCharging", false);
-		}
-
-		public void SetAttackStarted(float duration = -1f)
-		{
-			Animator.SetBool("isAttacking", true);
-
-			float d = duration;
 
 			if (attackState)
 			{
 				Motion motion = attackState.motion;
 				float currentDuration = motion.averageDuration;
 
-				if (d > 0)
-					attackState.speed = currentDuration / d;
+				if (attackDuration > 0)
+					attackState.speed = currentDuration / attackDuration;
 				else
 					attackState.speed = ANIM_DEFAULT_SPEED;
 			}
+
+			if (recoveryState)
+			{
+				Motion motion = recoveryState.motion;
+				float currentDuration = motion.averageDuration;
+
+				if (recoveryDuration > 0)
+					recoveryState.speed = currentDuration / recoveryDuration;
+				else
+					recoveryState.speed = ANIM_DEFAULT_SPEED;
+			}
+		}
+
+		public void SetChargeStarted()
+		{
+			Animator.SetBool("isAttacking", false);
+			Animator.SetBool("isRecovering", false);
+			Animator.SetBool("isCharging", true);
+
+		}
+		public void SetChargeCancelled()
+		{
+			Animator.SetBool("isCharging", false);
+		}
+
+		public void SetAttackStarted()
+		{
+			Animator.SetBool("isCharging", false);
+			Animator.SetBool("isRecovering", false);
+			Animator.SetBool("isAttacking", true);
 
 		}
 		public void SetAttackCancelled()
@@ -266,22 +281,13 @@ namespace Dungeon.Player
 			Animator.SetBool("isAttacking", false);
 		}
 
-		public void SetRecoveryStarted(float duration = -1f)
+		public void SetRecoveryStarted()
 		{
+	
+			Animator.SetBool("isCharging", false);
+			Animator.SetBool("isAttacking", false);
 			Animator.SetBool("isRecovering", true);
 
-			float d = duration;
-
-			if (recoveryState)
-			{
-				Motion motion = recoveryState.motion;
-				float currentDuration = motion.averageDuration;
-
-				if (d > 0)
-					recoveryState.speed = currentDuration / d;
-				else
-					recoveryState.speed = ANIM_DEFAULT_SPEED;
-			}
 
 		}
 		public void SetRecoveryCancelled()

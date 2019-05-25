@@ -32,7 +32,7 @@ namespace Dungeon.Player
 		private Vector3 lastNonZeroMoveDirection = Vector3.forward;
 
 		bool lookRotFromInput = true;
-		private Vector3 lookDirRaw = Vector3.forward;
+		private Quaternion lookRotRaw = Quaternion.identity;
 
 		private Vector3 currentMoveOffset;
 		private float vSpeed = 0;
@@ -364,37 +364,35 @@ namespace Dungeon.Player
 
 		void Rotate()
 		{
-			UpdateLookDirRaw();
+			UpdateLookRotRaw();
 
-			if (PManager.AllowRotate())
-			{
-				if (PManager.PCombat.Target)
-				{
-					var lookpos = PManager.PCombat.Target.transform.position - transform.position;
-					lookpos.y = 0;
-					var rot = Quaternion.LookRotation(lookpos);
-					transform.rotation = Quaternion.Slerp(transform.rotation, rot, Time.deltaTime * rotationSpeed);
-				}
-				else
-				{
-					transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDirRaw), Time.deltaTime * rotationSpeed);
-
-				}
-			}
+			transform.rotation = Quaternion.Slerp(transform.rotation, lookRotRaw, Time.deltaTime * rotationSpeed);
+			Debug.Log("lookrot is right: " + (Mathf.Approximately(transform.rotation.x, lookRotRaw.x) && Mathf.Approximately(transform.rotation.y, lookRotRaw.y) && Mathf.Approximately(transform.rotation.z, lookRotRaw.z)));
+			
 		}
 
-		private void UpdateLookDirRaw()
+		private void UpdateLookRotRaw()
 		{
 			if (PManager.AllowRotate() && GetTransformedInputDirection().magnitude > 0)
 				lookRotFromInput = true;
 
 			if (PManager.AllowRotate() && lookRotFromInput)
 			{
-				lookDirRaw = GetTransformedInputDirection(false);
+				if (PManager.PCombat.Target)
+				{
+					var lookpos = PManager.PCombat.Target.transform.position - transform.position;
+					lookpos.y = 0;
+					lookRotRaw = Quaternion.LookRotation(lookpos);
+				}
+				else
+				{
+					var lookpos = GetFlatMoveDirection(allowZero: false);
+					lookpos.y = 0;
+					lookRotRaw = Quaternion.LookRotation(lookpos);
+				}
 			}
 			else
 			{
-				lookDirRaw = transform.forward;
 				lookRotFromInput = false;
 			}
 
@@ -450,15 +448,17 @@ namespace Dungeon.Player
 		}
 		public void ExternalRotate(Vector3 lookDirection, bool instant = false)
 		{
-			lookDirection.y = 0;
+			var dir = lookDirection;
+			dir.y = 0;
 
 			if (instant)
 			{
-				transform.rotation = Quaternion.LookRotation(lookDirection);	
+				lookRotRaw = Quaternion.LookRotation(dir);
+				transform.rotation = lookRotRaw;
 			}
 			else
 			{
-				
+				lookRotRaw = Quaternion.LookRotation(dir);
 			}
 		}
 

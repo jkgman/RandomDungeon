@@ -207,7 +207,7 @@ namespace Dungeon.Items
 			}
 		}
 
-		public float GetActionDuration()
+		public float GetCurrentActionDuration()
 		{
 			switch (_currentAttackType)
 			{
@@ -242,10 +242,47 @@ namespace Dungeon.Items
 					}
 				}
 				default:
-				return 0;
+					Debug.LogWarning("Action duration not known, set to 0");
+					return 0;
 			}
 		}
 
+		public float GetChargeDuration(AttackType type, int index = 0)
+		{
+			switch (type)
+			{
+				case AttackType.lightAttack:
+					return lightAttacks[index].chargeDuration;
+				case AttackType.heavyAttack:
+					return heavyAttacks[index].chargeDuration;
+				default:
+					return 0;
+			}
+		}
+		public float GetAttackDuration(AttackType type, int index = 0)
+		{
+			switch (type)
+			{
+				case AttackType.lightAttack:
+					return lightAttacks[index].attackDuration;
+				case AttackType.heavyAttack:
+					return heavyAttacks[index].attackDuration;
+				default:
+					return 0;
+			}
+		}
+		public float GetRecoveryDuration(AttackType type, int index = 0)
+		{
+			switch (type)
+			{
+				case AttackType.lightAttack:
+					return lightAttacks[index].recoveryDuration;
+				case AttackType.heavyAttack:
+					return heavyAttacks[index].recoveryDuration;
+				default:
+					return 0;
+			}
+		}
 		void OnTriggerEnter(Collider other)
 		{
 			if (!IsAttacking)

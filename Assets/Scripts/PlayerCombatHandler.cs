@@ -28,6 +28,7 @@ namespace Dungeon.Player
 		[SerializeField] private Transform rightHand;
 		[SerializeField] private Transform leftHand;
 		[SerializeField] private Items.Weapon currentWeapon;
+		private IEnumerator currentAttackCo;
 
 		[Header("Dodge shit")]
 		[SerializeField] private float dodgeDistance = 3f;
@@ -139,6 +140,7 @@ namespace Dungeon.Player
 				return -PManager.PController.GetFlatMoveDirection();
 			}
 		}
+
 		#endregion
 
 		#region Events
@@ -154,6 +156,28 @@ namespace Dungeon.Player
 		void Update() 
 		{
 			UpdateTarget();
+			UpdateDebug();
+		}
+
+		void UpdateDebug()
+		{
+			if (currentWeapon && PlayerDebugCanvas.Instance)
+			{
+				if (currentWeapon.IsAttacking)
+				{
+					if (currentWeapon.CurrentAttackState == AttackState.charge)
+						PlayerDebugCanvas.Instance.SetDebugText("Charge");
+					if (currentWeapon.CurrentAttackState == AttackState.attack)
+						PlayerDebugCanvas.Instance.SetDebugText("Attack");
+					if (currentWeapon.CurrentAttackState == AttackState.recovery)
+						PlayerDebugCanvas.Instance.SetDebugText("Recovery");
+				}
+				else
+				{
+
+					PlayerDebugCanvas.Instance.SetDebugText("Idle");
+				}
+			}
 		}
 
 		#region Targeting
@@ -341,22 +365,38 @@ namespace Dungeon.Player
 			yield return null;
 		}
 
-
 		void Attack()
 		{
 			if (PManager.AllowAttack())
 			{
-				StartCoroutine(LightAttackRoutine());
+				if (currentAttackCo != null)
+					StopCoroutine(currentAttackCo);
+
+				currentAttackCo = LightAttackRoutine();
+				StartCoroutine(currentAttackCo);
 			}
+		}
+
+		void SetAttackDurations(AttackType type)
+		{
+			float charge = currentWeapon.GetChargeDuration(type);
+			float attack = currentWeapon.GetAttackDuration(type);
+			float recovery = currentWeapon.GetRecoveryDuration(type);
+
+			PManager.PAnimation.SetAttackDurations(charge, attack, recovery);
 		}
 
 		IEnumerator LightAttackRoutine()
 		{
 			currentWeapon.CurrentAttackType = AttackType.lightAttack;
 			currentWeapon.IsAttacking = true;
+			SetAttackDurations(currentWeapon.CurrentAttackType);
+			yield return null; //Wait for one frame because animator sucks ass (ignores booleans if setting durations in same frame)
+
 			yield return StartCoroutine(LightAttackCharge());
 			yield return StartCoroutine(LightAttackAttack());
 			yield return StartCoroutine(LightAttackRecovery());
+
 			currentWeapon.IsAttacking = false;
 
 			yield return null;
@@ -366,71 +406,121 @@ namespace Dungeon.Player
 		IEnumerator LightAttackCharge()
 		{
 			currentWeapon.CurrentAttackState = AttackState.charge;
+			PManager.PAnimation.SetChargeStarted();
+
 			float t = 0;
 			float t01 = 0;
-			Vector3 moveOffset = Vector3.zero;
-			PManager.PAnimation.SetChargeStarted(currentWeapon.GetActionDuration());
+			float moveOffset = 0;
+			float offsetTotal = 0;
+			Vector3 moveDirection = PManager.PController.GetFlatMoveDirection(allowZero: false);
 
-			while (currentWeapon.CurrentAttackType == AttackType.lightAttack && currentWeapon.IsAttacking && t < currentWeapon.GetActionDuration())
+			while (	currentWeapon.IsAttacking && 
+					currentWeapon.CurrentAttackType == AttackType.lightAttack && 
+					t < currentWeapon.GetCurrentActionDuration())
 			{
-				
+				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
+				moveDirection = UpdateAttackMoveDirection(moveDirection);
+				PManager.PController.ExternalMove(moveDirection * moveOffset);
+
+				if (currentWeapon.CanRotate(Target != null))
+					PManager.PController.ExternalRotate(moveDirection, false);
+
+				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
+				t += Time.smoothDeltaTime;
 				yield return null;
 			}
+			
+			PManager.PAnimation.SetChargeCancelled();
 
 		}
 		IEnumerator LightAttackAttack()
 		{
 			currentWeapon.CurrentAttackState = AttackState.attack;
+			PManager.PAnimation.SetAttackStarted();
+			
 			float t = 0;
 			float t01 = 0;
-			Vector3 moveOffset = Vector3.zero;
+			float moveOffset = 0;
+			float offsetTotal = 0;
 
-			PManager.PAnimation.SetAttackStarted(currentWeapon.GetActionDuration());
+			Vector3 moveDirection = PManager.PController.GetFlatMoveDirection(allowZero: false);
 
-
-			Vector3 moveDirection = transform.forward;
-			if (Target)
-				moveDirection = GetFlatDirectionToTarget();
-			else
-				moveDirection = PManager.PController.GetFlatMoveDirection(false);
-
-
-			while (currentWeapon.CurrentAttackType == AttackType.lightAttack && currentWeapon.IsAttacking && t < currentWeapon.GetActionDuration())
+			while (	currentWeapon.IsAttacking &&
+					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
+					t < currentWeapon.GetCurrentActionDuration())
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetActionDuration());
+				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				moveDirection = UpdateAttackMoveDirection(moveDirection);
 
-				if (Target)
-				{
-					if (currentWeapon.CanRotate(true))
-						moveDirection = GetFlatDirectionToTarget();
-				}
-				else
-				{
-					if (currentWeapon.CanRotate(false))
-						moveDirection = PManager.PController.GetFlatMoveDirection(false);
-				}
+				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
+				PManager.PController.ExternalMove(transform.forward * moveOffset);
 
-				//PManager.PController.ExternalMove(moveDirection.normalized * currentWeapon.CurrentAttackMoveSpeed(t01) * Time.smoothDeltaTime);
+				if (currentWeapon.CanRotate(Target != null))
+					PManager.PController.ExternalRotate(moveDirection, false);
 
-				//TODO
-				//Movement along curve/smoothstep
-				//Decide if rotation allowed during attack and how fast
-				//Decide if movement allowed at any point of attack (and implement)
-
+				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
 				t += Time.smoothDeltaTime;
 				yield return null;
 			}
-
+			
 			PManager.PAnimation.SetAttackCancelled();
 
 		}
 		IEnumerator LightAttackRecovery()
 		{
 			currentWeapon.CurrentAttackState = AttackState.recovery;
+			PManager.PAnimation.SetRecoveryStarted();
 
-			yield return null;
+			float t = 0;
+			float t01 = 0;
+			float moveOffset = 0;
+			float offsetTotal = 0;
+
+			Vector3 moveDirection = PManager.PController.GetFlatMoveDirection(allowZero: false);
+
+
+			while (	currentWeapon.IsAttacking &&
+					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
+					t < currentWeapon.GetCurrentActionDuration())
+			{
+				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+
+				moveDirection = UpdateAttackMoveDirection(moveDirection);
+
+				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
+				PManager.PController.ExternalMove(transform.forward * moveOffset);
+
+				if (currentWeapon.CanRotate(Target != null))
+					PManager.PController.ExternalRotate(moveDirection, false);
+
+				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
+				t += Time.smoothDeltaTime;
+				yield return null;
+			}
+			
+			PManager.PAnimation.SetRecoveryCancelled();
 		}
 
+		Vector3 UpdateAttackMoveDirection(Vector3 current)
+		{
+			Vector3 output = current;
+
+			if (Target)
+			{
+				if (currentWeapon.CanRotate(hasTarget: true))
+					output = GetFlatDirectionToTarget();
+			}
+			else
+			{
+				if (currentWeapon.CanRotate(hasTarget: false))
+					output = PManager.PController.GetFlatMoveDirection(allowZero: false);
+			}
+
+			return output;
+		}
 
 		#endregion
 
@@ -544,7 +634,7 @@ namespace Dungeon.Player
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (currentWeapon)
+			if (currentWeapon && currentWeapon.IsAttacking)
 				output = currentWeapon.CanMove(Target != null) ? output : false;
 
 			return output;
@@ -557,8 +647,8 @@ namespace Dungeon.Player
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = IsBlocking ? false : output;
-			if (currentWeapon)
-				output = currentWeapon.IsAttacking ? false : output;
+			if (currentWeapon && currentWeapon.IsAttacking)
+				output = currentWeapon.CanMove(Target != null) ? false : output;
 
 			return output;
 		}
@@ -590,7 +680,7 @@ namespace Dungeon.Player
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (currentWeapon)
+			if (currentWeapon && currentWeapon.IsAttacking)
 				output = currentWeapon.CanRotate(Target != null) ? output : false;
 				
 			return output;

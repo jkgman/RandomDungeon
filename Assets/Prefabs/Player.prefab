@@ -18,7 +18,7 @@ MonoBehaviour:
   lightAttacks:
   - chargeDuration: 0.5
     attackDuration: 0.1
-    recoveryDuration: 0.3
+    recoveryDuration: 0.5
     attackDamage: 10
     chargeMoveCurve:
       serializedVersion: 2
@@ -58,12 +58,12 @@ MonoBehaviour:
         outWeight: 0.16666667
       - serializedVersion: 3
         time: 1
-        value: 0.51250076
-        inSlope: 0
-        outSlope: 0
+        value: 1
+        inSlope: 0.15820087
+        outSlope: 0.15820087
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0
+        inWeight: 0.19999999
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -73,21 +73,30 @@ MonoBehaviour:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.006248474
-        inSlope: 0
-        outSlope: 0
+        value: 0
+        inSlope: 0.6946218
+        outSlope: 0.6946218
         tangentMode: 34
         weightedMode: 0
         inWeight: 0
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1
-        value: 0.006248474
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 34
+        time: 0.5189253
+        value: 0.36045682
+        inSlope: -0.016576352
+        outSlope: -0.016576352
+        tangentMode: 0
         weightedMode: 0
-        inWeight: 0.33333334
+        inWeight: 0.48315033
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1.0041809
+        value: 0.010894775
+        inSlope: -0.000011482661
+        outSlope: -0.000011482661
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.26424867
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
