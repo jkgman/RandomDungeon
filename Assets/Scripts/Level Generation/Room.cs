@@ -7,6 +7,8 @@ public class Room : MonoBehaviour
     public float RoomRadius;
     public Vector3[] connectionPoints;
     public Room[] ConnectedRooms;
+    public bool hardPos = false;
+    public Node node;
 
     private void OnDrawGizmos()
     {

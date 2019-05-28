@@ -406,6 +406,7 @@ GameObject:
   m_Component:
   - component: {fileID: 615304287}
   - component: {fileID: 615304286}
+  - component: {fileID: 615304288}
   m_Layer: 0
   m_Name: LevelGen
   m_TagString: Untagged
@@ -425,21 +426,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97ebfd04e63b7ed4481a50b7003ea28c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arcAngle: 166
-  arcWidth: 63.6
-  arcRadius: 145.3
-  roomThresholds:
-  - {fileID: 3039573083186108089, guid: f2aab1d66f9561941ae26af85279d711, type: 3}
-  levelRooms:
-  - {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609, type: 3}
-  - {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780, type: 3}
-  - {fileID: 7251326221172780505, guid: c57dc610afb8bfe48b3ab17da378deae, type: 3}
-  testObj: {fileID: 1389884305894859634, guid: 705d66e4ccd92cf4e8278661de58c609, type: 3}
-  tower: {fileID: 9159231308846830610, guid: c33266e267c48d343826bfc569897873, type: 3}
-  roomSize: 15
-  rejectionSamples: 30
+  settings: {fileID: 11400000, guid: dae209cecbae31c4e934c9a18405a30f, type: 2}
   displayRadius: 7
   DrawOnlyInArc: 1
+  autoGenerate: 0
+  roomSize: 15
+  rejectionSamples: 30
+  gizmos: 0
 --- !u!4 &615304287
 Transform:
   m_ObjectHideFlags: 0
@@ -454,6 +447,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &615304288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 615304285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 186b597c9b28618498eef17fab682799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &816031542
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -752,7 +757,6 @@ MonoBehaviour:
     m_Bits: 4294967295
   volumeAnchorOverride: {fileID: 0}
   antialiasing: 0
-  SMAAQuality: 2
   dithering: 0
   stopNaNs: 0
   physicalParameters:
