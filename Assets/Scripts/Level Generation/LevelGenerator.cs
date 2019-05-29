@@ -67,7 +67,7 @@ public class LevelGenerator : MonoBehaviour
     }
     
     public void Generate(bool spawn) {
-        Debug.Log("generate");
+        //Debug.Log("generate");
         int startoffset = 2;
         Vector2[] startpoints = new Vector2[2];
         

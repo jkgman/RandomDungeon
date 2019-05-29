@@ -7,12 +7,19 @@ public class DelaunayTriangulation : MonoBehaviour
     List<Node[]> tris = new List<Node[]>();
     List<Node> nodes = new List<Node>();
     Node[] startingNodes = new Node[3];
+    public bool gizmos= false;
     private void Start()
     {
+        Debug.Log("Point: 0,0 vert: -1,0; 1,0; 0,1  "+ InCircle(new Vector2(0,0),new Vector2(-1,0),new Vector2(1,0),new Vector2(0,1)));
+        Debug.Log("Point: 1,0 vert: -1,0; 1,0; 0,1  "+ InCircle(new Vector2(1,0),new Vector2(-1,0),new Vector2(1,0),new Vector2(0,1)));
+        Debug.Log("Point: 1,1 vert: -1,0; 1,0; 0,1  "+ InCircle(new Vector2(1,1),new Vector2(-1,0),new Vector2(1,0),new Vector2(0,1)));
+        Debug.Log("Point: 0,0 vert: -1,0; 0,1; 1,0  "+ InCircle(new Vector2(0,0),new Vector2(0,0),new Vector2(0,1),new Vector2(1,0)));
+
         //List<Node> nodes = new List<Node>();
         //nodes.Add(new Node(new Vector2(1,1)));
         //GenerateGraph(nodes,0,2,0,2);
     }
+    
     public void GenerateGraph(List<Node> startingNodes, float minX, float maxX, float minY, float maxY) {
         nodes = startingNodes;
         EncapsulateRectangle(minX, maxX, minY, maxY);
@@ -34,15 +41,14 @@ public class DelaunayTriangulation : MonoBehaviour
             {
                 if (tris[i][j].Pos2D == this.startingNodes[0].Pos2D || tris[i][j].Pos2D == this.startingNodes[1].Pos2D || tris[i][j].Pos2D == this.startingNodes[2].Pos2D)
                 {
-                    Debug.Log("remove");
+                    //Debug.Log("remove");
                     tris.RemoveAt(i);
                     break;
                 }
             }
         }
     }
-    void EncapsulateRectangle(float minX, float maxX, float minY, float maxY)
-    {
+    void EncapsulateRectangle(float minX, float maxX, float minY, float maxY){
         float tan = Mathf.Tan(45 * Mathf.Deg2Rad);
         float width = maxX - minX;
         float height = maxY - minY;
@@ -90,15 +96,95 @@ public class DelaunayTriangulation : MonoBehaviour
         tris.Add(new Node[] { currentTri[2], currentTri[0], point });
     }
 
-    private void OnDrawGizmos()
-    {
-        Debug.Log(tris.Count);
-        for (int i = 0; i < tris.Count; i++)
+    bool InCircle(Vector2 point, Vector2 vertA, Vector2 vertB, Vector2 vertC) {
+
+        bool undefinedAB = false, undefinedBC = false;
+
+        float xDist = vertB.x - vertA.x;
+        float yDist = vertB.y - vertA.y;
+        Vector2 centerAB = vertA + new Vector2(xDist/2,yDist/2);
+
+        float slopeAB, perpSlopeAB = 0, perpInterceptAB = 0;
+        //AB is undefined
+        if ((vertB.x - vertA.x) == 0)
         {
-            Gizmos.DrawLine(tris[i][0].Pos3D, tris[i][1].Pos3D);
-            Gizmos.DrawLine(tris[i][1].Pos3D, tris[i][2].Pos3D);
-            Gizmos.DrawLine(tris[i][2].Pos3D, tris[i][0].Pos3D);
+            perpSlopeAB = 0;
         }
+        else
+        {
+            slopeAB = (vertB.y - vertA.y) / (vertB.x - vertA.x);
+            //perpSlopeAB is undefned
+            if (slopeAB == 0)
+            {
+                undefinedAB = true;
+            }
+            else
+            {
+                perpSlopeAB = -1 / slopeAB;
+                perpInterceptAB = centerAB.y - (perpSlopeAB * centerAB.x);
+            }
+        }
+        
+
+        xDist = vertC.x - vertB.x;
+        yDist = vertC.y - vertB.y;
+        Vector2 centerBC = vertB + new Vector2(xDist/2,yDist/2);
+
+        float slopeBC, perpSlopeBC = 0, perpInterceptBC = 0;
+        //BC is undefined
+        if ((vertC.x - vertB.x) == 0)
+        {
+            perpSlopeBC = 0;
+        }
+        else
+        {
+            slopeBC = (vertC.y - vertB.y) / (vertC.x - vertB.x);
+            //perpSlopeBC is undefned
+            if (slopeBC == 0)
+            {
+                undefinedBC = true;
+
+            }
+            else
+            {
+                perpSlopeBC = -1 / slopeBC;
+                perpInterceptBC = centerBC.y - (perpSlopeBC * centerBC.x);
+            }
+        }
+        
+        float xIntercept, yIntercept;
+        if(undefinedAB){
+            xIntercept = centerAB.x;
+            yIntercept = perpSlopeBC * xIntercept + perpInterceptBC;
+        }else if(undefinedBC){
+            xIntercept = centerBC.x;
+            yIntercept = perpSlopeAB * xIntercept + perpInterceptAB;
+        }else{
+            xIntercept = (perpInterceptBC - perpInterceptAB) / (perpSlopeAB - perpSlopeBC);
+            yIntercept = perpSlopeAB * xIntercept + perpInterceptAB;
+        }
+        
+        Vector2 circleCenter = new Vector2(xIntercept, yIntercept);
+        if ((circleCenter - point).magnitude <= (circleCenter - vertA).magnitude)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
+    private void OnDrawGizmos() {
+        if(gizmos){
+            for (int i = 0; i < tris.Count; i++)
+            {
+                Gizmos.DrawLine(tris[i][0].Pos3D, tris[i][1].Pos3D);
+                Gizmos.DrawLine(tris[i][1].Pos3D, tris[i][2].Pos3D);
+                Gizmos.DrawLine(tris[i][2].Pos3D, tris[i][0].Pos3D);
+            }
+        }        
         
     }
 }
