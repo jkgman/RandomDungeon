@@ -10,10 +10,6 @@ public class DelaunayTriangulation : MonoBehaviour
     public bool gizmos= false;
     private void Start()
     {
-        Debug.Log("Point: 0,0 vert: -1,0; 1,0; 0,1  "+ InCircle(new Vector2(0,0),new Vector2(-1,0),new Vector2(1,0),new Vector2(0,1)));
-        Debug.Log("Point: 1,0 vert: -1,0; 1,0; 0,1  "+ InCircle(new Vector2(1,0),new Vector2(-1,0),new Vector2(1,0),new Vector2(0,1)));
-        Debug.Log("Point: 1,1 vert: -1,0; 1,0; 0,1  "+ InCircle(new Vector2(1,1),new Vector2(-1,0),new Vector2(1,0),new Vector2(0,1)));
-        Debug.Log("Point: 0,0 vert: -1,0; 0,1; 1,0  "+ InCircle(new Vector2(0,0),new Vector2(0,0),new Vector2(0,1),new Vector2(1,0)));
 
         //List<Node> nodes = new List<Node>();
         //nodes.Add(new Node(new Vector2(1,1)));
@@ -31,6 +27,9 @@ public class DelaunayTriangulation : MonoBehaviour
                 if (inTri)
                 {
                     SplitTri(nodes[i], tris[j]);
+                    //add tries abd, bcd, cad to triangulate
+                    //while triangulate.count > 0
+                        //checktriangulation triangulate(0)
                     break;
                 }
             }
@@ -47,6 +46,17 @@ public class DelaunayTriangulation : MonoBehaviour
                 }
             }
         }
+    }
+    void checkTriangulation(){
+        /* given tri abc
+        for points connected to a, if more than one also connect to b
+            incircle point c,and tri a, b, shared point that is not d(u for undefined)
+            if incircle
+                tris remove abu and acb
+                tris add acu and cbu
+                add triangulate some squares
+        remove triangulate(0)
+        */
     }
     void EncapsulateRectangle(float minX, float maxX, float minY, float maxY){
         float tan = Mathf.Tan(45 * Mathf.Deg2Rad);
