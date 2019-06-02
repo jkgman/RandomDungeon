@@ -1,0 +1,662 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class DelaunayTriangulation : MonoBehaviour
+{
+    List<Tri> tris = new List<Tri>();
+    List<Node> nodes = new List<Node>();
+
+    List<Tri> triangulate = new List<Tri>();
+
+    Node[] startingNodes = new Node[3];
+
+    public bool gizmos= false;
+
+
+    private void Start()
+    {
+        //nodes.Add(new Node(Vector2.zero));
+        //nodes.Add(new Node(Vector2.right));
+        //nodes.Add(new Node(Vector2.up));
+        //tris.Add(new Tri(nodes[0], nodes[1], nodes[2]));
+        //RemoveTri(tris[0]);
+        //Debug.Log(tris.Count);
+    }
+    
+    public void GenerateGraph(List<Node> startingNodes, float minX, float maxX, float minY, float maxY) {
+        nodes = startingNodes;
+        EncapsulateRectangle(minX, maxX, minY, maxY);
+        Debug.Log(tris.Count);
+        //for all nodes minus the 3 added starting nodes
+        for (int i = 0; i < nodes.Count-3; i++)
+        {
+            //for existing tris
+            for (int j = 0; j < tris.Count; j++)
+            {
+                if (tris[j].InTri(nodes[i]))
+                {
+                    Debug.Log("SplitTri");
+                    SplitTri(nodes[i], tris[j]);
+                    //triangulate.Add(tris[tris.Count - 1]);
+                    //triangulate.Add(tris[tris.Count - 2]);
+                    //triangulate.Add(tris[tris.Count - 3]);
+                    //while (triangulate.Count > 0)
+                    //{
+                    //    Triangulate(triangulate[triangulate.Count - 1]);
+                    //}
+                    //break;
+                }
+            }
+        }
+        Debug.Log(tris.Count);
+        //remove starting tris
+        for (int i = tris.Count - 1; i >= 0; i--)
+        {
+            if (tris[i].A.Pos2D == this.startingNodes[0].Pos2D || tris[i].A.Pos2D == this.startingNodes[1].Pos2D || tris[i].A.Pos2D == this.startingNodes[2].Pos2D)
+            {
+                tris.RemoveAt(i);
+
+            }else
+            if (tris[i].B.Pos2D == this.startingNodes[0].Pos2D || tris[i].B.Pos2D == this.startingNodes[1].Pos2D || tris[i].B.Pos2D == this.startingNodes[2].Pos2D)
+            {
+                tris.RemoveAt(i);
+
+            }else
+            if (tris[i].C.Pos2D == this.startingNodes[0].Pos2D || tris[i].C.Pos2D == this.startingNodes[1].Pos2D || tris[i].C.Pos2D == this.startingNodes[2].Pos2D)
+            {
+                tris.RemoveAt(i);
+
+            }
+            
+        }
+        Debug.Log(tris.Count);
+    }
+
+
+
+    /// <summary>
+    /// Adds nodes a, b, c and tri abc so that any point in between min max area would be inside
+    /// </summary>
+    /// <param name="minX"></param>
+    /// <param name="maxX"></param>
+    /// <param name="minY"></param>
+    /// <param name="maxY"></param>
+    void EncapsulateRectangle(float minX, float maxX, float minY, float maxY)
+    {
+        float tan = Mathf.Tan(45 * Mathf.Deg2Rad);
+        float width = maxX - minX;
+        float height = maxY - minY;
+        Vector2 apos = new Vector2(minX - 2, minY - 2);
+        Vector2 bpos = new Vector2(width + width * tan, minY);
+        Vector2 cpos = new Vector2(minX, height + height / tan);
+        Node a = new Node(apos);
+        Node b = new Node(bpos);
+        Node c = new Node(cpos);
+        startingNodes[0] = a;
+        startingNodes[1] = b;
+        startingNodes[2] = c;
+        nodes.Add(a);
+        nodes.Add(b);
+        nodes.Add(c);
+        tris.Add(new Tri(a, c, b));
+    }
+
+
+
+    /// <summary>
+    /// remove current tri ABC and add ABD, BCD, CAD
+    /// </summary>
+    /// <param name="point">Node D</param>
+    /// <param name="currentTri">Tri ABC</param>
+    void SplitTri(Node point, Tri currentTri)
+    {
+        
+        tris.Add(new Tri(currentTri.A, currentTri.B, point ));
+        tris.Add(new Tri(currentTri.B, currentTri.C, point ));
+        tris.Add(new Tri(currentTri.C, currentTri.A, point ));
+
+
+        //ABD
+        if (currentTri.hasABNeighbor)
+        {
+            tris[tris.Count - 3].hasABNeighbor = true;
+            tris[tris.Count - 3].ABNeighbor = currentTri.ABNeighbor;
+            if (currentTri.B == currentTri.ABNeighbor.A )
+            {
+                tris[tris.Count - 3].ABNeighborSide = Side.AB;
+            }
+            else if(currentTri.B == currentTri.ABNeighbor.B)
+            {
+                tris[tris.Count - 3].ABNeighborSide = Side.BC;
+            }
+            else if (currentTri.B == currentTri.ABNeighbor.C)
+            {
+                tris[tris.Count - 3].ABNeighborSide = Side.CA;
+            }
+        }
+
+        tris[tris.Count - 3].hasBCNeighbor = true;
+        tris[tris.Count - 3].BCNeighbor = tris[tris.Count - 2];
+        tris[tris.Count - 3].BCNeighborSide = Side.CA;
+
+        tris[tris.Count - 3].hasCANeighbor = true;
+        tris[tris.Count - 3].CANeighbor = tris[tris.Count - 1];
+        tris[tris.Count - 3].CANeighborSide = Side.BC;
+
+
+        //BCD
+        if (currentTri.hasBCNeighbor)
+        {
+            tris[tris.Count - 2].hasABNeighbor = true;
+            tris[tris.Count - 2].ABNeighbor = currentTri.BCNeighbor;           
+            if (currentTri.C == currentTri.ABNeighbor.A)
+            {
+                tris[tris.Count - 2].ABNeighborSide = Side.AB;
+            }
+            else if (currentTri.C == currentTri.ABNeighbor.B)
+            {
+                tris[tris.Count - 2].ABNeighborSide = Side.BC;
+            }
+            else if (currentTri.C == currentTri.ABNeighbor.C)
+            {
+                tris[tris.Count - 2].ABNeighborSide = Side.CA;
+            }
+        }
+        tris[tris.Count - 2].hasBCNeighbor = true;
+        tris[tris.Count - 2].BCNeighbor = tris[tris.Count - 1];
+        tris[tris.Count - 2].BCNeighborSide = Side.CA;
+
+        tris[tris.Count - 2].hasCANeighbor = true;
+        tris[tris.Count - 2].CANeighbor = tris[tris.Count - 3];
+        tris[tris.Count - 2].CANeighborSide = Side.BC;
+
+
+        //CAD
+        if (currentTri.hasCANeighbor)
+        {
+            tris[tris.Count - 1].ABNeighbor = currentTri.CANeighbor;
+            tris[tris.Count - 1].hasABNeighbor = true;
+            if (currentTri.A == currentTri.ABNeighbor.A)
+            {
+                tris[tris.Count - 1].ABNeighborSide = Side.AB;
+            }
+            else if (currentTri.A == currentTri.ABNeighbor.B)
+            {
+                tris[tris.Count - 1].ABNeighborSide = Side.BC;
+            }
+            else if (currentTri.A == currentTri.ABNeighbor.C)
+            {
+                tris[tris.Count - 1].ABNeighborSide = Side.CA;
+            }
+        }
+        tris[tris.Count - 1].hasBCNeighbor = true;
+        tris[tris.Count - 1].BCNeighbor = tris[tris.Count - 3];
+        tris[tris.Count - 1].BCNeighborSide = Side.CA;
+
+        tris[tris.Count - 1].hasCANeighbor = true;
+        tris[tris.Count - 1].CANeighbor = tris[tris.Count - 2];
+        tris[tris.Count - 1].CANeighborSide = Side.BC;
+
+        tris.Remove(currentTri.Remove());
+    }
+
+
+
+    bool Triangulate(Tri tri)
+    {
+        if (tri.hasABNeighbor)
+        {
+            Debug.Log("ABNEIGHBOR");
+            Node d = new Node(Vector2.zero);
+            if (tri.ABNeighbor.A != tri.A && tri.ABNeighbor.A != tri.B)
+            {
+                d = tri.ABNeighbor.A;
+            }
+            else if (tri.ABNeighbor.B != tri.A && tri.ABNeighbor.B != tri.B)
+            {
+                d = tri.ABNeighbor.B;
+
+            }
+            else if (tri.ABNeighbor.C != tri.A && tri.ABNeighbor.C != tri.B)
+            {
+                d = tri.ABNeighbor.C;
+            }
+
+            if (InCircle(d, tri))
+            {
+                Debug.Log("Flip Quad");
+                Tri adc = new Tri(tri.A, d, tri.C);
+                Tri bcd = new Tri(tri.B, tri.C, d);
+
+                tris.Add(adc);
+                tris.Add(bcd);
+                RemoveTri(tri);
+                RemoveTri(tri.ABNeighbor);
+                triangulate.Remove(tri.ABNeighbor);
+                triangulate.Remove(tri);
+                triangulate.Add(tris[tris.Count - 1]);
+                triangulate.Add(tris[tris.Count - 2]);
+                return true;
+            }
+        }
+        if (tri.hasBCNeighbor)
+        {
+            Debug.Log("BCNEIGHBOR");
+            Node d = new Node(Vector2.zero);
+            if (tri.BCNeighbor.A != tri.B && tri.BCNeighbor.A != tri.C)
+            {
+                d = tri.BCNeighbor.A;
+            }
+            else if (tri.BCNeighbor.B != tri.B && tri.BCNeighbor.B != tri.C)
+            {
+                d = tri.BCNeighbor.B;
+
+            }
+            else if (tri.BCNeighbor.C != tri.B && tri.BCNeighbor.C != tri.C)
+            {
+                d = tri.BCNeighbor.C;
+            }
+
+            if (InCircle(d, tri))
+            {
+                Debug.Log("Flip Quad");
+                Tri cad = new Tri(tri.C, tri.A, d);
+                Tri abd = new Tri(tri.A, tri.B, d);
+
+                tris.Add(cad);
+                tris.Add(abd);
+
+                RemoveTri(tri);
+                RemoveTri(tri.BCNeighbor);
+                triangulate.Remove(tri.BCNeighbor);
+                triangulate.Remove(tri);
+                triangulate.Add(tris[tris.Count - 1]);
+                triangulate.Add(tris[tris.Count - 2]);
+                return true;
+            }
+        }
+        if (tri.hasCANeighbor)
+        {
+            Debug.Log("CANEIGHBOR");
+            Node d = new Node(Vector2.zero);
+            if (tri.CANeighbor.A != tri.C && tri.CANeighbor.A != tri.A)
+            {
+                d = tri.CANeighbor.A;
+            }
+            else if (tri.CANeighbor.B != tri.C && tri.CANeighbor.B != tri.A)
+            {
+                d = tri.CANeighbor.B;
+
+            }
+            else if (tri.CANeighbor.C != tri.C && tri.CANeighbor.C != tri.A)
+            {
+                d = tri.CANeighbor.C;
+            }
+
+            if (InCircle(d, tri))
+            {
+                
+                Tri abd = new Tri(tri.A, tri.B, d);
+                Tri bcd = new Tri(tri.B, tri.C, d);
+
+                tris.Add(abd);
+                tris.Add(bcd);
+                RemoveTri(tri);
+                RemoveTri(tri.CANeighbor);
+                triangulate.Remove(tri.CANeighbor);
+                triangulate.Remove(tri);
+                triangulate.Add(tris[tris.Count - 1]);
+                triangulate.Add(tris[tris.Count - 2]);
+                return true;
+            }
+        }
+        ////for points connected to ab
+        //for (int i = 0; i < tri.A.GetConnections.Count; i++)
+        //{
+        //    //for those points connected to the points off a
+        //    for (int j = 0; j < tri.A.GetConnections[i].GetConnections.Count; j++)
+        //    {
+        //        //if they connect to b then we have found a quad
+        //        if (tri.A.GetConnections[i].GetConnections[j] == tri.B)
+        //        {
+        //            //if the quads notC is in a triangulated circle from our tri flip the quad
+        //            if (InCircle(tri.A.GetConnections[i], tri))
+        //            {
+        //                Tri adc = new Tri(tri.A, tri.A.GetConnections[i], tri.C);
+        //                Tri bcd = new Tri(tri.B, tri.C, tri.A.GetConnections[i]);
+
+        //                tris.Add(adc);
+        //                tris.Add(bcd);
+        //                RemoveTri(tri);
+        //                RemoveTri(new Tri(tri.A, tri.B, tri.A.GetConnections[i]));
+        //                triangulate.Remove(tri);
+        //                //add adc bdc
+        //                triangulate.Add(tris[tris.Count - 1]);
+        //                triangulate.Add(tris[tris.Count - 2]);
+        //                return true;
+        //            }
+        //        }
+        //    }
+        //}
+        ////for points connected to bc
+        //for (int i = 0; i < tri.B.GetConnections.Count; i++)
+        //{
+        //    //for those points connected to the points off a
+        //    for (int j = 0; j < tri.B.GetConnections[i].GetConnections.Count; j++)
+        //    {
+        //        //if they connect to b then we have found a quad
+        //        if (tri.B.GetConnections[i].GetConnections[j] == tri.C)
+        //        {
+        //            //if the quads notC is in a triangulated circle from our tri flip the quad
+        //            if (InCircle(tri.B.GetConnections[i], tri))
+        //            {
+        //                Tri cad = new Tri(tri.C, tri.A, tri.B.GetConnections[i]);
+        //                Tri abd = new Tri(tri.A, tri.B, tri.B.GetConnections[i]);
+        //                tris.Add(cad);
+        //                tris.Add(abd);
+        //                RemoveTri(tri);
+        //                RemoveTri(new Tri(tri.C, tri.B, tri.B.GetConnections[i]));
+        //                triangulate.Remove(tri);
+        //                triangulate.Add(tris[tris.Count - 1]);
+        //                triangulate.Add(tris[tris.Count - 2]);
+        //                return true;
+        //            }
+        //        }
+        //    }
+        //}
+        ////for points connected to ca
+        //for (int i = 0; i < tri.C.GetConnections.Count; i++)
+        //{
+        //    //for those points connected to the points off a
+        //    for (int j = 0; j < tri.C.GetConnections[i].GetConnections.Count; j++)
+        //    {
+        //        //if they connect to b then we have found a quad
+        //        if (tri.C.GetConnections[i].GetConnections[j] == tri.A)
+        //        {
+        //            //if the quads notC is in a triangulated circle from our tri flip the quad
+        //            if (InCircle(tri.C.GetConnections[i], tri))
+        //            {
+        //                Tri bcd = new Tri(tri.A, tri.C, tri.C.GetConnections[i]);
+        //                Tri abd = new Tri(tri.A, tri.B, tri.C.GetConnections[i]);
+
+        //                tris.Add(bcd);
+        //                tris.Add(abd);
+        //                RemoveTri(tri);
+        //                RemoveTri(new Tri(tri.A, tri.C, tri.C.GetConnections[i]));
+        //                triangulate.Remove(tri);
+        //                triangulate.Add(tris[tris.Count - 1]);
+        //                triangulate.Add(tris[tris.Count - 2]);
+        //                return true;
+        //            }
+        //        }
+        //    }
+        //}
+        triangulate.Remove(tri);
+        return false;
+    }
+
+    /// <summary>
+    /// returns if point is inside tri vertAvertBvertC
+    /// </summary>
+    /// <param name="point"></param>
+    /// <param name="vertA"></param>
+    /// <param name="vertB"></param>
+    /// <param name="vertC"></param>
+    /// <returns></returns>
+    bool InCircle(Node node, Tri tri) {
+        Vector2 vertA = tri.A.Pos2D, vertB = tri.B.Pos2D, vertC = tri.C.Pos2D;
+        Vector2 point = node.Pos2D;
+        bool undefinedAB = false, undefinedBC = false;
+
+        float xDist = vertB.x - vertA.x;
+        float yDist = vertB.y - vertA.y;
+        Vector2 centerAB = vertA + new Vector2(xDist/2,yDist/2);
+
+        float slopeAB, perpSlopeAB = 0, perpInterceptAB = 0;
+        //AB is undefined
+        if ((vertB.x - vertA.x) == 0)
+        {
+            perpSlopeAB = 0;
+        }
+        else
+        {
+            slopeAB = (vertB.y - vertA.y) / (vertB.x - vertA.x);
+            //perpSlopeAB is undefned
+            if (slopeAB == 0)
+            {
+                undefinedAB = true;
+            }
+            else
+            {
+                perpSlopeAB = -1 / slopeAB;
+                perpInterceptAB = centerAB.y - (perpSlopeAB * centerAB.x);
+            }
+        }
+        
+
+        xDist = vertC.x - vertB.x;
+        yDist = vertC.y - vertB.y;
+        Vector2 centerBC = vertB + new Vector2(xDist/2,yDist/2);
+
+        float slopeBC, perpSlopeBC = 0, perpInterceptBC = 0;
+        //BC is undefined
+        if ((vertC.x - vertB.x) == 0)
+        {
+            perpSlopeBC = 0;
+        }
+        else
+        {
+            slopeBC = (vertC.y - vertB.y) / (vertC.x - vertB.x);
+            //perpSlopeBC is undefned
+            if (slopeBC == 0)
+            {
+                undefinedBC = true;
+
+            }
+            else
+            {
+                perpSlopeBC = -1 / slopeBC;
+                perpInterceptBC = centerBC.y - (perpSlopeBC * centerBC.x);
+            }
+        }
+        
+        float xIntercept, yIntercept;
+        if(undefinedAB){
+            xIntercept = centerAB.x;
+            yIntercept = perpSlopeBC * xIntercept + perpInterceptBC;
+        }else if(undefinedBC){
+            xIntercept = centerBC.x;
+            yIntercept = perpSlopeAB * xIntercept + perpInterceptAB;
+        }else{
+            xIntercept = (perpInterceptBC - perpInterceptAB) / (perpSlopeAB - perpSlopeBC);
+            yIntercept = perpSlopeAB * xIntercept + perpInterceptAB;
+        }
+        
+        Vector2 circleCenter = new Vector2(xIntercept, yIntercept);
+        if ((circleCenter - point).magnitude <= (circleCenter - vertA).magnitude)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
+    void RemoveTri(Tri tri) {
+        for (int i = 0; i < tris.Count; i++)
+        {
+            if (tris[i] == tri)
+            {
+                tris[i].Remove();
+                tris.RemoveAt(tris.Count - 1);
+                break;
+            }
+        }
+    } 
+
+    private void OnDrawGizmos() {
+        if (gizmos)
+        {
+            for (int i = 0; i < tris.Count; i++)
+            {
+                Gizmos.DrawLine(tris[i].A.Pos3D, tris[i].B.Pos3D);
+                Gizmos.DrawLine(tris[i].B.Pos3D, tris[i].C.Pos3D);
+                Gizmos.DrawLine(tris[i].C.Pos3D, tris[i].A.Pos3D);
+            }
+        }
+
+    }
+}
+public class Node {
+
+    List<Node> connectedNodes = new List<Node>();
+    Vector2 pos;
+    // override object.Equals
+    public override bool Equals(object obj)
+    {
+
+        if (obj == null || GetType() != obj.GetType())
+        {
+            return false;
+        }
+
+        if (pos == ((Node)obj).pos)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    // override object.GetHashCode
+    public override int GetHashCode()
+    {
+        // TODO: write your implementation of GetHashCode() here
+        throw new System.NotImplementedException();
+        return base.GetHashCode();
+    }
+    public Node(Vector2 pos)
+    {
+        this.pos = pos;
+    }
+
+    public Vector2 Pos2D { get => pos; }
+    public Vector3 Pos3D { get => new Vector3(pos.x,0,pos.y); }
+    public List<Node> GetConnections { get => connectedNodes; private set => connectedNodes = value; }
+
+    public void AddConnection(Node connection) {
+        connectedNodes.Add(connection);
+    }
+    public void RemoveConnection(Node connection) {
+        connectedNodes.Remove(connection);
+    }
+}
+public enum Side {
+    AB,BC,CA
+}
+public class Tri
+{
+    Node a;
+    Node b;
+    Node c;
+    public bool hasABNeighbor = false;
+    public Tri ABNeighbor;
+    public Side ABNeighborSide;
+    public bool hasBCNeighbor = false;
+    public Tri BCNeighbor;
+    public Side BCNeighborSide;
+    public bool hasCANeighbor = false;
+    public Tri CANeighbor;
+    public Side CANeighborSide;
+
+    public override bool Equals(object obj)
+    {
+
+        if (obj == null || GetType() != obj.GetType())
+        {
+            return false;
+        }
+
+        if (A == ((Tri)obj).A && B == ((Tri)obj).B && C == ((Tri)obj).C)
+        {
+            return true;
+        }
+        if (A == ((Tri)obj).C && B == ((Tri)obj).A && C == ((Tri)obj).B)
+        {
+            return true;
+        }
+        if (A == ((Tri)obj).B && B == ((Tri)obj).C && C == ((Tri)obj).A)
+        {
+            return true;
+        }
+        return false;
+    }
+    public override int GetHashCode()
+    {
+        // TODO: write your implementation of GetHashCode() here
+        throw new System.NotImplementedException();
+        return base.GetHashCode();
+    }
+    public Tri(Node a, Node b, Node c) {
+        A = a;
+        B = b;
+        C = c;
+        A.AddConnection(b);
+        A.AddConnection(c);
+        B.AddConnection(a);
+        B.AddConnection(c);
+        C.AddConnection(a);
+        C.AddConnection(b);
+    }
+    public Tri Remove() {
+        A.RemoveConnection(B);
+        A.RemoveConnection(C);
+        B.RemoveConnection(A);
+        B.RemoveConnection(C);
+        C.RemoveConnection(A);
+        C.RemoveConnection(B);
+        return this;
+    }
+
+
+    public Node A { get => a; private set => a = value; }
+    public Node B { get => b; private set => b = value; }
+    public Node C { get => c; private set => c = value; }
+
+    /// <summary>
+    /// Returns false if node is not positioned inside tri
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public bool InTri(Node node)
+    {
+        Vector3 vertA = A.Pos3D, vertB = B.Pos3D, vertC = C.Pos3D;
+        Vector3 point = node.Pos3D;
+
+        Vector3 sideA = vertB - vertA;
+        float certaintyA = Vector3.Cross(sideA, point - vertA).y;
+        if (certaintyA < 0)
+        {
+            return false;
+        }
+
+        Vector3 sideB = vertC - vertB;
+        float certaintyB = Vector3.Cross(sideB, point - vertB).y;
+        if (certaintyB < 0)
+        {
+            return false;
+        }
+
+        Vector3 sideC = vertA - vertC;
+        float certaintyC = Vector3.Cross(sideC, point - vertC).y;
+        if (certaintyC < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+}

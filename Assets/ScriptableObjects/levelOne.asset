@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37606108db0d6d64cba36a9fe8198589, type: 3}
   m_Name: levelOne
   m_EditorClassIdentifier: 
-  arcAngle: 201
+  arcAngle: 135
   arcWidth: 60.5
   arcRadius: 106
   reqRooms:
