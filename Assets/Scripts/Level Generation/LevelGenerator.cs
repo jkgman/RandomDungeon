@@ -32,8 +32,8 @@ public class LevelGenerator : MonoBehaviour
     private void Start()
     {
         Generate(true);
-        GameObject towerinst = Instantiate(settings.tower, Vector3.zero, Quaternion.identity,transform);
-        towerinst.transform.localScale = Vector3.one * settings.arcRadius * 2;
+        //GameObject towerinst = Instantiate(settings.tower, Vector3.zero, Quaternion.identity,transform);
+        //towerinst.transform.localScale = Vector3.one * settings.arcRadius * 2;
         
     }
 

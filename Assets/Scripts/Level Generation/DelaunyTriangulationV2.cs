@@ -10,8 +10,11 @@ public class DelaunyTriangulationV2 : MonoBehaviour
     List<Tri> tris = new List<Tri>();
 
     List<Tri> triangulationQueue = new List<Tri>();
-
+    public float rad = 1;
     public bool gizmos = false;
+    private void Start()
+    {
+    }
 
     public void DelaunayTriangulate(List<Node> NodeSet, Vector2 min, Vector2 max) {
         UnsortedNodes = NodeSet;
@@ -24,7 +27,7 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         tris.Add(EncapTri.Add());
         while (UnsortedNodes.Count > 0)
         {
-            Tri encapsulatingTri = FindEncapsulatingTri(tris, UnsortedNodes[UnsortedNodes.Count-1]);
+            Tri encapsulatingTri = FindEncapsulatingTri(tris, UnsortedNodes[UnsortedNodes.Count - 1]);
             if (encapsulatingTri == null)
             {
                 Debug.LogWarning("Could not find encapsulating tri for node at: " + UnsortedNodes[UnsortedNodes.Count - 1].Pos2D);
@@ -36,42 +39,61 @@ public class DelaunyTriangulationV2 : MonoBehaviour
             tris.Remove(encapsulatingTri.Remove());
 
             SortedNodes.Add(UnsortedNodes[UnsortedNodes.Count - 1]);
+            UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]);
             foreach (Tri tri in splitTris)
             {
                 tris.Add(tri.Add());
                 triangulationQueue.Add(tri);
             }
-            while (triangulationQueue.Count > 0) {
+            while (triangulationQueue.Count > 0)
+            {
                 Tri[] triSet;
                 bool isBadQuad = false;
-                if ((triSet = TestQuad(triangulationQueue[0], Side.AB)) != null)
+                triSet = VerifyTri(triangulationQueue[0]);
+                if (triSet == null)
                 {
-                    isBadQuad = true;
-                }
-                else if((triSet = TestQuad(triangulationQueue[0], Side.BC)) != null)
-                {
-                    isBadQuad = true;
-                }
-                else if ((triSet = TestQuad(triangulationQueue[0], Side.CA)) != null)
-                {
-                    isBadQuad = true;
+                    triangulationQueue.Remove(triangulationQueue[0]);
                 }
                 else
                 {
-                    triangulationQueue.Remove(triangulationQueue[0]);
+                    isBadQuad = true;
                 }
 
                 if (isBadQuad)
                 {
-                    tris.Remove(triSet[0].Remove());
-                    tris.Remove(triSet[1].Remove());
+                    Debug.Log(triSet[0].PrintTri());
+                    Debug.Log(triSet[1].PrintTri());
+                    tris.Remove(triSet[0]);
+                    tris.Remove(triSet[1]);
+                    
                     triangulationQueue.Remove(triSet[0]);
                     triangulationQueue.Remove(triSet[1]);
+                    triSet[0].Remove();
+                    triSet[1].Remove();
                     tris.Add(triSet[2].Add());
                     tris.Add(triSet[3].Add());
                     triangulationQueue.Add(triSet[2]);
                     triangulationQueue.Add(triSet[3]);
                 }
+            }
+        }
+        for (int i = tris.Count - 1; i >= 0; i--)
+        {
+            if (tris[i].A.Pos2D == this.SortedNodes[0].Pos2D || tris[i].A.Pos2D == this.SortedNodes[1].Pos2D || tris[i].A.Pos2D == this.SortedNodes[2].Pos2D)
+            {
+                tris.RemoveAt(i);
+
+            }
+            else
+            if (tris[i].B.Pos2D == this.SortedNodes[0].Pos2D || tris[i].B.Pos2D == this.SortedNodes[1].Pos2D || tris[i].B.Pos2D == this.SortedNodes[2].Pos2D)
+            {
+                tris.RemoveAt(i);
+
+            }
+            else
+            if (tris[i].C.Pos2D == this.SortedNodes[0].Pos2D || tris[i].C.Pos2D == this.SortedNodes[1].Pos2D || tris[i].C.Pos2D == this.SortedNodes[2].Pos2D)
+            {
+                tris.RemoveAt(i);
             }
         }
     }
@@ -154,6 +176,25 @@ public class DelaunyTriangulationV2 : MonoBehaviour
 
         return new Tri[] { triABD,triBCD,triCAD};
     }
+    private Tri[] VerifyTri(Tri tri) {
+        Tri[] AB,BC,CA;
+        AB = TestQuad(tri, Side.AB);
+        if (AB != null)
+        {
+            return AB;
+        }
+        BC = TestQuad(tri, Side.BC);
+        if (BC != null)
+        {
+            return BC;
+        }
+        CA = TestQuad(tri, Side.CA);
+        if (CA != null)
+        {
+            return CA;
+        }
+        return null;
+    }
     /// <summary>
     /// If the quad is bad return [0] abc [1] acd [2] bcd [3] abd else return null
     /// </summary>
@@ -189,7 +230,7 @@ public class DelaunyTriangulationV2 : MonoBehaviour
     /// <returns></returns>
     private bool IsQuadBad(Node A, Node B, Node C, Node D) {
         float Xca = A.Pos2D.x - C.Pos2D.x, Xba = A.Pos2D.x - B.Pos2D.x, Xbd = D.Pos2D.x - B.Pos2D.x, Xcd = D.Pos2D.x - C.Pos2D.x;
-        float Yca = A.Pos2D.y - C.Pos2D.y, Yba = A.Pos2D.y - B.Pos2D.y, Ycd = D.Pos2D.y - C.Pos2D.y, Ybd = D.Pos2D.y - B.Pos2D.y;
+        float Yca = A.Pos2D.y - C.Pos2D.y, Yba = A.Pos2D.y - B.Pos2D.y, Ybd = D.Pos2D.y - B.Pos2D.y, Ycd = D.Pos2D.y - C.Pos2D.y;
         float a = (Xca * Xba + Yca * Yba) * (Xbd * Ycd - Xcd * Ybd);
         float b = (Yca * Xba - Xca * Yba) * (Xbd * Xcd + Ycd * Ybd);
         if (a < b)
@@ -201,25 +242,35 @@ public class DelaunyTriangulationV2 : MonoBehaviour
             return true;
         }
     }
+
     private void OnDrawGizmos()
     {
         if (gizmos)
         {
             for (int i = 0; i < tris.Count; i++)
             {
+                Gizmos.color = Color.green;
                 Gizmos.DrawLine(tris[i].A.Pos3D, tris[i].B.Pos3D);
                 Gizmos.DrawLine(tris[i].B.Pos3D, tris[i].C.Pos3D);
                 Gizmos.DrawLine(tris[i].C.Pos3D, tris[i].A.Pos3D);
             }
+            for (int i = 0; i < UnsortedNodes.Count; i++)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(UnsortedNodes[i].Pos3D, rad);
+            }
+            for (int i = 0; i < SortedNodes.Count; i++)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawSphere(SortedNodes[i].Pos3D, rad);
+            }
         }
-
     }
 }
 public enum Side
 {
     AB, BC, CA
 }
-
 public class Node
 {
 
@@ -265,7 +316,6 @@ public class Node
         connectedNodes.Remove(connection);
     }
 }
-
 public class Tri
 {
     Node a;
@@ -475,5 +525,7 @@ public class Tri
 
         return true;
     }
-
+    public string PrintTri() {
+        return "Tri with nodes " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D;
+    }
 }
