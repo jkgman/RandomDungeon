@@ -10,7 +10,7 @@ public class LevelGenerator : MonoBehaviour
     
     public LevelSettings settings;
     private List<Room> instantiatedRooms = new List<Room>();
-    private DelaunayTriangulation triangulate;
+    private DelaunyTriangulationV2 triangulate;
     public static LevelGenerator instance;
     void Awake()
     {
@@ -111,8 +111,8 @@ public class LevelGenerator : MonoBehaviour
         {
             startingNodes.Add(instantiatedRooms[i].node);
         }
-        triangulate = GetComponent<DelaunayTriangulation>();
-        triangulate.GenerateGraph(startingNodes, xMin, xMax, yMin, yMax);
+        triangulate = GetComponent<DelaunyTriangulationV2>();
+        triangulate.DelaunayTriangulate(startingNodes,new Vector2(xMin,yMin), new Vector2(xMax,yMax));
     }
 
     private void OnValidate()

@@ -180,55 +180,55 @@ public class DelaunayTriangulation : MonoBehaviour
     /// <param name="side"></param>
     /// <returns></returns>
     bool Triangulate(Tri tri, Side side) {
-        if (!tri.IsSide(side))
-        {
-            return false;
-        }
-        Node A = tri.A, B = tri.A, C = tri.A, D = tri.A;
-        switch (side)
-        {
-            case Side.AB:
-                A = tri.B;
-                B = tri.C;
-                C = tri.A;
-                D = tri.ABNeighbor.GetOppositeNode(tri.ABNeighborSide);
-                break;
-            case Side.BC:
-                A = tri.C;
-                B = tri.A;
-                C = tri.B;
-                D = tri.BCNeighbor.GetOppositeNode(tri.BCNeighborSide);
-                break;
-            case Side.CA:
-                A = tri.A;
-                B = tri.B;
-                C = tri.C;
-                D = tri.CANeighbor.GetOppositeNode(tri.CANeighborSide);
-                break;
-            default:
-                break;
-        }
-        float Xca = A.Pos2D.x - C.Pos2D.x, Xba = A.Pos2D.x - B.Pos2D.x, Xbd = D.Pos2D.x - B.Pos2D.x, Xcd = D.Pos2D.x - C.Pos2D.x;
-        float Yca = A.Pos2D.y - C.Pos2D.y, Yba = A.Pos2D.y - B.Pos2D.y, Ycd = D.Pos2D.y - C.Pos2D.y, Ybd = D.Pos2D.y - B.Pos2D.y;
-        float a = (Xca * Xba + Yca * Yba) * (Xbd * Ycd - Xcd * Ybd);
-        float b = (Yca * Xba - Xca * Yba) * (Xbd * Xcd + Ycd * Ybd);
-        if (a < b)
+        //if (!tri.HasSide(side))
+        //{
+        //    return false;
+        //}
+        //Node A = tri.A, B = tri.A, C = tri.A, D = tri.A;
+        //switch (side)
+        //{
+        //    case Side.AB:
+        //        A = tri.B;
+        //        B = tri.C;
+        //        C = tri.A;
+        //        D = tri.ABNeighbor.GetOppositeNode(tri.ABNeighborSide);
+        //        break;
+        //    case Side.BC:
+        //        A = tri.C;
+        //        B = tri.A;
+        //        C = tri.B;
+        //        D = tri.BCNeighbor.GetOppositeNode(tri.BCNeighborSide);
+        //        break;
+        //    case Side.CA:
+        //        A = tri.A;
+        //        B = tri.B;
+        //        C = tri.C;
+        //        D = tri.CANeighbor.GetOppositeNode(tri.CANeighborSide);
+        //        break;
+        //    default:
+        //        break;
+        //}
+        //float Xca = A.Pos2D.x - C.Pos2D.x, Xba = A.Pos2D.x - B.Pos2D.x, Xbd = D.Pos2D.x - B.Pos2D.x, Xcd = D.Pos2D.x - C.Pos2D.x;
+        //float Yca = A.Pos2D.y - C.Pos2D.y, Yba = A.Pos2D.y - B.Pos2D.y, Ycd = D.Pos2D.y - C.Pos2D.y, Ybd = D.Pos2D.y - B.Pos2D.y;
+        //float a = (Xca * Xba + Yca * Yba) * (Xbd * Ycd - Xcd * Ybd);
+        //float b = (Yca * Xba - Xca * Yba) * (Xbd * Xcd + Ycd * Ybd);
+        if(true)//if (a < b)
         {
             return false;
         }
         else
         {
-            triangulate.Remove(tri);
-            triangulate.Remove(tri.GetSideNeighbor(side));
-            tris.Remove(tri);
-            tris.Remove(tri.GetSideNeighbor(side));
-            Tri newA = new Tri(B,C,D);
-            Tri newB = new Tri(A,B,D);
+            //triangulate.Remove(tri);
+            //triangulate.Remove(tri.GetSideNeighbor(side));
+            //tris.Remove(tri);
+            //tris.Remove(tri.GetSideNeighbor(side));
+            //Tri newA = new Tri(B,C,D);
+            //Tri newB = new Tri(A,B,D);
 
-            tris.Add(newA);
-            tris.Add(newB);
-            triangulate.Add(newA);
-            triangulate.Add(newB);
+            //tris.Add(newA);
+            //tris.Add(newB);
+            //triangulate.Add(newA);
+            //triangulate.Add(newB);
             return true;
         }
         

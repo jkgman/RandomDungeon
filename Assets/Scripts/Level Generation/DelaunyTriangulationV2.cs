@@ -12,25 +12,208 @@ public class DelaunyTriangulationV2 : MonoBehaviour
     List<Tri> triangulationQueue = new List<Tri>();
 
     public bool gizmos = false;
+
     public void DelaunayTriangulate(List<Node> NodeSet, Vector2 min, Vector2 max) {
-        //UnsortedNodes = NodeSet
-        //Tri EncapTri = EncapsulateDomain(min,max)
-        //SortedNodes.add(each EncapTri.Node)
-        //tris.add(EncapTri)
+        UnsortedNodes = NodeSet;
+        Tri EncapTri = EncapsulateDomain(min, max);
+
+        foreach (Node node in EncapTri.GetNodes())
+        {
+            SortedNodes.Add(node);
+        }
+        tris.Add(EncapTri.Add());
         while (UnsortedNodes.Count > 0)
         {
-            //find tri containing node
-            //find 3 resulting nodes from split tri
-            //remove old tri and node connections
-            //add new tris and connections
-            //
+            Tri encapsulatingTri = FindEncapsulatingTri(tris, UnsortedNodes[UnsortedNodes.Count-1]);
+            if (encapsulatingTri == null)
+            {
+                Debug.LogWarning("Could not find encapsulating tri for node at: " + UnsortedNodes[UnsortedNodes.Count - 1].Pos2D);
+                UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]);
+                continue;
+            }
+            Tri[] splitTris = SplitTri(encapsulatingTri, UnsortedNodes[UnsortedNodes.Count - 1]);
+
+            tris.Remove(encapsulatingTri.Remove());
+
+            SortedNodes.Add(UnsortedNodes[UnsortedNodes.Count - 1]);
+            foreach (Tri tri in splitTris)
+            {
+                tris.Add(tri.Add());
+                triangulationQueue.Add(tri);
+            }
+            while (triangulationQueue.Count > 0) {
+                Tri[] triSet;
+                bool isBadQuad = false;
+                if ((triSet = TestQuad(triangulationQueue[0], Side.AB)) != null)
+                {
+                    isBadQuad = true;
+                }
+                else if((triSet = TestQuad(triangulationQueue[0], Side.BC)) != null)
+                {
+                    isBadQuad = true;
+                }
+                else if ((triSet = TestQuad(triangulationQueue[0], Side.CA)) != null)
+                {
+                    isBadQuad = true;
+                }
+                else
+                {
+                    triangulationQueue.Remove(triangulationQueue[0]);
+                }
+
+                if (isBadQuad)
+                {
+                    tris.Remove(triSet[0].Remove());
+                    tris.Remove(triSet[1].Remove());
+                    triangulationQueue.Remove(triSet[0]);
+                    triangulationQueue.Remove(triSet[1]);
+                    tris.Add(triSet[2].Add());
+                    tris.Add(triSet[3].Add());
+                    triangulationQueue.Add(triSet[2]);
+                    triangulationQueue.Add(triSet[3]);
+                }
+            }
         }
     }
 
+    /// <summary>
+    /// return tri that encapsulates the given range
+    /// </summary>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
     private Tri EncapsulateDomain(Vector2 min, Vector2 max) {
+        float tan = Mathf.Tan(45 * Mathf.Deg2Rad);
+        float width = max.x - min.x;
+        float height = max.y - min.y;
+        Vector2 apos = new Vector2(min.x - 2, min.y - 2);
+        Vector2 bpos = new Vector2(width + width * tan, min.y);
+        Vector2 cpos = new Vector2(min.x, height + height / tan);
+        Node a = new Node(apos);
+        Node b = new Node(bpos);
+        Node c = new Node(cpos);
+        return new Tri(a, b, c);
+    }
+    /// <summary>
+    /// Returns the tri that node is in or null if outside all
+    /// </summary>
+    /// <param name="node">Node to find encapsulating tri</param>
+    /// <returns></returns>
+    private Tri FindEncapsulatingTri(List<Tri> tris,Node node) {
+        for (int i = 0; i < tris.Count; i++)
+        {
+            if (tris[i].InTri(node))
+            {
+                return tris[i];
+            }
+        }
         return null;
     }
+    /// <summary>
+    /// return abd,bcd,cad
+    /// </summary>
+    /// <param name="tri">Tri ABC</param>
+    /// <param name="node">Node D</param>
+    /// <returns></returns>
+    private Tri[] SplitTri(Tri tri, Node node) {
+        Tri triABD = new Tri(tri.A, tri.B, node);
+        Tri triBCD = new Tri(tri.B, tri.C, node);
+        Tri triCAD = new Tri(tri.C, tri.A, node);
 
+        if (tri.ABNeighbor != null)
+        {
+            triABD.ABNeighbor = tri.ABNeighbor;
+            triABD.ABNeighborSide = tri.ABNeighborSide;
+        }
+        triABD.BCNeighbor = triBCD;
+        triABD.BCNeighborSide = Side.CA;
+        triABD.CANeighbor = triCAD;
+        triABD.CANeighborSide = Side.BC;
+
+        //BCD
+        if (tri.BCNeighbor != null)
+        {
+            triBCD.ABNeighbor = tri.BCNeighbor;
+            triBCD.ABNeighborSide = tri.BCNeighborSide;
+        }
+        triBCD.BCNeighbor = triCAD;
+        triBCD.BCNeighborSide = Side.CA;
+        triBCD.CANeighbor = triABD;
+        triBCD.CANeighborSide = Side.BC;
+
+        //CAD
+        if (tri.CANeighbor != null)
+        {
+            triCAD.ABNeighbor = tri.CANeighbor;
+            triCAD.ABNeighborSide = tri.CANeighborSide;
+        }
+        triCAD.BCNeighbor = triABD;
+        triCAD.BCNeighborSide = Side.CA;
+        triCAD.CANeighbor = triBCD;
+        triCAD.CANeighborSide = Side.BC;
+
+        return new Tri[] { triABD,triBCD,triCAD};
+    }
+    /// <summary>
+    /// If the quad is bad return [0] abc [1] acd [2] bcd [3] abd else return null
+    /// </summary>
+    /// <param name="tri">Tri to Test</param>
+    /// <param name="side">Side to Test</param>
+    /// <returns></returns>
+    private Tri[] TestQuad(Tri tri, Side side) {
+        if (!tri.HasSide(side))
+        {
+            return null;
+        }
+        Tri[] solution = new Tri[4];
+        solution[0] = tri;
+        solution[1] = tri.NeighborOn(side);
+        if (IsQuadBad(tri.PrevNode(tri.NoneSharedNodeOn(side)),tri.NoneSharedNodeOn(side), tri.NextNode(tri.NoneSharedNodeOn(side)), tri.NeighborOn(side).NoneSharedNodeOn(tri.NeighborSideOn(side))))
+        {
+            solution[2] = new Tri(tri.NoneSharedNodeOn(side), tri.NextNode(tri.NoneSharedNodeOn(side)), tri.NeighborOn(side).NoneSharedNodeOn(tri.NeighborSideOn(side)));
+            solution[3] = new Tri(tri.PrevNode(tri.NoneSharedNodeOn(side)), tri.NoneSharedNodeOn(side), tri.NeighborOn(side).NoneSharedNodeOn(tri.NeighborSideOn(side)));
+            return solution;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    /// <summary>
+    /// if quad abcd is bad return true
+    /// </summary>
+    /// <param name="A"></param>
+    /// <param name="B"></param>
+    /// <param name="C"></param>
+    /// <param name="D"></param>
+    /// <returns></returns>
+    private bool IsQuadBad(Node A, Node B, Node C, Node D) {
+        float Xca = A.Pos2D.x - C.Pos2D.x, Xba = A.Pos2D.x - B.Pos2D.x, Xbd = D.Pos2D.x - B.Pos2D.x, Xcd = D.Pos2D.x - C.Pos2D.x;
+        float Yca = A.Pos2D.y - C.Pos2D.y, Yba = A.Pos2D.y - B.Pos2D.y, Ycd = D.Pos2D.y - C.Pos2D.y, Ybd = D.Pos2D.y - B.Pos2D.y;
+        float a = (Xca * Xba + Yca * Yba) * (Xbd * Ycd - Xcd * Ybd);
+        float b = (Yca * Xba - Xca * Yba) * (Xbd * Xcd + Ycd * Ybd);
+        if (a < b)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    private void OnDrawGizmos()
+    {
+        if (gizmos)
+        {
+            for (int i = 0; i < tris.Count; i++)
+            {
+                Gizmos.DrawLine(tris[i].A.Pos3D, tris[i].B.Pos3D);
+                Gizmos.DrawLine(tris[i].B.Pos3D, tris[i].C.Pos3D);
+                Gizmos.DrawLine(tris[i].C.Pos3D, tris[i].A.Pos3D);
+            }
+        }
+
+    }
 }
 public enum Side
 {
@@ -129,12 +312,16 @@ public class Tri
         A = a;
         B = b;
         C = c;
-        A.AddConnection(b);
-        A.AddConnection(c);
-        B.AddConnection(a);
-        B.AddConnection(c);
-        C.AddConnection(a);
-        C.AddConnection(b);
+        
+    }
+    public Tri Add() {
+        A.AddConnection(B);
+        A.AddConnection(C);
+        B.AddConnection(A);
+        B.AddConnection(C);
+        C.AddConnection(A);
+        C.AddConnection(B);
+        return this;
     }
     public Tri Remove()
     {
@@ -147,11 +334,52 @@ public class Tri
         return this;
     }
 
-
     public Node A { get => a; private set => a = value; }
     public Node B { get => b; private set => b = value; }
     public Node C { get => c; private set => c = value; }
-    public Tri TriOn(Side side)
+    public Node NextNode(Node node) {
+        if (node == A)
+        {
+            return B;
+        }
+        else if (node == B)
+        {
+            return C;
+        }
+        else if (node == C)
+        {
+            return A;
+        }
+        else {
+            Debug.LogWarning("couldnt find node " + node.Pos2D + " in tri " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D);
+            return null;
+        }
+    }
+    public Node PrevNode(Node node)
+    {
+        if (node == A)
+        {
+            return C;
+        }
+        else if (node == B)
+        {
+            return A;
+        }
+        else if (node == C)
+        {
+            return B;
+        }
+        else
+        {
+            Debug.LogWarning("couldnt find node " + node.Pos2D + " in tri " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D);
+            return null;
+        }
+    }
+    public Node[] GetNodes() {
+        Node[] nodes = new Node[]{A,B,C};
+        return nodes;
+    }
+    public Tri NeighborOn(Side side)
     {
         switch (side)
         {
@@ -163,6 +391,19 @@ public class Tri
                 return CANeighbor;
             default:
                 return null;
+        }
+    }
+    public Side NeighborSideOn(Side side) {
+        switch (side)
+        {
+            case Side.AB:
+                return ABNeighborSide;
+            case Side.BC:
+                return BCNeighborSide;
+            case Side.CA:
+                return CANeighborSide;
+            default:
+                return Side.AB;
         }
     }
     public Node NoneSharedNodeOn(Side side)
@@ -179,7 +420,7 @@ public class Tri
                 return null;
         }
     }
-    public bool IsSide(Side side)
+    public bool HasSide(Side side)
     {
         switch (side)
         {
