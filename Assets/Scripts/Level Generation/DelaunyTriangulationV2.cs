@@ -12,9 +12,33 @@ public class DelaunyTriangulationV2 : MonoBehaviour
     List<Tri> triangulationQueue = new List<Tri>();
     public float rad = 1;
     public bool gizmos = false;
-    private void Start()
-    {
-    }
+    //private void Start()
+    //{
+    //    Node a = new Node(new Vector2(0,0));
+    //    Node b = new Node(new Vector2(1,0));
+    //    Node c = new Node(new Vector2(0, 1));
+    //    Node d = new Node(new Vector2(.8f, .8f));
+    //    Debug.Log("Quad is: " + IsQuadBad(a, b, c, d) + " ABC: " + a.Pos2D + " " + b.Pos2D + " " + c.Pos2D + " D: " + d.Pos2D);
+    //    Tri tri = new Tri(a,b,c);
+    //    Tri tri2 = new Tri(b,d,c);
+    //    tri.SetNeighbor(Side.BC, tri2,Side.CA);
+    //    tri2.SetNeighbor(Side.CA, tri, Side.BC);
+    //    Tri[] newTris = VerifyTri(tri);
+    //    if (newTris != null)
+    //    {
+    //        Debug.Log("Tri 1: " + tri.A.Pos2D + " " + tri.B.Pos2D + " " + tri.C.Pos2D + " Tri 2: " + tri2.A.Pos2D + " " + tri2.B.Pos2D + " " + tri2.C.Pos2D);
+    //        Debug.Log("newTris 0: " + newTris[0].A.Pos2D + " " + newTris[0].B.Pos2D + " " + newTris[0].C.Pos2D + " newTris 1: " + newTris[1].A.Pos2D + " " + newTris[1].B.Pos2D + " " + newTris[1].C.Pos2D);
+    //        Debug.Log("newTris 2: " + newTris[2].A.Pos2D + " " + newTris[2].B.Pos2D + " " + newTris[2].C.Pos2D + " newTris 3: " + newTris[3].A.Pos2D + " " + newTris[3].B.Pos2D + " " + newTris[3].C.Pos2D);
+    //        Debug.Log(newTris[0].GetNeighbor(Side.BC).PrintTri());
+    //    }
+    //    else
+    //    {
+    //        Debug.Log("tris good");
+    //        Debug.Log("Tri 1: " + a.Pos2D + " " + b.Pos2D + " " + c.Pos2D + " Tri 2: " + a.Pos2D + " " + b.Pos2D + " " + d.Pos2D);
+    //    }
+        
+
+    //}
 
     public void DelaunayTriangulate(List<Node> NodeSet, Vector2 min, Vector2 max) {
         UnsortedNodes = NodeSet;
@@ -24,7 +48,7 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         {
             SortedNodes.Add(node);
         }
-        tris.Add(EncapTri.Add());
+        tris.Add(EncapTri.AddNodeConnections());
         while (UnsortedNodes.Count > 0)
         {
             Tri encapsulatingTri = FindEncapsulatingTri(tris, UnsortedNodes[UnsortedNodes.Count - 1]);
@@ -35,67 +59,88 @@ public class DelaunyTriangulationV2 : MonoBehaviour
                 continue;
             }
             Tri[] splitTris = SplitTri(encapsulatingTri, UnsortedNodes[UnsortedNodes.Count - 1]);
-
-            tris.Remove(encapsulatingTri.Remove());
-
+            if (!tris.Remove(encapsulatingTri.RemoveNodeConnections()))
+            {
+                Debug.Log("Failed to remove containing tri " + encapsulatingTri.PrintTri());
+            }
+            
             SortedNodes.Add(UnsortedNodes[UnsortedNodes.Count - 1]);
-            UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]);
+            if (!UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]))
+            {
+                Debug.Log("failed to remove unsorted node " + UnsortedNodes[UnsortedNodes.Count - 1]);
+            }
+            
             foreach (Tri tri in splitTris)
             {
-                tris.Add(tri.Add());
+                tris.Add(tri.AddNodeConnections());
                 triangulationQueue.Add(tri);
             }
             while (triangulationQueue.Count > 0)
             {
                 Tri[] triSet;
-                bool isBadQuad = false;
                 triSet = VerifyTri(triangulationQueue[0]);
                 if (triSet == null)
                 {
-                    triangulationQueue.Remove(triangulationQueue[0]);
+                    if (!triangulationQueue.Remove(triangulationQueue[0]))
+                    {
+                        Debug.Log("Failed to remove triangulationQueue[0] " + triangulationQueue[0].PrintTri());
+                    }
                 }
                 else
                 {
-                    isBadQuad = true;
-                }
 
-                if (isBadQuad)
-                {
-                    Debug.Log(triSet[0].PrintTri());
-                    Debug.Log(triSet[1].PrintTri());
-                    tris.Remove(triSet[0]);
-                    tris.Remove(triSet[1]);
-                    
-                    triangulationQueue.Remove(triSet[0]);
-                    triangulationQueue.Remove(triSet[1]);
-                    triSet[0].Remove();
-                    triSet[1].Remove();
-                    tris.Add(triSet[2].Add());
-                    tris.Add(triSet[3].Add());
+                    if (!tris.Remove(triSet[0]))
+                    {
+                        Debug.Log("Failed to remove TriSet[0] " + triSet[0].PrintTri());
+                    }
+                    if (!tris.Remove(triSet[1]))
+                    {
+                        Debug.Log("Failed to remove TriSet[1] " + triSet[1].PrintTri());
+                        if (tris.Contains(triSet[1]))
+                        {
+                            Debug.Log("but does contain triset[1]");
+                        }
+                    }
+                    if (!triangulationQueue.Remove(triSet[0]))
+                    {
+                        Debug.Log("Failed to remove triangulationqueu tri " + triSet[0].PrintTri());
+                    }
+                    if (triangulationQueue.Contains(triSet[1]))
+                    {
+                        if (!triangulationQueue.Remove(triSet[1]))
+                        {
+                            Debug.Log("Failed to remove triangulationqueu tri " + triSet[1].PrintTri());
+                        }
+                    }
+
+                    triSet[0].RemoveNodeConnections();
+                    triSet[1].RemoveNodeConnections();
+                    tris.Add(triSet[2].AddNodeConnections());
+                    tris.Add(triSet[3].AddNodeConnections());
                     triangulationQueue.Add(triSet[2]);
                     triangulationQueue.Add(triSet[3]);
                 }
             }
         }
-        for (int i = tris.Count - 1; i >= 0; i--)
-        {
-            if (tris[i].A.Pos2D == this.SortedNodes[0].Pos2D || tris[i].A.Pos2D == this.SortedNodes[1].Pos2D || tris[i].A.Pos2D == this.SortedNodes[2].Pos2D)
-            {
-                tris.RemoveAt(i);
+        //for (int i = tris.Count - 1; i >= 0; i--)
+        //{
+        //    if (tris[i].A.Pos2D == this.SortedNodes[0].Pos2D || tris[i].A.Pos2D == this.SortedNodes[1].Pos2D || tris[i].A.Pos2D == this.SortedNodes[2].Pos2D)
+        //    {
+        //        tris.RemoveAt(i);
 
-            }
-            else
-            if (tris[i].B.Pos2D == this.SortedNodes[0].Pos2D || tris[i].B.Pos2D == this.SortedNodes[1].Pos2D || tris[i].B.Pos2D == this.SortedNodes[2].Pos2D)
-            {
-                tris.RemoveAt(i);
+        //    }
+        //    else
+        //    if (tris[i].B.Pos2D == this.SortedNodes[0].Pos2D || tris[i].B.Pos2D == this.SortedNodes[1].Pos2D || tris[i].B.Pos2D == this.SortedNodes[2].Pos2D)
+        //    {
+        //        tris.RemoveAt(i);
 
-            }
-            else
-            if (tris[i].C.Pos2D == this.SortedNodes[0].Pos2D || tris[i].C.Pos2D == this.SortedNodes[1].Pos2D || tris[i].C.Pos2D == this.SortedNodes[2].Pos2D)
-            {
-                tris.RemoveAt(i);
-            }
-        }
+        //    }
+        //    else
+        //    if (tris[i].C.Pos2D == this.SortedNodes[0].Pos2D || tris[i].C.Pos2D == this.SortedNodes[1].Pos2D || tris[i].C.Pos2D == this.SortedNodes[2].Pos2D)
+        //    {
+        //        tris.RemoveAt(i);
+        //    }
+        //}
     }
 
     /// <summary>
@@ -144,35 +189,20 @@ public class DelaunyTriangulationV2 : MonoBehaviour
 
         if (tri.ABNeighbor != null)
         {
-            triABD.ABNeighbor = tri.ABNeighbor;
-            triABD.ABNeighborSide = tri.ABNeighborSide;
+            triABD.UpdateNeighbor(Side.AB, tri.ABNeighbor, tri.ABNeighborConnectingSide);
         }
-        triABD.BCNeighbor = triBCD;
-        triABD.BCNeighborSide = Side.CA;
-        triABD.CANeighbor = triCAD;
-        triABD.CANeighborSide = Side.BC;
-
-        //BCD
         if (tri.BCNeighbor != null)
         {
-            triBCD.ABNeighbor = tri.BCNeighbor;
-            triBCD.ABNeighborSide = tri.BCNeighborSide;
+            triBCD.UpdateNeighbor(Side.AB, tri.BCNeighbor, tri.BCNeighborConnectingSide);
         }
-        triBCD.BCNeighbor = triCAD;
-        triBCD.BCNeighborSide = Side.CA;
-        triBCD.CANeighbor = triABD;
-        triBCD.CANeighborSide = Side.BC;
-
-        //CAD
         if (tri.CANeighbor != null)
         {
-            triCAD.ABNeighbor = tri.CANeighbor;
-            triCAD.ABNeighborSide = tri.CANeighborSide;
+            triCAD.UpdateNeighbor(Side.AB, tri.CANeighbor, tri.CANeighborConnectingSide);
         }
-        triCAD.BCNeighbor = triABD;
-        triCAD.BCNeighborSide = Side.CA;
-        triCAD.CANeighbor = triBCD;
-        triCAD.CANeighborSide = Side.BC;
+
+        triABD.UpdateNeighbor(Side.BC, triBCD, Side.CA);
+        triBCD.UpdateNeighbor(Side.BC, triCAD, Side.CA);
+        triCAD.UpdateNeighbor(Side.BC, triABD, Side.CA);
 
         return new Tri[] { triABD,triBCD,triCAD};
     }
@@ -208,11 +238,35 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         }
         Tri[] solution = new Tri[4];
         solution[0] = tri;
-        solution[1] = tri.NeighborOn(side);
-        if (IsQuadBad(tri.PrevNode(tri.NoneSharedNodeOn(side)),tri.NoneSharedNodeOn(side), tri.NextNode(tri.NoneSharedNodeOn(side)), tri.NeighborOn(side).NoneSharedNodeOn(tri.NeighborSideOn(side))))
+        solution[1] = tri.GetNeighbor(side);
+        if (IsQuadBad(tri.PrevNode(tri.OpposingNode(side)),tri.OpposingNode(side), tri.NextNode(tri.OpposingNode(side)), tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side))))
         {
-            solution[2] = new Tri(tri.NoneSharedNodeOn(side), tri.NextNode(tri.NoneSharedNodeOn(side)), tri.NeighborOn(side).NoneSharedNodeOn(tri.NeighborSideOn(side)));
-            solution[3] = new Tri(tri.PrevNode(tri.NoneSharedNodeOn(side)), tri.NoneSharedNodeOn(side), tri.NeighborOn(side).NoneSharedNodeOn(tri.NeighborSideOn(side)));
+            solution[2] = new Tri(tri.OpposingNode(side), tri.NextNode(tri.OpposingNode(side)), tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side)));
+            solution[3] = new Tri(tri.PrevNode(tri.OpposingNode(side)), tri.OpposingNode(side), tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side)));
+
+            if (tri.GetNeighbor(tri.PrevSide(side)) != null)
+            {
+                solution[2].UpdateNeighbor(Side.AB, tri.GetNeighbor(tri.PrevSide(side)), tri.GetNeighborConnectingSide(tri.PrevSide(side)));
+            }
+            if (tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).NextSide(tri.GetNeighborConnectingSide(side))) != null)
+            {
+                solution[2].UpdateNeighbor(Side.BC, tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).NextSide(tri.GetNeighborConnectingSide(side))),
+                    tri.GetNeighbor(side).GetNeighborConnectingSide(tri.GetNeighbor(side).NextSide(tri.GetNeighborConnectingSide(side))));
+            }
+
+
+            if (tri.GetNeighbor(tri.NextSide(side)) != null)
+            {
+                solution[3].UpdateNeighbor(Side.AB, tri.GetNeighbor(tri.NextSide(side)), tri.GetNeighborConnectingSide(tri.NextSide(side)));
+            }
+            if (tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).PrevSide(tri.GetNeighborConnectingSide(side))) != null)
+            {
+                solution[3].UpdateNeighbor(Side.CA, tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).PrevSide(tri.GetNeighborConnectingSide(side))),
+                    tri.GetNeighbor(side).GetNeighborConnectingSide(tri.GetNeighbor(side).PrevSide(tri.GetNeighborConnectingSide(side))));
+            }
+
+            solution[2].UpdateNeighbor(Side.CA, solution[3], Side.BC);
+
             return solution;
         }
         else
@@ -233,7 +287,7 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         float Yca = A.Pos2D.y - C.Pos2D.y, Yba = A.Pos2D.y - B.Pos2D.y, Ybd = D.Pos2D.y - B.Pos2D.y, Ycd = D.Pos2D.y - C.Pos2D.y;
         float a = (Xca * Xba + Yca * Yba) * (Xbd * Ycd - Xcd * Ybd);
         float b = (Yca * Xba - Xca * Yba) * (Xbd * Xcd + Ycd * Ybd);
-        if (a < b)
+        if (a <= b)
         {
             return false;
         }
@@ -269,7 +323,7 @@ public class DelaunyTriangulationV2 : MonoBehaviour
 }
 public enum Side
 {
-    AB, BC, CA
+    AB, BC, CA 
 }
 public class Node
 {
@@ -322,11 +376,11 @@ public class Tri
     Node b;
     Node c;
     public Tri ABNeighbor;
-    public Side ABNeighborSide;
+    public Side ABNeighborConnectingSide;
     public Tri BCNeighbor;
-    public Side BCNeighborSide;
+    public Side BCNeighborConnectingSide;
     public Tri CANeighbor;
-    public Side CANeighborSide;
+    public Side CANeighborConnectingSide;
 
     public override bool Equals(object obj)
     {
@@ -356,7 +410,67 @@ public class Tri
         throw new System.NotImplementedException();
         return base.GetHashCode();
     }
-
+    /*Getters and Setters*/
+    public Node[] GetNodes()
+    {
+        Node[] nodes = new Node[] { A, B, C };
+        return nodes;
+    }
+    public Node A { get => a; private set => a = value; }
+    public Node B { get => b; private set => b = value; }
+    public Node C { get => c; private set => c = value; }
+    public void UpdateNeighbor(Side side, Tri tri, Side neighborSide) {
+        SetNeighbor(side, tri, neighborSide);
+        tri.SetNeighbor(neighborSide, this, side);
+    }
+    private void SetNeighbor(Side side, Tri tri, Side neighborSide)
+    {
+        if (side == Side.AB)
+        {
+            ABNeighbor = tri;
+            ABNeighborConnectingSide = neighborSide;
+        }
+        else if (side == Side.BC)
+        {
+            BCNeighbor = tri;
+            BCNeighborConnectingSide = neighborSide;
+        }
+        else
+        {
+            CANeighbor = tri;
+            CANeighborConnectingSide = neighborSide;
+        }
+        
+    }
+    public Tri GetNeighbor(Side side)
+    {
+        switch (side)
+        {
+            case Side.AB:
+                return ABNeighbor;
+            case Side.BC:
+                return BCNeighbor;
+            case Side.CA:
+                return CANeighbor;
+            default:
+                return null;
+        }
+    }
+    public Side GetNeighborConnectingSide(Side side)
+    {
+        switch (side)
+        {
+            case Side.AB:
+                return ABNeighborConnectingSide;
+            case Side.BC:
+                return BCNeighborConnectingSide;
+            case Side.CA:
+                return CANeighborConnectingSide;
+            default:
+                return Side.AB;
+        }
+    }
+    /*Initializer*/
     public Tri(Node a, Node b, Node c)
     {
         A = a;
@@ -364,7 +478,8 @@ public class Tri
         C = c;
         
     }
-    public Tri Add() {
+
+    public Tri AddNodeConnections() {
         A.AddConnection(B);
         A.AddConnection(C);
         B.AddConnection(A);
@@ -373,7 +488,7 @@ public class Tri
         C.AddConnection(B);
         return this;
     }
-    public Tri Remove()
+    public Tri RemoveNodeConnections()
     {
         A.RemoveConnection(B);
         A.RemoveConnection(C);
@@ -383,10 +498,6 @@ public class Tri
         C.RemoveConnection(B);
         return this;
     }
-
-    public Node A { get => a; private set => a = value; }
-    public Node B { get => b; private set => b = value; }
-    public Node C { get => c; private set => c = value; }
     public Node NextNode(Node node) {
         if (node == A)
         {
@@ -425,38 +536,7 @@ public class Tri
             return null;
         }
     }
-    public Node[] GetNodes() {
-        Node[] nodes = new Node[]{A,B,C};
-        return nodes;
-    }
-    public Tri NeighborOn(Side side)
-    {
-        switch (side)
-        {
-            case Side.AB:
-                return ABNeighbor;
-            case Side.BC:
-                return BCNeighbor;
-            case Side.CA:
-                return CANeighbor;
-            default:
-                return null;
-        }
-    }
-    public Side NeighborSideOn(Side side) {
-        switch (side)
-        {
-            case Side.AB:
-                return ABNeighborSide;
-            case Side.BC:
-                return BCNeighborSide;
-            case Side.CA:
-                return CANeighborSide;
-            default:
-                return Side.AB;
-        }
-    }
-    public Node NoneSharedNodeOn(Side side)
+    public Node OpposingNode(Side side)
     {
         switch (side)
         {
@@ -497,6 +577,35 @@ public class Tri
         }
         return true;
     }
+    public Side NextSide(Side side) {
+        if (side == Side.AB)
+        {
+            return Side.BC;
+        }
+        else if (side == Side.BC)
+        {
+            return Side.CA;
+        }
+        else
+        {
+            return Side.AB;
+        }
+    }
+    public Side PrevSide(Side side)
+    {
+        if (side == Side.CA)
+        {
+            return Side.BC;
+        }
+        else if (side == Side.BC) 
+        {
+            return Side.AB;
+        }
+        else
+        {
+            return Side.CA;
+        }
+    }
     public bool InTri(Node node)
     {
         Vector3 vertA = A.Pos3D, vertB = B.Pos3D, vertC = C.Pos3D;
@@ -527,5 +636,33 @@ public class Tri
     }
     public string PrintTri() {
         return "Tri with nodes " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D;
+    }
+    public Node FirstNodeOnSide(Side side) {
+        if (side == Side.AB)
+        {
+            return A;
+        }else if (side == Side.BC)
+        {
+            return B;
+        }
+        else
+        {
+            return C;
+        }
+    }
+    public Node LastNodeOnSide(Side side)
+    {
+        if (side == Side.AB)
+        {
+            return B;
+        }
+        else if (side == Side.BC)
+        {
+            return C;
+        }
+        else
+        {
+            return A;
+        }
     }
 }

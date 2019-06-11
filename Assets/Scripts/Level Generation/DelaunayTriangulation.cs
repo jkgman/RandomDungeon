@@ -56,7 +56,7 @@ public class DelaunayTriangulation : MonoBehaviour
             if (tris[i].InTri(node))
             {
                 List<Tri> newTris = SplitTri(node, tris[i]);
-                tris.Remove(tris[i].Remove());
+                tris.Remove(tris[i].RemoveNodeConnections());
                 foreach (Tri tri in newTris)
                 {
                     tris.Add(tri);
@@ -87,21 +87,21 @@ public class DelaunayTriangulation : MonoBehaviour
             triABD.ABNeighbor = currentTri.ABNeighbor;
             if (currentTri.B == currentTri.ABNeighbor.A)
             {
-                triABD.ABNeighborSide = Side.AB;
+                triABD.ABNeighborConnectingSide = Side.AB;
             }
             else if (currentTri.B == currentTri.ABNeighbor.B)
             {
-                triABD.ABNeighborSide = Side.BC;
+                triABD.ABNeighborConnectingSide = Side.BC;
             }
             else if (currentTri.B == currentTri.ABNeighbor.C)
             {
-                triABD.ABNeighborSide = Side.CA;
+                triABD.ABNeighborConnectingSide = Side.CA;
             }
         }
         triABD.BCNeighbor = triBCD;
-        triABD.BCNeighborSide = Side.CA;
+        triABD.BCNeighborConnectingSide = Side.CA;
         triABD.CANeighbor = triCAD;
-        triABD.CANeighborSide = Side.BC;
+        triABD.CANeighborConnectingSide = Side.BC;
 
         //BCD
         if (currentTri.BCNeighbor != null)
@@ -109,21 +109,21 @@ public class DelaunayTriangulation : MonoBehaviour
             triBCD.ABNeighbor = currentTri.BCNeighbor;
             if (currentTri.C == currentTri.ABNeighbor.A)
             {
-                triBCD.ABNeighborSide = Side.AB;
+                triBCD.ABNeighborConnectingSide = Side.AB;
             }
             else if (currentTri.C == currentTri.ABNeighbor.B)
             {
-                triBCD.ABNeighborSide = Side.BC;
+                triBCD.ABNeighborConnectingSide = Side.BC;
             }
             else if (currentTri.C == currentTri.ABNeighbor.C)
             {
-                triBCD.ABNeighborSide = Side.CA;
+                triBCD.ABNeighborConnectingSide = Side.CA;
             }
         }
         triBCD.BCNeighbor = triCAD;
-        triBCD.BCNeighborSide = Side.CA;
+        triBCD.BCNeighborConnectingSide = Side.CA;
         triBCD.CANeighbor = triABD;
-        triBCD.CANeighborSide = Side.BC;
+        triBCD.CANeighborConnectingSide = Side.BC;
 
         //CAD
         if (currentTri.CANeighbor != null)
@@ -131,21 +131,21 @@ public class DelaunayTriangulation : MonoBehaviour
             triCAD.ABNeighbor = currentTri.CANeighbor;
             if (currentTri.A == currentTri.ABNeighbor.A)
             {
-                triCAD.ABNeighborSide = Side.AB;
+                triCAD.ABNeighborConnectingSide = Side.AB;
             }
             else if (currentTri.A == currentTri.ABNeighbor.B)
             {
-                triCAD.ABNeighborSide = Side.BC;
+                triCAD.ABNeighborConnectingSide = Side.BC;
             }
             else if (currentTri.A == currentTri.ABNeighbor.C)
             {
-                triCAD.ABNeighborSide = Side.CA;
+                triCAD.ABNeighborConnectingSide = Side.CA;
             }
         }
         triCAD.BCNeighbor = triABD;
-        triCAD.BCNeighborSide = Side.CA;
+        triCAD.BCNeighborConnectingSide = Side.CA;
         triCAD.CANeighbor = triBCD;
-        triCAD.CANeighborSide = Side.BC;
+        triCAD.CANeighborConnectingSide = Side.BC;
 
         return new List<Tri> { triABD , triBCD , triCAD };
     }
