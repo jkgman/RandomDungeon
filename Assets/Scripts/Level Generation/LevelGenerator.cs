@@ -112,7 +112,11 @@ public class LevelGenerator : MonoBehaviour
             startingNodes.Add(instantiatedRooms[i].node);
         }
         triangulate = GetComponent<DelaunyTriangulationV2>();
-        triangulate.DelaunayTriangulate(startingNodes,new Vector2(xMin,yMin), new Vector2(xMax,yMax));
+        List<Node> starting = new List<Node>();
+        starting.Add(new Node(new Vector2(0,settings.arcRadius/2)));
+        //starting.Add(new Node(startpoints[0]));
+        //starting.Add(new Node(startpoints[1]));
+        triangulate.DelaunayTriangulation(starting, startingNodes,new Vector2(xMin,yMin), new Vector2(xMax,yMax));
     }
 
     private void OnValidate()

@@ -6,28 +6,64 @@ public class DelaunyTriangulationV2 : MonoBehaviour
 {
     List<Node> UnsortedNodes = new List<Node>();
     List<Node> SortedNodes = new List<Node>();
+    List<Node> TempNodes = new List<Node>();
 
     List<Tri> tris = new List<Tri>();
     List<Tri> triangulationQueue = new List<Tri>();
+    Side returnedTestQuadSide;
+
     public float rad = 1;
     public bool gizmos = false;
 
-    //todo simplify
     /// <summary>
-    /// Take a list of nodes and vectors for the max and min size, from that triangulate the most equilateral path between all points with no overlapping paths
+    /// Take a list of nodes and vectors for the max and min size. 
+    /// Triangulate the most equilateral path between all points with no overlapping paths.
+    /// Only garunteed to work with convex surfaces.
     /// </summary>
     /// <param name="NodeSet">List of nodes to triangulate</param>
     /// <param name="min">Position of the most minimal node</param>
     /// <param name="max">Position of the maximun node</param>
-    public void DelaunayTriangulate(List<Node> NodeSet, Vector2 min, Vector2 max) {
+    public void DelaunayTriangulation(List<Node> NodeSet, Vector2 min, Vector2 max) {
         UnsortedNodes = NodeSet;
         Tri EncapTri = EncapsulateDomain(min, max);
 
         foreach (Node node in EncapTri.GetNodes())
         {
             SortedNodes.Add(node);
+            TempNodes.Add(node);
         }
         tris.Add(EncapTri.AddNodeConnections());
+        Triangulate();
+    }
+
+    /// <summary>
+    /// Take a list of nodes and vectors for the max and min size, as well as some starting nodes to refine how the paths are made. 
+    /// Triangulate the most equilateral path between all points with no overlapping paths.
+    /// Removes starting nodes after calculation. Only garunteed to work with convex surfaces, but the starting nodes can help refine the object.
+    /// </summary>
+    /// <param name="StartingNodes">//En</param>
+    /// <param name="NodeSet"></param>
+    public void DelaunayTriangulation(List<Node> startingNodes, List<Node> NodeSet, Vector2 min, Vector2 max) {
+        UnsortedNodes = NodeSet;
+        Tri EncapTri = EncapsulateDomain(min, max);
+
+        foreach (Node node in EncapTri.GetNodes())
+        {
+            SortedNodes.Add(node);
+            TempNodes.Add(node);
+        }
+        foreach (Node node in startingNodes) {
+            UnsortedNodes.Add(node);
+            TempNodes.Add(node);
+        }
+        tris.Add(EncapTri.AddNodeConnections());
+        Triangulate();
+    }
+
+    /// <summary>
+    /// Takes care of all the triangulation from the member variables initialized through one of the DelaunayTriangulation methods.
+    /// </summary>
+    private void Triangulate() {
         while (UnsortedNodes.Count > 0)
         {
             //Find encapsulating tri for current node
@@ -64,23 +100,23 @@ public class DelaunyTriangulationV2 : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("Node was not in tri specified: " + encapsulatingTri.PrintTri()  + " Node: " + UnsortedNodes[UnsortedNodes.Count - 1].Pos2D);
+                Debug.LogWarning("Node was not in tri specified: " + encapsulatingTri.PrintTri() + " Node: " + UnsortedNodes[UnsortedNodes.Count - 1].Pos2D);
                 UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]);
                 continue;
             }
-            
-            
+
+
             if (!tris.Remove(encapsulatingTri.RemoveNodeConnections()))
             {
                 Debug.Log("Failed to remove containing tri " + encapsulatingTri.PrintTri());
             }
-            
+
             SortedNodes.Add(UnsortedNodes[UnsortedNodes.Count - 1]);
             if (!UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]))
             {
                 Debug.Log("failed to remove unsorted node " + UnsortedNodes[UnsortedNodes.Count - 1]);
             }
-            
+
             foreach (Tri tri in splitTris)
             {
                 tris.Add(tri.AddNodeConnections());
@@ -99,6 +135,30 @@ public class DelaunyTriangulationV2 : MonoBehaviour
                 }
                 else
                 {
+                    //set neighbors of new tris
+                    if (triSet[0].GetNeighbor(triSet[0].PrevSide(returnedTestQuadSide)) != null)
+                    {
+                        triSet[2].UpdateNeighbor(Side.AB, triSet[0].GetNeighbor(triSet[0].PrevSide(returnedTestQuadSide)), triSet[0].GetNeighborConnectingSide(triSet[0].PrevSide(returnedTestQuadSide)));
+                    }
+                    if (triSet[0].GetNeighbor(returnedTestQuadSide).GetNeighbor(triSet[0].GetNeighbor(returnedTestQuadSide).NextSide(triSet[0].GetNeighborConnectingSide(returnedTestQuadSide))) != null)
+                    {
+                        triSet[2].UpdateNeighbor(Side.BC, triSet[0].GetNeighbor(returnedTestQuadSide).GetNeighbor(triSet[0].GetNeighbor(returnedTestQuadSide).NextSide(triSet[0].GetNeighborConnectingSide(returnedTestQuadSide))),
+                            triSet[0].GetNeighbor(returnedTestQuadSide).GetNeighborConnectingSide(triSet[0].GetNeighbor(returnedTestQuadSide).NextSide(triSet[0].GetNeighborConnectingSide(returnedTestQuadSide))));
+                    }
+
+
+                    if (triSet[0].GetNeighbor(triSet[0].NextSide(returnedTestQuadSide)) != null)
+                    {
+                        triSet[3].UpdateNeighbor(Side.AB, triSet[0].GetNeighbor(triSet[0].NextSide(returnedTestQuadSide)), triSet[0].GetNeighborConnectingSide(triSet[0].NextSide(returnedTestQuadSide)));
+                    }
+                    if (triSet[0].GetNeighbor(returnedTestQuadSide).GetNeighbor(triSet[0].GetNeighbor(returnedTestQuadSide).PrevSide(triSet[0].GetNeighborConnectingSide(returnedTestQuadSide))) != null)
+                    {
+                        triSet[3].UpdateNeighbor(Side.CA, triSet[0].GetNeighbor(returnedTestQuadSide).GetNeighbor(triSet[0].GetNeighbor(returnedTestQuadSide).PrevSide(triSet[0].GetNeighborConnectingSide(returnedTestQuadSide))),
+                            triSet[0].GetNeighbor(returnedTestQuadSide).GetNeighborConnectingSide(triSet[0].GetNeighbor(returnedTestQuadSide).PrevSide(triSet[0].GetNeighborConnectingSide(returnedTestQuadSide))));
+                    }
+
+                    triSet[2].UpdateNeighbor(Side.CA, triSet[3], Side.BC);
+
 
                     if (!tris.Remove(triSet[0]))
                     {
@@ -133,25 +193,23 @@ public class DelaunyTriangulationV2 : MonoBehaviour
                 }
             }
         }
-        //for (int i = tris.Count - 1; i >= 0; i--)
-        //{
-        //    if (tris[i].A.Pos2D == this.SortedNodes[0].Pos2D || tris[i].A.Pos2D == this.SortedNodes[1].Pos2D || tris[i].A.Pos2D == this.SortedNodes[2].Pos2D)
-        //    {
-        //        tris.RemoveAt(i);
+        RemoveStartingNodes();
+    }
 
-        //    }
-        //    else
-        //    if (tris[i].B.Pos2D == this.SortedNodes[0].Pos2D || tris[i].B.Pos2D == this.SortedNodes[1].Pos2D || tris[i].B.Pos2D == this.SortedNodes[2].Pos2D)
-        //    {
-        //        tris.RemoveAt(i);
-
-        //    }
-        //    else
-        //    if (tris[i].C.Pos2D == this.SortedNodes[0].Pos2D || tris[i].C.Pos2D == this.SortedNodes[1].Pos2D || tris[i].C.Pos2D == this.SortedNodes[2].Pos2D)
-        //    {
-        //        tris.RemoveAt(i);
-        //    }
-        //}
+    /// <summary>
+    /// Removes all nodes from the tempnode list
+    /// </summary>
+    private void RemoveStartingNodes() {
+        for (int i = tris.Count - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < TempNodes.Count; j++)
+            {
+                if (tris[i].SharesNode(TempNodes[j]))
+                {
+                    tris.RemoveAt(i);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -232,9 +290,8 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         return null;
     }
 
-    //todo simplify
     /// <summary>
-    /// If the quad is bad return [0] abc [1] acd [2] bcd [3] abd else return null
+    /// If the quad is bad return [0] abc [1] acd [2] bcd [3] abd and sets returnedQuadTestSide member variable to the tested side else return null
     /// </summary>
     /// <param name="tri">Tri to Test</param>
     /// <param name="side">Side to Test</param>
@@ -259,33 +316,12 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         D = tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side));
         if (IsQuadBad(A, B, C, D))
         {
+            //Exposes side used to class
+            returnedTestQuadSide = side;
             //Add tris that make up flipped quad to solution array
             solution[2] = new Tri(B, C, D);
             solution[3] = new Tri(A, B, D);
-
-            if (tri.GetNeighbor(tri.PrevSide(side)) != null)
-            {
-                solution[2].UpdateNeighbor(Side.AB, tri.GetNeighbor(tri.PrevSide(side)), tri.GetNeighborConnectingSide(tri.PrevSide(side)));
-            }
-            if (tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).NextSide(tri.GetNeighborConnectingSide(side))) != null)
-            {
-                solution[2].UpdateNeighbor(Side.BC, tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).NextSide(tri.GetNeighborConnectingSide(side))),
-                    tri.GetNeighbor(side).GetNeighborConnectingSide(tri.GetNeighbor(side).NextSide(tri.GetNeighborConnectingSide(side))));
-            }
-
-
-            if (tri.GetNeighbor(tri.NextSide(side)) != null)
-            {
-                solution[3].UpdateNeighbor(Side.AB, tri.GetNeighbor(tri.NextSide(side)), tri.GetNeighborConnectingSide(tri.NextSide(side)));
-            }
-            if (tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).PrevSide(tri.GetNeighborConnectingSide(side))) != null)
-            {
-                solution[3].UpdateNeighbor(Side.CA, tri.GetNeighbor(side).GetNeighbor(tri.GetNeighbor(side).PrevSide(tri.GetNeighborConnectingSide(side))),
-                    tri.GetNeighbor(side).GetNeighborConnectingSide(tri.GetNeighbor(side).PrevSide(tri.GetNeighborConnectingSide(side))));
-            }
-
-            solution[2].UpdateNeighbor(Side.CA, solution[3], Side.BC);
-
+            
             return solution;
         }
         else
@@ -680,5 +716,15 @@ public class Tri
         {
             return A;
         }
+    }
+    public bool SharesNode(Node node) {
+        for (int i = 0; i < 3; i++)
+        {
+            if (GetNodes()[i] == node)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
