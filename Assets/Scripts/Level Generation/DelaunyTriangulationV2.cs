@@ -8,38 +8,17 @@ public class DelaunyTriangulationV2 : MonoBehaviour
     List<Node> SortedNodes = new List<Node>();
 
     List<Tri> tris = new List<Tri>();
-
     List<Tri> triangulationQueue = new List<Tri>();
     public float rad = 1;
     public bool gizmos = false;
-    //private void Start()
-    //{
-    //    Node a = new Node(new Vector2(0,0));
-    //    Node b = new Node(new Vector2(1,0));
-    //    Node c = new Node(new Vector2(0, 1));
-    //    Node d = new Node(new Vector2(.8f, .8f));
-    //    Debug.Log("Quad is: " + IsQuadBad(a, b, c, d) + " ABC: " + a.Pos2D + " " + b.Pos2D + " " + c.Pos2D + " D: " + d.Pos2D);
-    //    Tri tri = new Tri(a,b,c);
-    //    Tri tri2 = new Tri(b,d,c);
-    //    tri.SetNeighbor(Side.BC, tri2,Side.CA);
-    //    tri2.SetNeighbor(Side.CA, tri, Side.BC);
-    //    Tri[] newTris = VerifyTri(tri);
-    //    if (newTris != null)
-    //    {
-    //        Debug.Log("Tri 1: " + tri.A.Pos2D + " " + tri.B.Pos2D + " " + tri.C.Pos2D + " Tri 2: " + tri2.A.Pos2D + " " + tri2.B.Pos2D + " " + tri2.C.Pos2D);
-    //        Debug.Log("newTris 0: " + newTris[0].A.Pos2D + " " + newTris[0].B.Pos2D + " " + newTris[0].C.Pos2D + " newTris 1: " + newTris[1].A.Pos2D + " " + newTris[1].B.Pos2D + " " + newTris[1].C.Pos2D);
-    //        Debug.Log("newTris 2: " + newTris[2].A.Pos2D + " " + newTris[2].B.Pos2D + " " + newTris[2].C.Pos2D + " newTris 3: " + newTris[3].A.Pos2D + " " + newTris[3].B.Pos2D + " " + newTris[3].C.Pos2D);
-    //        Debug.Log(newTris[0].GetNeighbor(Side.BC).PrintTri());
-    //    }
-    //    else
-    //    {
-    //        Debug.Log("tris good");
-    //        Debug.Log("Tri 1: " + a.Pos2D + " " + b.Pos2D + " " + c.Pos2D + " Tri 2: " + a.Pos2D + " " + b.Pos2D + " " + d.Pos2D);
-    //    }
-        
 
-    //}
-
+    //todo simplify
+    /// <summary>
+    /// Take a list of nodes and vectors for the max and min size, from that triangulate the most equilateral path between all points with no overlapping paths
+    /// </summary>
+    /// <param name="NodeSet">List of nodes to triangulate</param>
+    /// <param name="min">Position of the most minimal node</param>
+    /// <param name="max">Position of the maximun node</param>
     public void DelaunayTriangulate(List<Node> NodeSet, Vector2 min, Vector2 max) {
         UnsortedNodes = NodeSet;
         Tri EncapTri = EncapsulateDomain(min, max);
@@ -51,14 +30,46 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         tris.Add(EncapTri.AddNodeConnections());
         while (UnsortedNodes.Count > 0)
         {
+            //Find encapsulating tri for current node
             Tri encapsulatingTri = FindEncapsulatingTri(tris, UnsortedNodes[UnsortedNodes.Count - 1]);
+            //Check that a tri was found
             if (encapsulatingTri == null)
             {
                 Debug.LogWarning("Could not find encapsulating tri for node at: " + UnsortedNodes[UnsortedNodes.Count - 1].Pos2D);
                 UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]);
                 continue;
             }
+
+            //get the split tris tris
             Tri[] splitTris = SplitTri(encapsulatingTri, UnsortedNodes[UnsortedNodes.Count - 1]);
+            if (splitTris != null)
+            {
+                //if splittri sucset neighbors of split tri
+
+                if (encapsulatingTri.ABNeighbor != null)
+                {
+                    splitTris[0].UpdateNeighbor(Side.AB, encapsulatingTri.ABNeighbor, encapsulatingTri.ABNeighborConnectingSide);
+                }
+                if (encapsulatingTri.BCNeighbor != null)
+                {
+                    splitTris[1].UpdateNeighbor(Side.AB, encapsulatingTri.BCNeighbor, encapsulatingTri.BCNeighborConnectingSide);
+                }
+                if (encapsulatingTri.CANeighbor != null)
+                {
+                    splitTris[2].UpdateNeighbor(Side.AB, encapsulatingTri.CANeighbor, encapsulatingTri.CANeighborConnectingSide);
+                }
+                splitTris[0].UpdateNeighbor(Side.BC, splitTris[1], Side.CA);
+                splitTris[1].UpdateNeighbor(Side.BC, splitTris[2], Side.CA);
+                splitTris[2].UpdateNeighbor(Side.BC, splitTris[0], Side.CA);
+            }
+            else
+            {
+                Debug.LogWarning("Node was not in tri specified: " + encapsulatingTri.PrintTri()  + " Node: " + UnsortedNodes[UnsortedNodes.Count - 1].Pos2D);
+                UnsortedNodes.Remove(UnsortedNodes[UnsortedNodes.Count - 1]);
+                continue;
+            }
+            
+            
             if (!tris.Remove(encapsulatingTri.RemoveNodeConnections()))
             {
                 Debug.Log("Failed to remove containing tri " + encapsulatingTri.PrintTri());
@@ -146,8 +157,8 @@ public class DelaunyTriangulationV2 : MonoBehaviour
     /// <summary>
     /// return tri that encapsulates the given range
     /// </summary>
-    /// <param name="min"></param>
-    /// <param name="max"></param>
+    /// <param name="min">Minimum Range Value</param>
+    /// <param name="max">Maximum Range Value</param>
     /// <returns></returns>
     private Tri EncapsulateDomain(Vector2 min, Vector2 max) {
         float tan = Mathf.Tan(45 * Mathf.Deg2Rad);
@@ -161,10 +172,12 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         Node c = new Node(cpos);
         return new Tri(a, b, c);
     }
+
     /// <summary>
-    /// Returns the tri that node is in or null if outside all
+    /// Returns the tri from given list that the given node is in or null if none are found
     /// </summary>
-    /// <param name="node">Node to find encapsulating tri</param>
+    /// <param name="tris">List of tris from which to find encapsulating tri</param>
+    /// <param name="node">Node of wich we want to find encapsulating tri</param>
     /// <returns></returns>
     private Tri FindEncapsulatingTri(List<Tri> tris,Node node) {
         for (int i = 0; i < tris.Count; i++)
@@ -176,36 +189,29 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         }
         return null;
     }
+
     /// <summary>
-    /// return abd,bcd,cad
+    /// Given a tri and node located inside it returns three tris that are the outcome of splitting the tri on the node. Returns null if node is outside.
     /// </summary>
-    /// <param name="tri">Tri ABC</param>
-    /// <param name="node">Node D</param>
+    /// <param name="tri">Containing tri</param>
+    /// <param name="node">Inner node</param>
     /// <returns></returns>
     private Tri[] SplitTri(Tri tri, Node node) {
+        if (!tri.InTri(node))
+        {
+            return null;
+        }
         Tri triABD = new Tri(tri.A, tri.B, node);
         Tri triBCD = new Tri(tri.B, tri.C, node);
         Tri triCAD = new Tri(tri.C, tri.A, node);
-
-        if (tri.ABNeighbor != null)
-        {
-            triABD.UpdateNeighbor(Side.AB, tri.ABNeighbor, tri.ABNeighborConnectingSide);
-        }
-        if (tri.BCNeighbor != null)
-        {
-            triBCD.UpdateNeighbor(Side.AB, tri.BCNeighbor, tri.BCNeighborConnectingSide);
-        }
-        if (tri.CANeighbor != null)
-        {
-            triCAD.UpdateNeighbor(Side.AB, tri.CANeighbor, tri.CANeighborConnectingSide);
-        }
-
-        triABD.UpdateNeighbor(Side.BC, triBCD, Side.CA);
-        triBCD.UpdateNeighbor(Side.BC, triCAD, Side.CA);
-        triCAD.UpdateNeighbor(Side.BC, triABD, Side.CA);
-
         return new Tri[] { triABD,triBCD,triCAD};
     }
+
+    /// <summary>
+    /// Takes a tri and tests the quads made up by each side to see if any are in a none optimal configuration, returns the first bad quad result it gets, or null.
+    /// </summary>
+    /// <param name="tri">Tri to be tested</param>
+    /// <returns></returns>
     private Tri[] VerifyTri(Tri tri) {
         Tri[] AB,BC,CA;
         AB = TestQuad(tri, Side.AB);
@@ -225,6 +231,8 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         }
         return null;
     }
+
+    //todo simplify
     /// <summary>
     /// If the quad is bad return [0] abc [1] acd [2] bcd [3] abd else return null
     /// </summary>
@@ -232,17 +240,28 @@ public class DelaunyTriangulationV2 : MonoBehaviour
     /// <param name="side">Side to Test</param>
     /// <returns></returns>
     private Tri[] TestQuad(Tri tri, Side side) {
+        //If theres no side on the given side to check return null
         if (!tri.HasSide(side))
         {
             return null;
         }
+
+        //prepare the array for returning and add starting tris
         Tri[] solution = new Tri[4];
         solution[0] = tri;
         solution[1] = tri.GetNeighbor(side);
-        if (IsQuadBad(tri.PrevNode(tri.OpposingNode(side)),tri.OpposingNode(side), tri.NextNode(tri.OpposingNode(side)), tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side))))
+
+        //Set the nodes that make up quad ABC ACD
+        Node A, B, C, D;
+        A = tri.PrevNode(tri.OpposingNode(side));
+        B = tri.OpposingNode(side);
+        C = tri.NextNode(tri.OpposingNode(side));
+        D = tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side));
+        if (IsQuadBad(A, B, C, D))
         {
-            solution[2] = new Tri(tri.OpposingNode(side), tri.NextNode(tri.OpposingNode(side)), tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side)));
-            solution[3] = new Tri(tri.PrevNode(tri.OpposingNode(side)), tri.OpposingNode(side), tri.GetNeighbor(side).OpposingNode(tri.GetNeighborConnectingSide(side)));
+            //Add tris that make up flipped quad to solution array
+            solution[2] = new Tri(B, C, D);
+            solution[3] = new Tri(A, B, D);
 
             if (tri.GetNeighbor(tri.PrevSide(side)) != null)
             {
@@ -274,13 +293,10 @@ public class DelaunyTriangulationV2 : MonoBehaviour
             return null;
         }
     }
+
     /// <summary>
-    /// if quad abcd is bad return true
+    /// Tests if the quad formed by ABC and BDC is the most equilateral configuration, if it isnt return true.
     /// </summary>
-    /// <param name="A"></param>
-    /// <param name="B"></param>
-    /// <param name="C"></param>
-    /// <param name="D"></param>
     /// <returns></returns>
     private bool IsQuadBad(Node A, Node B, Node C, Node D) {
         float Xca = A.Pos2D.x - C.Pos2D.x, Xba = A.Pos2D.x - B.Pos2D.x, Xbd = D.Pos2D.x - B.Pos2D.x, Xcd = D.Pos2D.x - C.Pos2D.x;

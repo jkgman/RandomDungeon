@@ -15,10 +15,6 @@ public class DelaunayTriangulation : MonoBehaviour
 
     public bool gizmos= false;
 
-    private void Start()
-    {
-
-    }
     
     public void GenerateGraph(List<Node> startingNodes, float minX, float maxX, float minY, float maxY) {
         domainNodes = startingNodes;
