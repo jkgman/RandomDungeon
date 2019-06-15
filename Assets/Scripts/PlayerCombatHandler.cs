@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Events;
-using UnityEngine.Experimental.Input;
+using UnityEngine.InputSystem;
 using UnityEngine;
 
 namespace Dungeon.Player
@@ -540,10 +540,10 @@ namespace Dungeon.Player
 			inputs.Player.SwitchTarget.started += InputTargetSwitch;
 			inputs.Player.SwitchTarget.Enable();
 			inputs.Player.RunAndDodge.started += InputDodgeStarted;
-			inputs.Player.RunAndDodge.cancelled += InputDodgeCancelled;
+			inputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
 			inputs.Player.RunAndDodge.Enable();
 			inputs.Player.Attack.started += InputAttackStarted;
-			inputs.Player.Attack.cancelled += InputAttackCancelled;
+			inputs.Player.Attack.canceled += InputAttackCancelled;
 			inputs.Player.Attack.Enable();
 		}
 
@@ -554,7 +554,7 @@ namespace Dungeon.Player
 			inputs.Player.SwitchTarget.started -= InputTargetSwitch;
 			inputs.Player.SwitchTarget.Disable();
 			inputs.Player.RunAndDodge.started -= InputDodgeStarted;
-			inputs.Player.RunAndDodge.cancelled -= InputDodgeCancelled;
+			inputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
 			inputs.Player.RunAndDodge.Enable();
 		}
 

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Events;
-using UnityEngine.Experimental.Input;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 namespace Dungeon.Player
@@ -490,12 +490,12 @@ namespace Dungeon.Player
 
 			inputs.Player.Move.started += InputMoveStarted;
 			inputs.Player.Move.performed += InputMovePerformed;
-			inputs.Player.Move.cancelled += InputMoveCancelled;
+			inputs.Player.Move.canceled += InputMoveCancelled;
 			inputs.Player.Move.Enable();
 
 			inputs.Player.RunAndDodge.started += InputRunStarted;
 			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
-			inputs.Player.RunAndDodge.cancelled += InputRunCancelled;
+			inputs.Player.RunAndDodge.canceled += InputRunCancelled;
 			inputs.Player.RunAndDodge.Disable();
 		}
 
@@ -503,13 +503,13 @@ namespace Dungeon.Player
 		{
 			inputs.Player.Move.started += InputMoveStarted;
 			inputs.Player.Move.performed -= InputMovePerformed;
-			inputs.Player.Move.cancelled -= InputMoveCancelled;
+			inputs.Player.Move.canceled -= InputMoveCancelled;
 			inputs.Player.Move.Disable();
 
 
 			inputs.Player.RunAndDodge.started -= InputRunStarted;
 			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
-			inputs.Player.RunAndDodge.cancelled -= InputRunCancelled;
+			inputs.Player.RunAndDodge.canceled -= InputRunCancelled;
 			inputs.Player.RunAndDodge.Disable();
 		}
 

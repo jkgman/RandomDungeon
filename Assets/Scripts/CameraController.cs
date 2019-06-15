@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Experimental.Input;
+using UnityEngine.InputSystem;
 
 
 ///

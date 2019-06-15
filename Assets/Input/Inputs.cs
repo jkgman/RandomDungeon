@@ -4,8 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.Input;
-using UnityEngine.Experimental.Input.Utilities;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
 
 public class Inputs : IInputActionCollection
 {
@@ -681,44 +681,54 @@ public class Inputs : IInputActionCollection
         m_Player_TargetLock = m_Player.GetAction("TargetLock");
         m_Player_SwitchTarget = m_Player.GetAction("SwitchTarget");
     }
+
     ~Inputs()
     {
         UnityEngine.Object.Destroy(asset);
     }
+
     public InputBinding? bindingMask
     {
         get => asset.bindingMask;
         set => asset.bindingMask = value;
     }
+
     public ReadOnlyArray<InputDevice>? devices
     {
         get => asset.devices;
         set => asset.devices = value;
     }
+
     public ReadOnlyArray<InputControlScheme> controlSchemes
     {
         get => asset.controlSchemes;
     }
+
     public bool Contains(InputAction action)
     {
         return asset.Contains(action);
     }
+
     public IEnumerator<InputAction> GetEnumerator()
     {
         return asset.GetEnumerator();
     }
+
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
+
     public void Enable()
     {
         asset.Enable();
     }
+
     public void Disable()
     {
         asset.Disable();
     }
+
     // UI
     private InputActionMap m_UI;
     private IUIActions m_UIActionsCallbackInterface;
@@ -748,38 +758,38 @@ public class Inputs : IInputActionCollection
             {
                 Navigate.started -= m_Wrapper.m_UIActionsCallbackInterface.OnNavigate;
                 Navigate.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnNavigate;
-                Navigate.cancelled -= m_Wrapper.m_UIActionsCallbackInterface.OnNavigate;
+                Navigate.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnNavigate;
                 Submit.started -= m_Wrapper.m_UIActionsCallbackInterface.OnSubmit;
                 Submit.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnSubmit;
-                Submit.cancelled -= m_Wrapper.m_UIActionsCallbackInterface.OnSubmit;
+                Submit.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnSubmit;
                 Cancel.started -= m_Wrapper.m_UIActionsCallbackInterface.OnCancel;
                 Cancel.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnCancel;
-                Cancel.cancelled -= m_Wrapper.m_UIActionsCallbackInterface.OnCancel;
+                Cancel.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnCancel;
                 Point.started -= m_Wrapper.m_UIActionsCallbackInterface.OnPoint;
                 Point.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnPoint;
-                Point.cancelled -= m_Wrapper.m_UIActionsCallbackInterface.OnPoint;
+                Point.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnPoint;
                 Click.started -= m_Wrapper.m_UIActionsCallbackInterface.OnClick;
                 Click.performed -= m_Wrapper.m_UIActionsCallbackInterface.OnClick;
-                Click.cancelled -= m_Wrapper.m_UIActionsCallbackInterface.OnClick;
+                Click.canceled -= m_Wrapper.m_UIActionsCallbackInterface.OnClick;
             }
             m_Wrapper.m_UIActionsCallbackInterface = instance;
             if (instance != null)
             {
                 Navigate.started += instance.OnNavigate;
                 Navigate.performed += instance.OnNavigate;
-                Navigate.cancelled += instance.OnNavigate;
+                Navigate.canceled += instance.OnNavigate;
                 Submit.started += instance.OnSubmit;
                 Submit.performed += instance.OnSubmit;
-                Submit.cancelled += instance.OnSubmit;
+                Submit.canceled += instance.OnSubmit;
                 Cancel.started += instance.OnCancel;
                 Cancel.performed += instance.OnCancel;
-                Cancel.cancelled += instance.OnCancel;
+                Cancel.canceled += instance.OnCancel;
                 Point.started += instance.OnPoint;
                 Point.performed += instance.OnPoint;
-                Point.cancelled += instance.OnPoint;
+                Point.canceled += instance.OnPoint;
                 Click.started += instance.OnClick;
                 Click.performed += instance.OnClick;
-                Click.cancelled += instance.OnClick;
+                Click.canceled += instance.OnClick;
             }
         }
     }
@@ -790,6 +800,7 @@ public class Inputs : IInputActionCollection
             return new UIActions(this);
         }
     }
+
     // Player
     private InputActionMap m_Player;
     private IPlayerActions m_PlayerActionsCallbackInterface;
@@ -821,44 +832,44 @@ public class Inputs : IInputActionCollection
             {
                 Move.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
                 Move.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
-                Move.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
+                Move.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnMove;
                 RunAndDodge.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnRunAndDodge;
                 RunAndDodge.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnRunAndDodge;
-                RunAndDodge.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnRunAndDodge;
+                RunAndDodge.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnRunAndDodge;
                 Look.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
                 Look.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
-                Look.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
+                Look.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
                 Attack.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
                 Attack.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
-                Attack.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
+                Attack.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
                 TargetLock.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
                 TargetLock.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
-                TargetLock.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
+                TargetLock.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
                 SwitchTarget.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchTarget;
                 SwitchTarget.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchTarget;
-                SwitchTarget.cancelled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchTarget;
+                SwitchTarget.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSwitchTarget;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
             {
                 Move.started += instance.OnMove;
                 Move.performed += instance.OnMove;
-                Move.cancelled += instance.OnMove;
+                Move.canceled += instance.OnMove;
                 RunAndDodge.started += instance.OnRunAndDodge;
                 RunAndDodge.performed += instance.OnRunAndDodge;
-                RunAndDodge.cancelled += instance.OnRunAndDodge;
+                RunAndDodge.canceled += instance.OnRunAndDodge;
                 Look.started += instance.OnLook;
                 Look.performed += instance.OnLook;
-                Look.cancelled += instance.OnLook;
+                Look.canceled += instance.OnLook;
                 Attack.started += instance.OnAttack;
                 Attack.performed += instance.OnAttack;
-                Attack.cancelled += instance.OnAttack;
+                Attack.canceled += instance.OnAttack;
                 TargetLock.started += instance.OnTargetLock;
                 TargetLock.performed += instance.OnTargetLock;
-                TargetLock.cancelled += instance.OnTargetLock;
+                TargetLock.canceled += instance.OnTargetLock;
                 SwitchTarget.started += instance.OnSwitchTarget;
                 SwitchTarget.performed += instance.OnSwitchTarget;
-                SwitchTarget.cancelled += instance.OnSwitchTarget;
+                SwitchTarget.canceled += instance.OnSwitchTarget;
             }
         }
     }
