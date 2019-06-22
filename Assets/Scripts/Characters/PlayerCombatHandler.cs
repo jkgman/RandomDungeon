@@ -27,7 +27,7 @@ namespace Dungeon.Player
 		[Header("Attack shit")]
 		[SerializeField] private Transform rightHand;
 		[SerializeField] private Transform leftHand;
-		[SerializeField] private Items.Weapon currentWeapon;
+		private Items.Weapon currentWeapon;
 		private IEnumerator currentAttackCo;
 
 		[Header("Dodge shit")]
@@ -87,6 +87,10 @@ namespace Dungeon.Player
 		void Awake()
 		{
 			ControlsSubscribe();
+
+			currentWeapon = GetComponentInChildren<Items.Weapon>();
+			if (currentWeapon)
+				currentWeapon.CurrentEquipper = transform;
 		}
 
 		void Start() {

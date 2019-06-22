@@ -7,11 +7,15 @@ namespace Dungeon.Enemy
 	public class Enemy : MonoBehaviour
 	{
 		bool isActive = true;
-		public EnemyStats stats;
-
-		void Awake()
+		private EnemyStats _stats;
+		public EnemyStats Stats
 		{
-			stats = GetComponent<EnemyStats>();
+			get
+			{
+				if (!_stats)
+					_stats = GetComponent<EnemyStats>();
+				return _stats;
+			}
 		}
 
 		public bool CanBeTargeted()

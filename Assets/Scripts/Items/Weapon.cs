@@ -70,7 +70,6 @@ namespace Dungeon.Items
 		[Header("General data")]
 		[SerializeField] private bool isEquipped;
 		[SerializeField] private bool staggerableDuringAction;
-		[SerializeField] private float stackInterval;
 		[SerializeField] private List<AttackData> lightAttacks = new List<AttackData>();
 		[SerializeField] private List<AttackData> heavyAttacks = new List<AttackData>();
 
@@ -78,6 +77,11 @@ namespace Dungeon.Items
 		[SerializeField] private AllowedActionsSpecific actionsDuringFree;
 		[SerializeField] private AllowedActionsGeneral actionsGeneral;
 
+		public Transform CurrentEquipper
+		{
+			get;
+			set;
+		}
 
 		public float CurrentMoveDistance(float evaluationTime)
 		{
@@ -353,14 +357,28 @@ namespace Dungeon.Items
 
 		private void OnTriggerEnter(Collider other)
 		{
-			if (!IsAttacking)
+			if (!IsAttacking || CurrentAttackState != AttackState.attack)
 				return;
 
 			ITakeDamage dmg = other.GetComponent<ITakeDamage>();
 
-			if (dmg != null)
+			if (dmg != null && other.transform != CurrentEquipper)
 			{
 				Debug.Log("Weapon dealing "+ GetCurrentDamage() + " damage to: " + other.gameObject.name);
+				dmg.TakeDamage(GetCurrentDamage());
+			}
+		}
+
+		private void OnTriggerStay(Collider other)
+		{
+			if (!IsAttacking || CurrentAttackState != AttackState.attack)
+				return;
+
+			ITakeDamage dmg = other.GetComponent<ITakeDamage>();
+
+			if (dmg != null && other.transform != CurrentEquipper)
+			{
+				Debug.Log("Weapon dealing " + GetCurrentDamage() + " damage to: " + other.gameObject.name);
 				dmg.TakeDamage(GetCurrentDamage());
 			}
 		}
