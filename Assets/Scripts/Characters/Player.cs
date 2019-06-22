@@ -1,18 +1,17 @@
 ﻿using UnityEngine;
 
-namespace Dungeon.Player {
+namespace Dungeon.Player 
+{
 
-/// <summary>
-/// Master script of player that holds references to sub-scripts.
-/// </summary>
-	public class PlayerManager : MonoBehaviour, IAllowedActions
+	/// <summary>
+	/// Master script of player that holds references to sub-scripts.
+	/// </summary>
+	public class Player : MonoBehaviour, IAllowedActions
 	{
 		
 		//If same key uses multiple bindings depending on the length of input, this is used.
 		//Example: Running=Press&Hold - Dodge=Press&Release
 		public readonly float inputMaxPressTime = 0.3f;
-
-
 
 		#region IAllowedActions
 
@@ -65,6 +64,18 @@ namespace Dungeon.Player {
 		#endregion
 
 		#region Getters & Setters
+
+		private PlayerStats _pStats;
+		public PlayerStats PStats
+		{
+			get
+			{
+				if (!_pStats)
+					_pStats = GetComponent<PlayerStats>();
+
+				return _pStats;
+			}
+		}
 
 		private PlayerController _pController;
 		public PlayerController PController

@@ -73,27 +73,26 @@ namespace Dungeon
 
 
 		#region Getters & Setters
-
-		private Player.PlayerManager _playerManager;
-		private Player.PlayerManager PlayerManager
+		private Player.Player _playerManager;
+		private Player.Player Player
 		{
 			get
 			{
 				if (!_playerManager)
 				{
 					var go = GameObject.FindGameObjectWithTag("Player");
-					_playerManager = go.GetComponent<Player.PlayerManager>();
+					_playerManager = go.GetComponent<Player.Player>();
 				}
 				return _playerManager;
 			}
 		}
 		private Vector3 PlayerPos
 		{
-			get { return PlayerManager.transform.position; }
+			get { return Player.transform.position; }
 		}
 		private Transform PlayerTarget
 		{
-			get { return PlayerManager.PCombat.Target; }
+			get { return Player.PCombat.Target; }
 
 		}
 
@@ -156,7 +155,7 @@ namespace Dungeon
 
 		void Awake() 
 		{
-			if (PlayerManager)
+			if (Player)
 			{
 				AddEvents();
 				ControlsSubscribe();
@@ -260,7 +259,7 @@ namespace Dungeon
 				Vector3 midPos = (PlayerTarget.position + PlayerPos) / 2f;
 				Vector3 vectorBetween = PlayerTarget.position - PlayerPos;
 				//Weight towards player the further away target is
-				Vector3 goalPos = Vector3.Lerp(midPos, PlayerPos, PlayerManager.PCombat.GetMaxDistToTarget / vectorBetween.magnitude);
+				Vector3 goalPos = Vector3.Lerp(midPos, PlayerPos, Player.PCombat.GetMaxDistToTarget / vectorBetween.magnitude);
 				//Lerp determines how much camera lags behind player
 				dummyPos = Vector3.Lerp(dummyPos, goalPos, Time.smoothDeltaTime * LERP_DUMMY_TARGETING);
 			}

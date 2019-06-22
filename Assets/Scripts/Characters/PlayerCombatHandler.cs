@@ -67,13 +67,13 @@ namespace Dungeon.Player
 			private set;
 		}
 
-		private PlayerManager _pManager;
-		private PlayerManager PManager
+		private Player _pManager;
+		private Player PManager
 		{
 			get
 			{
 				if (!_pManager)
-					_pManager = GetComponent<PlayerManager>();
+					_pManager = GetComponent<Player>();
 
 				return _pManager;
 			}
@@ -236,7 +236,7 @@ namespace Dungeon.Player
 			{
 				for (int i = 0; i < cols.Length; i++)
 				{
-					var enemy = cols[i].GetComponent<Enemy>();
+					var enemy = cols[i].GetComponent<Enemy.Enemy>();
 					if (enemy && enemy.CanBeTargeted() && !temp.Contains(enemy.transform))
 					{
 						temp.Add(enemy.transform);
@@ -454,7 +454,7 @@ namespace Dungeon.Player
 
 				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
 				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
-				PManager.PController.ExternalMove(transform.forward * moveOffset);
+				PManager.PController.ExternalMove(moveDirection * moveOffset);
 
 				if (currentWeapon.CanRotate(Target != null))
 					PManager.PController.ExternalRotateToInputDirection();
@@ -490,7 +490,7 @@ namespace Dungeon.Player
 
 				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
 				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
-				PManager.PController.ExternalMove(transform.forward * moveOffset);
+				PManager.PController.ExternalMove(moveDirection * moveOffset);
 
 				if (currentWeapon.CanRotate(Target != null))
 					PManager.PController.ExternalRotateToInputDirection();
@@ -505,18 +505,18 @@ namespace Dungeon.Player
 
 		Vector3 UpdateAttackMoveDirection(Vector3 current)
 		{
-			Vector3 output = current;
+			Vector3 output = transform.forward;
 
-			if (Target)
-			{
-				if (currentWeapon.CanRotate(hasTarget: true))
-					output = GetFlatDirectionToTarget();
-			}
-			else
-			{
-				if (currentWeapon.CanRotate(hasTarget: false))
-					output = PManager.PController.GetTransformedInputDirection(allowZero: false);
-			}
+			//if (Target)
+			//{
+			//	if (currentWeapon.CanRotate(hasTarget: true))
+			//		output = GetFlatDirectionToTarget();
+			//}
+			//else
+			//{
+			//	if (currentWeapon.CanRotate(hasTarget: false))
+			//		output = PManager.PController.GetTransformedInputDirection(allowZero: false);
+			//}
 
 			return output;
 		}

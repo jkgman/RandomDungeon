@@ -55,11 +55,11 @@ namespace Dungeon.Player
 
 		#region References
 
-		private PlayerManager _pManager;
-		private PlayerManager PManager {
+		private Player _pManager;
+		private Player PManager {
 			get {
 				if (!_pManager)
-					_pManager = GetComponent<PlayerManager>();
+					_pManager = GetComponent<Player>();
 				return _pManager;
 			}
 		}
@@ -375,7 +375,7 @@ namespace Dungeon.Player
 			if (PManager.AllowRotate() && GetTransformedInputDirection().magnitude > 0)
 				lookRotFromInput = true;
 
-			if (PManager.AllowRotate() && lookRotFromInput)
+			if (PManager.AllowRotate())
 			{
 				if (PManager.PCombat.Target)
 				{
@@ -383,7 +383,7 @@ namespace Dungeon.Player
 					lookpos.y = 0;
 					lookRotRaw = Quaternion.LookRotation(lookpos);
 				}
-				else
+				else if (lookRotFromInput)
 				{
 					var lookpos = GetFlatMoveDirection(allowZero: false);
 					lookpos.y = 0;
