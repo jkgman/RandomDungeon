@@ -322,11 +322,11 @@ namespace Dungeon.Player
 			{
 				Vector3 newMoveOffset = Vector3.zero;
 
-				if (PManager.PCombat.Target)
+				if (PManager.PCombat.Target != null)
 				{
 					//This calculation moves along circular path around target according to sideways input (moveInputRaw.x)
 					Vector2 pos = new Vector2(transform.position.x, transform.position.z);
-					Vector2 targetPos = new Vector2(PManager.PCombat.Target.transform.position.x, PManager.PCombat.Target.transform.position.z);
+					Vector2 targetPos = new Vector2(PManager.PCombat.Target.GetPosition().x, PManager.PCombat.Target.GetPosition().z);
 
 					float currentAngle = Vector3.SignedAngle(Vector3.forward, -PManager.PCombat.GetFlatDirectionToTarget(), Vector3.up);
 					Vector2 newPosWithSidewaysOffset = MovePointAlongCircle(currentAngle, pos,targetPos, -currentMoveSpeedRaw.x * Time.deltaTime);
@@ -341,10 +341,10 @@ namespace Dungeon.Player
 					newMoveOffset += forwardMoveDir * Time.deltaTime;
 
 					//Prevent from going too close. This might become problematic for combat but we'll see.
-					float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(PManager.PCombat.Target.transform.position.x, 0, PManager.PCombat.Target.transform.position.z));
+					float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(PManager.PCombat.Target.GetPosition().x, 0, PManager.PCombat.Target.GetPosition().z));
 					if (flatDistanceToTarget < 0.5f)
 					{
-						Vector3 newPos = new Vector3(PManager.PCombat.Target.transform.position.x, transform.position.y, PManager.PCombat.Target.transform.position.z) - PManager.PCombat.GetFlatDirectionToTarget().normalized*0.5f;
+						Vector3 newPos = new Vector3(PManager.PCombat.Target.GetPosition().x, transform.position.y, PManager.PCombat.Target.GetPosition().z) - PManager.PCombat.GetFlatDirectionToTarget().normalized*0.5f;
 						newMoveOffset += newPos - transform.position;
 					}
 				}
@@ -377,9 +377,9 @@ namespace Dungeon.Player
 
 			if (PManager.AllowRotate())
 			{
-				if (PManager.PCombat.Target)
+				if (PManager.PCombat.Target != null)
 				{
-					var lookpos = PManager.PCombat.Target.transform.position - transform.position;
+					var lookpos = PManager.PCombat.Target.GetPosition() - transform.position;
 					lookpos.y = 0;
 					lookRotRaw = Quaternion.LookRotation(lookpos);
 				}

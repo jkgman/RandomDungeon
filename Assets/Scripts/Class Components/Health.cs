@@ -19,7 +19,7 @@ public class Health
 	}
 
 
-	public bool isAlive()
+	public bool IsAlive()
 	{
 		if (CurrentHealth > 0)
 			return true;

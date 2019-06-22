@@ -90,7 +90,7 @@ namespace Dungeon
 		{
 			get { return Player.transform.position; }
 		}
-		private Transform PlayerTarget
+		private ITargetable PlayerTarget
 		{
 			get { return Player.PCombat.Target; }
 
@@ -253,11 +253,11 @@ namespace Dungeon
 		{
 			oldDummyPos = dummyPos;
 
-			if (PlayerTarget)
+			if (PlayerTarget != null)
 			{
 				//Vectors and positions between target and player.
-				Vector3 midPos = (PlayerTarget.position + PlayerPos) / 2f;
-				Vector3 vectorBetween = PlayerTarget.position - PlayerPos;
+				Vector3 midPos = (PlayerTarget.GetPosition() + PlayerPos) / 2f;
+				Vector3 vectorBetween = PlayerTarget.GetPosition() - PlayerPos;
 				//Weight towards player the further away target is
 				Vector3 goalPos = Vector3.Lerp(midPos, PlayerPos, Player.PCombat.GetMaxDistToTarget / vectorBetween.magnitude);
 				//Lerp determines how much camera lags behind player
@@ -272,10 +272,10 @@ namespace Dungeon
 
 		void UpdateAutomaticCameraAngleDirection()
 		{
-			if (PlayerTarget)
+			if (PlayerTarget != null)
 			{
 				//Get new direction from player-target relation
-				var newFlatDir = dummyPos - PlayerTarget.position;
+				var newFlatDir = dummyPos - PlayerTarget.GetPosition();
 				newFlatDir.y = 0;
 				newFlatDir.Normalize();
 
@@ -300,7 +300,7 @@ namespace Dungeon
 
 		void ProcessCurrentAngle()
 		{
-			if (PlayerTarget)
+			if (PlayerTarget != null)
 			{
 				//"Lerp weight" when defaulting to new rotation after target has changed. (between 0.5 and 1)
 				float lerpWeight = Mathf.Clamp01((Time.time - targetChangeTime) / 1f);
@@ -335,7 +335,7 @@ namespace Dungeon
 
 		void ApplyInputDirection()
 		{
-			if (!PlayerTarget)
+			if (PlayerTarget == null)
 			{
 				CurAngle += new Vector2(lookModifier.y, lookModifier.x);
 				RawAngle += new Vector2(lookModifier.y, lookModifier.x);
@@ -356,7 +356,7 @@ namespace Dungeon
 			}
 			else
 			{
-				if (PlayerTarget)
+				if (PlayerTarget != null)
 					currentDistance = Mathf.Lerp(currentDistance, distTargeting, Time.smoothDeltaTime* LERP_CAM_DISTANCE_TO_DEFAULT);
 				else
 					currentDistance = Mathf.Lerp(currentDistance, distDefault, Time.smoothDeltaTime* LERP_CAM_DISTANCE_TO_DEFAULT);
@@ -372,7 +372,7 @@ namespace Dungeon
 
 		public void ResetCamera()
 		{
-			if (!PlayerTarget)
+			if (PlayerTarget == null)
 			{
 				var x = defaultVAngle;
 				var y = Vector3.SignedAngle(Vector3.forward , -_playerManager.transform.forward, Vector3.up);
@@ -385,11 +385,11 @@ namespace Dungeon
 			Quaternion newRot = transform.rotation;
 			Quaternion rawLookRot = Quaternion.identity;
 
-			if (PlayerTarget)
+			if (PlayerTarget != null)
 			{
 				//"Lerp weight" when defaulting to new position after target has changed.
 				float lerpWeight = Mathf.Clamp01((Time.time - targetChangeTime) / 1f);
-				Vector3 newPoint = (PlayerTarget.position + PlayerPos) / 2f;
+				Vector3 newPoint = (PlayerTarget.GetPosition() + PlayerPos) / 2f;
 				lookAtPoint = Vector3.Lerp(lookAtPoint, newPoint, Time.smoothDeltaTime * LERP_LOOKAT_POS_TARGETING * lerpWeight);
 				//The goal to look at
 				rawLookRot = Quaternion.LookRotation((lookAtPoint - transform.position).normalized);

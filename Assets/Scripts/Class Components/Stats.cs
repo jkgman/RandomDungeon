@@ -25,7 +25,7 @@ public class Stats : MonoBehaviour, ITakeDamage
 		{
 			health.SubstractHealth(amount);
 			lastTimeDamaged = Time.time;
-			Debug.Log("Took damage. Alive: " + health.isAlive() + ", health: " + health.CurrentHealth);
+			Debug.Log("Took damage. Alive: " + health.IsAlive() + ", health: " + health.CurrentHealth);
 		}
 	}
 }

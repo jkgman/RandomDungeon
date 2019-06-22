@@ -115,8 +115,8 @@ namespace Dungeon.Player
 
 		#region Getters & Setters
 
-		private Transform _target;
-		public Transform Target {
+		private ITargetable _target;
+		public ITargetable Target {
 			get { return _target; }
 			set {
 				if (value != _target)
@@ -133,9 +133,9 @@ namespace Dungeon.Player
 
 		public Vector3 GetFlatDirectionToTarget() 
 		{
-			if (Target)
+			if (Target != null)
 			{
-				var dirToTarget = Target.transform.position - transform.position;
+				var dirToTarget = Target.GetPosition() - transform.position;
 				dirToTarget.y = 0;
 				return dirToTarget.normalized;
 			} 
@@ -187,14 +187,14 @@ namespace Dungeon.Player
 		#region Targeting
 
 		void UpdateTarget() {
-			if (Target && (Target.position - transform.position).magnitude > maxDistToTarget)
+			if (Target != null && ((Target.GetPosition() - transform.position).magnitude > maxDistToTarget || !Target.IsTargetable()))
 			{
 				Target = null;
 			}
 		}
 
 		void SetTargetIndicator() {
-			if (!Target || !PManager.GetCam) // Indicator relies on camera
+			if (Target == null || !PManager.GetCam) // Indicator relies on camera
 			{
 				if (targetIndicator)
 					Destroy(targetIndicator);
@@ -203,10 +203,10 @@ namespace Dungeon.Player
 				if (!targetIndicator)
 				{
 					if (targetIndicatorPrefab)
-						targetIndicator = Instantiate(targetIndicatorPrefab, Target.transform.position, Quaternion.LookRotation(PManager.GetCam.transform.position - Target.transform.position));
+						targetIndicator = Instantiate(targetIndicatorPrefab, Target.GetPosition(), Quaternion.LookRotation(PManager.GetCam.transform.position - Target.GetPosition()));
 				} else
 				{
-					targetIndicator.transform.position = Target.transform.position;
+					targetIndicator.transform.position = Target.GetPosition();
 					targetIndicator.transform.rotation = Quaternion.LookRotation(PManager.GetCam.GetCurrentDirection());
 				}
 			}
@@ -214,7 +214,7 @@ namespace Dungeon.Player
 		}
 
 		public bool SetTarget(CameraTargetingData data) {
-			Transform oldTarget = Target;
+			ITargetable oldTarget = Target;
 
 			if (Target != null)
 			{
@@ -222,32 +222,32 @@ namespace Dungeon.Player
 				return true;
 			}
 
-			Transform[] nearbyTargets = FindTargets();
+			ITargetable[] nearbyTargets = FindTargets();
 			if (nearbyTargets != null && nearbyTargets.Length > 0)
 				Target = FindBestTarget(data, nearbyTargets);
 
 			return Target != oldTarget; //Return true if target changed in any way
 		}
 
-		Transform[] FindTargets() {
+		ITargetable[] FindTargets() {
 			//Sphere check on all nearby enemies.
 			//Adds objects with Enemy script in temp list
 			//Converts list into output array.
 
-			List<Transform> temp = new List<Transform>();
+			List<ITargetable> temp = new List<ITargetable>();
 			Collider[] cols = Physics.OverlapSphere(transform.position, maxDistToTarget, targetLayerMask.value);
 			if (cols != null && cols.Length > 0)
 			{
 				for (int i = 0; i < cols.Length; i++)
 				{
-					var enemy = cols[i].GetComponent<Enemy.Enemy>();
-					if (enemy && enemy.CanBeTargeted() && !temp.Contains(enemy.transform))
+					var targetable = cols[i].GetComponent<ITargetable>();
+					if (targetable != null && targetable.IsTargetable() && !temp.Contains(targetable))
 					{
-						temp.Add(enemy.transform);
+						temp.Add(targetable);
 					}
 				}
 			}
-			Transform[] output = new Transform[temp.Count];
+			ITargetable[] output = new ITargetable[temp.Count];
 			for (int i = 0; i < temp.Count; i++)
 			{
 				output[i] = temp[i];
@@ -256,21 +256,21 @@ namespace Dungeon.Player
 			return output;
 		}
 
-		Transform FindBestTarget(CameraTargetingData camData, Transform[] allTheBoisToBeTargeted) {
-			Transform output = null;
+		ITargetable FindBestTarget(CameraTargetingData camData, ITargetable[] allTheBoisToBeTargeted) {
+			ITargetable output = null;
 			float currentBestAngle = -1;
 
 			for (int i = 0; i < allTheBoisToBeTargeted.Length; i++)
 			{
-				float angle = Vector3.Angle(camData.forward, (allTheBoisToBeTargeted[i].position - camData.position));
+				float angle = Vector3.Angle(camData.forward, (allTheBoisToBeTargeted[i].GetPosition() - camData.position));
 				bool inView = angle < camData.fov * 0.65f;
-				bool farEnoughFromCamera = Vector3.Distance(camData.position, allTheBoisToBeTargeted[i].position) > 3f;
+				bool farEnoughFromCamera = Vector3.Distance(camData.position, allTheBoisToBeTargeted[i].GetPosition()) > 3f;
 				if (inView && farEnoughFromCamera)
 				{
 					//Check if target is visible in camera.
 					RaycastHit hit;
-					Physics.Raycast(camData.position, (allTheBoisToBeTargeted[i].position - camData.position).normalized, out hit, maxDistToTarget, blockTargetLayerMask.value);
-					if (!hit.collider || hit.collider.transform == allTheBoisToBeTargeted[i])
+					Physics.Raycast(camData.position, (allTheBoisToBeTargeted[i].GetPosition() - camData.position).normalized, out hit, maxDistToTarget, blockTargetLayerMask.value);
+					if (!hit.collider || hit.collider.transform == allTheBoisToBeTargeted[i].GetTransform())
 					{
 						//Check that the angle is better than currentBest.
 						if (currentBestAngle < 0 || angle < currentBestAngle)
@@ -286,28 +286,28 @@ namespace Dungeon.Player
 		}
 
 		void SwitchTarget(int direction) {
-			Transform[] allTheBoisToBeTargeted = FindTargets();
+			ITargetable[] allTheBoisToBeTargeted = FindTargets();
 			CameraTargetingData camData = PManager.GetCam.GetTargetingData();
 
-			Transform newTarget = null;
+			ITargetable newTarget = null;
 			float currentBestAngle = -1;
 
 			for (int i = 0; i < allTheBoisToBeTargeted.Length; i++)
 			{
-				Vector3 dirToBoi = (allTheBoisToBeTargeted[i].position - transform.position);
+				Vector3 dirToBoi = (allTheBoisToBeTargeted[i].GetPosition() - transform.position);
 				dirToBoi.y = 0;
 				dirToBoi.Normalize();
 				float angle = Vector3.SignedAngle(GetFlatDirectionToTarget(), dirToBoi, Vector3.up);
 				bool inView = Mathf.Abs(angle) < 100f;
-				bool farEnoughFromCamera = Vector3.Distance(camData.position, allTheBoisToBeTargeted[i].position) > 3f;
+				bool farEnoughFromCamera = Vector3.Distance(camData.position, allTheBoisToBeTargeted[i].GetPosition()) > 3f;
 				bool correctSide = (direction > 0 && angle > 0) || (direction < 0 && angle < 0);
 				if (inView && farEnoughFromCamera && correctSide)
 				{
 					//Check if target is visible in camera.
 					RaycastHit hit;
-					Physics.Raycast(camData.position, (allTheBoisToBeTargeted[i].position - camData.position).normalized, out hit, maxDistToTarget, blockTargetLayerMask.value);
+					Physics.Raycast(camData.position, (allTheBoisToBeTargeted[i].GetPosition() - camData.position).normalized, out hit, maxDistToTarget, blockTargetLayerMask.value);
 					Debug.Log(hit.collider);
-					if (!hit.collider || hit.collider.transform == allTheBoisToBeTargeted[i])
+					if (!hit.collider || hit.collider.transform == allTheBoisToBeTargeted[i].GetTransform())
 					{
 						//Check that the angle is better than currentBest.
 						if (currentBestAngle < 0 || Mathf.Abs(angle) < currentBestAngle)
@@ -320,7 +320,7 @@ namespace Dungeon.Player
 				}
 			}
 
-			if (newTarget)
+			if (newTarget != null)
 				Target = newTarget;
 
 		}
@@ -574,7 +574,7 @@ namespace Dungeon.Player
 
 		void InputTargetSwitch(InputAction.CallbackContext context) 
 		{
-			if (!Target)
+			if (Target == null)
 				return;
 
 			if (Time.time - inputTargetSwitchTime < inputTargetSwitchInterval)

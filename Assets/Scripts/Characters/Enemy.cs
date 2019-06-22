@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Dungeon.Enemy
 {
-	public class Enemy : MonoBehaviour
+	public class Enemy : MonoBehaviour, ITargetable
 	{
 		bool isActive = true;
 		private EnemyStats _stats;
@@ -17,11 +17,51 @@ namespace Dungeon.Enemy
 				return _stats;
 			}
 		}
-
-		public bool CanBeTargeted()
+		private CharacterBuffsAndEffects _effects;
+		public CharacterBuffsAndEffects Effects
 		{
-			//This is later used for mimics and other enemies that should not be possible to target at some states
-			return isActive; 
+			get
+			{
+				if (!_effects)
+					_effects = GetComponent<CharacterBuffsAndEffects>();
+				return _effects;
+			}
+		}
+
+
+		void Update()
+		{
+			if (!Stats.health.IsAlive())
+			{
+				StartCoroutine(DieRoutine());
+			}
+		}
+
+		IEnumerator DieRoutine()
+		{
+			//Death animation or whatever.
+			//For now it is just a particle effect and disappear.
+
+			Effects.PlayDeathParticles();
+			Effects.SetInvisible();
+			yield return new WaitForSeconds(2f);
+			isActive = false;
+			Destroy(this.gameObject);
+		}
+
+		public bool IsTargetable()
+		{
+			return Stats.health.IsAlive() && isActive;
+		}
+
+		public Vector3 GetPosition()
+		{
+			return transform.position;
+		}
+
+		public Transform GetTransform()
+		{
+			return transform;
 		}
 	}
 }
