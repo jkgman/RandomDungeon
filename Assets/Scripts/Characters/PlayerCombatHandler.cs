@@ -45,40 +45,8 @@ namespace Dungeon.Player
 		float inputTargetSwitchTime = 0;
 		readonly float inputTargetSwitchInterval = 0.1f;
 
-
-		public bool IsBlocking
-		{
-			get;
-			private set;
-		}
-		public bool IsDodging 
-		{
-			get;
-			private set;
-		}
-		public bool IsStunned
-		{
-			get;
-			private set;
-		}
-		public bool IsInvincible
-		{
-			get;
-			private set;
-		}
-
-		private Player _pManager;
-		private Player PManager
-		{
-			get
-			{
-				if (!_pManager)
-					_pManager = GetComponent<Player>();
-
-				return _pManager;
-			}
-		}
 		private Inputs inputs;
+
 
 
 
@@ -114,6 +82,39 @@ namespace Dungeon.Player
 		#endregion
 
 		#region Getters & Setters
+
+		public bool IsBlocking
+		{
+			get;
+			private set;
+		}
+		public bool IsDodging
+		{
+			get;
+			private set;
+		}
+		public bool IsStunned
+		{
+			get;
+			private set;
+		}
+		public bool IsInvincible
+		{
+			get;
+			private set;
+		}
+
+		private Player _pManager;
+		private Player PManager
+		{
+			get
+			{
+				if (!_pManager)
+					_pManager = GetComponent<Player>();
+
+				return _pManager;
+			}
+		}
 
 		private ITargetable _target;
 		public ITargetable Target {
