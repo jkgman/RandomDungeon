@@ -25,6 +25,8 @@ namespace Dungeon.Items
 
 	/// <summary>
 	/// Attached to weapons to give them individual properties.
+	/// Currently cramped up in one class, it will be split into different types of weapons.
+	/// Enemies will be using weapon class as well in the future.
 	/// </summary>
 	public class Weapon : MonoBehaviour
 	{
@@ -364,8 +366,10 @@ namespace Dungeon.Items
 
 			if (dmg != null && other.transform != CurrentEquipper)
 			{
-				Debug.Log("Weapon dealing "+ GetCurrentDamage() + " damage to: " + other.gameObject.name);
-				dmg.TakeDamage(GetCurrentDamage());
+				//Position and force are placeholder tests.
+				Vector3 position = other.ClosestPointOnBounds(transform.position);
+				Vector3 force = (other.transform.position - transform.parent.position).normalized * GetCurrentDamage()*2f;
+				dmg.TakeDamageAtPositionWithForce(GetCurrentDamage(), position, force);
 			}
 		}
 
@@ -378,8 +382,10 @@ namespace Dungeon.Items
 
 			if (dmg != null && other.transform != CurrentEquipper)
 			{
-				Debug.Log("Weapon dealing " + GetCurrentDamage() + " damage to: " + other.gameObject.name);
-				dmg.TakeDamage(GetCurrentDamage());
+				//Position and force are placeholder tests.
+				Vector3 position = other.ClosestPointOnBounds(transform.position);
+				Vector3 force = (other.transform.position - transform.parent.position).normalized * GetCurrentDamage() *0.5f;
+				dmg.TakeDamageAtPositionWithForce(GetCurrentDamage(), position, force);
 			}
 		}
 

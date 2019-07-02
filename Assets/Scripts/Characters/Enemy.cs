@@ -4,48 +4,20 @@ using UnityEngine;
 
 namespace Dungeon.Enemy
 {
-	public class Enemy : MonoBehaviour, ITargetable
+	public class Enemy : Character, ITargetable
 	{
 		bool isActive = true;
-		private EnemyStats _stats;
-		public EnemyStats Stats
-		{
-			get
-			{
-				if (!_stats)
-					_stats = GetComponent<EnemyStats>();
-				return _stats;
-			}
-		}
-		private CharacterBuffsAndEffects _effects;
-		public CharacterBuffsAndEffects Effects
-		{
-			get
-			{
-				if (!_effects)
-					_effects = GetComponent<CharacterBuffsAndEffects>();
-				return _effects;
-			}
-		}
 
-
-		void Update()
-		{
-			if (!Stats.health.IsAlive())
-			{
-				StartCoroutine(DieRoutine());
-			}
-		}
-
-		IEnumerator DieRoutine()
+		protected override IEnumerator DieRoutine()
 		{
 			//Death animation or whatever.
 			//For now it is just a particle effect and disappear.
 
 			Effects.PlayDeathParticles();
 			Effects.SetInvisible();
-			yield return new WaitForSeconds(2f);
+
 			isActive = false;
+			yield return new WaitForSeconds(2f);
 			Destroy(this.gameObject);
 		}
 

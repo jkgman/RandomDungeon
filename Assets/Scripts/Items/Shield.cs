@@ -8,7 +8,7 @@ namespace Dungeon.Items
 /// <summary>
 /// Item that has blocking properties and can absorb damage
 /// </summary>
-	public class Shield : MonoBehaviour, ITakeDamage
+	public class Shield : MonoBehaviour
 	{
 		[SerializeField] private Collider blockCollider;
 		[SerializeField] private bool canParry = true;

@@ -27,7 +27,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isEquipped: 1
   staggerableDuringAction: 1
-  stackInterval: 0.2
   lightAttacks:
   - chargeDuration: 0.5
     attackDuration: 0.1
@@ -46,8 +45,8 @@ MonoBehaviour:
         inWeight: 0
         outWeight: 0
       - serializedVersion: 3
-        time: 1
-        value: 1
+        time: 0.9916687
+        value: 0.15000153
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -61,22 +60,31 @@ MonoBehaviour:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 0.0062561035
-        inSlope: 1.2374634
-        outSlope: 1.2374634
+        time: 0.0000010174699
+        value: -0.008423899
+        inSlope: 0.000000017193727
+        outSlope: 0.000000017193727
         tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0.16666667
+        outWeight: 0.40972188
+      - serializedVersion: 3
+        time: 0.5121459
+        value: -0.00325777
+        inSlope: 0.0152084315
+        outSlope: 0.035674147
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0.34914446
+        outWeight: 0.26549077
       - serializedVersion: 3
         time: 1
-        value: 1
-        inSlope: 0.15820087
-        outSlope: 0.15820087
+        value: 0.39754105
+        inSlope: -0.000007702755
+        outSlope: -0.000007702755
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0.19999999
+        inWeight: 0.21666664
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -129,7 +137,7 @@ MonoBehaviour:
         outWeight: 0
       - serializedVersion: 3
         time: 1
-        value: 1
+        value: 0.19374847
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -144,16 +152,25 @@ MonoBehaviour:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.0062561035
-        inSlope: 1.2374634
-        outSlope: 1.2374634
+        value: -0.00073115854
+        inSlope: 0.010526965
+        outSlope: 0.010526965
         tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0.16666667
+        outWeight: 0.44200137
       - serializedVersion: 3
-        time: 1
-        value: 1
+        time: 0.5005661
+        value: 0.0055479677
+        inSlope: 0.008212669
+        outSlope: 0.008212669
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.39429444
+        outWeight: 0.37958893
+      - serializedVersion: 3
+        time: 0.9833374
+        value: 0.37891006
         inSlope: 0.15820087
         outSlope: 0.15820087
         tangentMode: 0
@@ -198,16 +215,16 @@ MonoBehaviour:
     rotatableDuringCharge: 0
     rotatableDuringAttack: 0
     rotatableDuringRecovery: 1
-    movableDuringCharge: 0
+    movableDuringCharge: 1
     movableDuringAttack: 0
-    movableDuringRecovery: 0
+    movableDuringRecovery: 1
   actionsDuringFree:
     rotatableDuringCharge: 1
     rotatableDuringAttack: 0
     rotatableDuringRecovery: 1
-    movableDuringCharge: 0
+    movableDuringCharge: 1
     movableDuringAttack: 0
-    movableDuringRecovery: 0
+    movableDuringRecovery: 1
   actionsGeneral:
     allowAttackDuringCharge: 0
     allowAttackDuringAttack: 0
@@ -291,6 +308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f23dd80b025fb4981cdab94c9501bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageStackInterval: 0.1
   maxHealth: 100
   maxStamina: 100
 --- !u!114 &3680647838422055351
@@ -449,15 +467,15 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 1034578760698460, guid: 51c4c472254948b479aa8ac2eeb21d2c, type: 3}
-      propertyPath: m_Layer
-      value: 9
-      objectReference: {fileID: 0}
     - target: {fileID: 1544879069566612, guid: 51c4c472254948b479aa8ac2eeb21d2c, type: 3}
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 1651168743756188, guid: 51c4c472254948b479aa8ac2eeb21d2c, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 1034578760698460, guid: 51c4c472254948b479aa8ac2eeb21d2c, type: 3}
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}

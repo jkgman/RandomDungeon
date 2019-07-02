@@ -74,6 +74,7 @@ namespace Dungeon.Player
 			}
 			return output;
 		}
+		
 		/// <summary>Get all states in a state machine.</summary>
 		List<AnimatorState> GetAllStatesInMachine(AnimatorStateMachine stateMachine)
 		{
@@ -100,7 +101,8 @@ namespace Dungeon.Player
 
 			return output;
 		}
-		/// <summary>Get all states in a child state machine. Works Recursively. </summary>
+		
+		/// <summary>Get all states in a child state machine.</summary>
 		List<AnimatorState> GetStatesInChildMachine(ChildAnimatorStateMachine childMachine)
 		{
 			List<AnimatorState> output = new List<AnimatorState>();
@@ -108,6 +110,7 @@ namespace Dungeon.Player
 			{
 				foreach(var sm in childMachine.stateMachine.stateMachines)
 				{
+					//Calls current function again if more child states are found inside this one.
 					List<AnimatorState> childStates = GetStatesInChildMachine(sm);
 					for (int i = 0; i < childStates.Count; i++)
 					{
@@ -125,19 +128,6 @@ namespace Dungeon.Player
 			return output;
 		}
 
-		AnimatorState GetAnimStateByName(string name)
-		{
-
-			foreach (AnimatorState j in animatorStates) //for each state
-			{
-				if (j.name == name)
-					return j;
-			}
-
-			Debug.LogWarning("Anim state was not found with name: " + name);
-			return null;
-		}
-
 		#endregion
 
 
@@ -147,6 +137,7 @@ namespace Dungeon.Player
 			SetStateVariables();
 		}
 
+		//Assigns values to animationState variables from the animator.
 		void SetStateVariables()
 		{
 			for (int i = 0; i < animatorStates.Count; i++)
@@ -173,7 +164,7 @@ namespace Dungeon.Player
 			}
 		}
 
-
+		//Called every frame a voluntary movement happens.
 		public void SetMovementPerformed(Vector2 blendParam)
 		{
 			currentMoveBlend = Vector2.Lerp(currentMoveBlend, blendParam, Time.deltaTime * blendSpeed);
@@ -184,6 +175,7 @@ namespace Dungeon.Player
 
 		}
 
+		//Called when dodge action starts
 		public void SetDodgeStarted(Vector2 direction, float duration = -1f)
 		{
 			Animator.SetBool("isDodging", true);
@@ -203,13 +195,20 @@ namespace Dungeon.Player
 			
 			Animator.SetFloat("xDodge", direction.x);
 			
+		//Called when Charge phase of attack starts
 		}
-
+		
+		//Called when dodge action ends or gets cancelled.
 		public void SetDodgeCancelled()
 		{
 			Animator.SetBool("isDodging", false);
 		}
 
+		/// <summary>
+		/// Before attack starts, weapon gives appropriate animations for animator to play.
+		/// This way animator only has one attack state that plays all animations of all weapons.
+		/// </summary>
+		/// <param name="data">Includes clips for all attack phases.</param>
 		public void SetAttackAnimations (AttackAnimationData data)
 		{
 			OverrideClips(currentChargeClipName, data.chargeClip);
@@ -221,6 +220,12 @@ namespace Dungeon.Player
 			currentRecoveryClipName = data.recoveryClip.name;
 		}
 
+		/// <summary>
+		/// Before attack starts, all attack phases have durations determined by weapon and its current attack. This sets animations to match weapon's durations.
+		/// </summary>
+		/// <param name="chargeDuration">Duration of charge phase of the attack.</param>
+		/// <param name="attackDuration">Duration of hitting/attacking phase of the attack.</param>
+		/// <param name="recoveryDuration">Duration of recovery phase of the attack.</param>
 		public void SetAttackDurations(float chargeDuration, float attackDuration, float recoveryDuration)
 		{
 			if (chargeState)
@@ -257,6 +262,7 @@ namespace Dungeon.Player
 			}
 		}
 
+		//Called when Charge phase of attack starts
 		public void SetChargeStarted()
 		{
 			Animator.SetBool("isAttacking", false);
@@ -264,11 +270,13 @@ namespace Dungeon.Player
 			Animator.SetBool("isCharging", true);
 
 		}
+		//Called when Recovery phase of attack ends. Usually goes to attack phase right after.
 		public void SetChargeCancelled()
 		{
 			Animator.SetBool("isCharging", false);
 		}
 
+		//Called when attack phase (hitting action inside the complete attack) starts
 		public void SetAttackStarted()
 		{
 			Animator.SetBool("isCharging", false);
@@ -276,11 +284,13 @@ namespace Dungeon.Player
 			Animator.SetBool("isAttacking", true);
 
 		}
+		//Called when attack ends. Not necessarily "cancelled"
 		public void SetAttackCancelled()
 		{
 			Animator.SetBool("isAttacking", false);
 		}
 
+		//Called when Recovery phase of attack starts
 		public void SetRecoveryStarted()
 		{
 	
@@ -290,13 +300,18 @@ namespace Dungeon.Player
 
 
 		}
+		//Called when Recovery phase of attack ends or is cancelled.
 		public void SetRecoveryCancelled()
 		{
 			Animator.SetBool("isRecovering", false);
 		}
 
 
-
+		/// <summary>
+		/// Replaces a clip inside animator. Original animation is found with string name and replaced with inserted AnimationClip.
+		/// </summary>
+		/// <param name="animName">The currently existing animation in animator.</param>
+		/// <param name="in_clip">Clip to replace the current animation with.</param>
 		private void OverrideClips(string animName, AnimationClip in_clip)
 		{
 			

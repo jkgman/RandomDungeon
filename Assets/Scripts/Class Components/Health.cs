@@ -43,12 +43,4 @@ public class Health
 		CurrentHealth = Mathf.Clamp(CurrentHealth, 0, maxHealth);
 
 	}
-	public void Die()
-	{
-		CurrentHealth = 0;
-	}
-	public void Revive()
-	{
-		CurrentHealth = maxHealth;
-	}
 }
