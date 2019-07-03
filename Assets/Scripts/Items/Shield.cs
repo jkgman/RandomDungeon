@@ -14,11 +14,11 @@ namespace Dungeon.Items
 		[SerializeField] private bool canParry = true;
 		[SerializeField] private float blockStrength;
 
-		Player.PlayerCombatHandler pCombat;
+		Characters.PlayerCombatHandler pCombat;
 		bool isEquipped;
 
 
-		public void Equip(Player.PlayerCombatHandler in_pCombat)
+		public void Equip(Characters.PlayerCombatHandler in_pCombat)
 		{
 			pCombat = in_pCombat;
 			isEquipped = true;

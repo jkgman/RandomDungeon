@@ -3,25 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Animations;
 
-namespace Dungeon.Player
+namespace Dungeon.Characters
 {
-	[System.Serializable]
-	public struct AttackAnimationData
-	{
-		public AnimationClip chargeClip;
-		public AnimationClip attackClip;
-		public AnimationClip recoveryClip;
-	}
 
-	public class PlayerAnimationHandler : MonoBehaviour
+	public class PlayerAnimationHandler : CharacterAnimationHandler
 	{
+
+
+
 		private const string DODGE_STATE = "DODGE";
 		private const string CHARGE_STATE= "CHARGE";
 		private const string ATTACK_STATE= "ATTACK";
 		private const string RECOVERY_STATE= "RECOVERY";
 		private const float ANIM_DEFAULT_SPEED = 1f;
 
-
+		//How fast blendTree values change.
 		[SerializeField] private float blendSpeed = 5f;
 
 		private AnimatorState dodgeState;
@@ -35,25 +31,12 @@ namespace Dungeon.Player
 
 
 		private Vector2 currentMoveBlend = Vector2.zero;
-		private AnimatorController ac;
-		private List<AnimatorState> animatorStates;
+
 
 
 
 		#region Getters & Setters
-
-		private Animator _animator;
-		private Animator Animator
-		{
-			get
-			{
-				if (!_animator)
-					_animator = GetComponentInChildren<Animator>();
-
-				return _animator;
-			}
-		}
-
+		
 		/// <summary>Get All states in current AnimatorController.</summary>
 		List<AnimatorState> GetAllStates()
 		{
@@ -131,9 +114,9 @@ namespace Dungeon.Player
 		#endregion
 
 
-		void Awake()
+		protected override void Awake()
 		{
-			animatorStates = GetAllStates();
+			base.Awake();
 			SetStateVariables();
 		}
 
@@ -209,7 +192,7 @@ namespace Dungeon.Player
 		/// This way animator only has one attack state that plays all animations of all weapons.
 		/// </summary>
 		/// <param name="data">Includes clips for all attack phases.</param>
-		public void SetAttackAnimations (AttackAnimationData data)
+		public void SetAttackAnimations (Items.Weapon.AttackAnimationData data)
 		{
 			OverrideClips(currentChargeClipName, data.chargeClip);
 			OverrideClips(currentAttackClipName, data.attackClip);
@@ -284,6 +267,7 @@ namespace Dungeon.Player
 			Animator.SetBool("isAttacking", true);
 
 		}
+		
 		//Called when attack ends. Not necessarily "cancelled"
 		public void SetAttackCancelled()
 		{
@@ -304,31 +288,6 @@ namespace Dungeon.Player
 		public void SetRecoveryCancelled()
 		{
 			Animator.SetBool("isRecovering", false);
-		}
-
-
-		/// <summary>
-		/// Replaces a clip inside animator. Original animation is found with string name and replaced with inserted AnimationClip.
-		/// </summary>
-		/// <param name="animName">The currently existing animation in animator.</param>
-		/// <param name="in_clip">Clip to replace the current animation with.</param>
-		private void OverrideClips(string animName, AnimationClip in_clip)
-		{
-			
-			AnimatorOverrideController aoc = new AnimatorOverrideController();
-			aoc.runtimeAnimatorController = Animator.runtimeAnimatorController;
-			var anims = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-			foreach ( var c in aoc.animationClips)
-			{
-				if (c.name == animName)
-				{
-					anims.Add(new KeyValuePair<AnimationClip, AnimationClip>(c, in_clip));
-					break;
-				}
-			}
-
-			aoc.ApplyOverrides(anims);
-			Animator.runtimeAnimatorController = aoc;
 		}
 	}
 }

@@ -73,15 +73,15 @@ namespace Dungeon
 
 
 		#region Getters & Setters
-		private Player.Player _playerManager;
-		private Player.Player Player
+		private Characters.Player _playerManager;
+		private Characters.Player Player
 		{
 			get
 			{
 				if (!_playerManager)
 				{
 					var go = GameObject.FindGameObjectWithTag("Player");
-					_playerManager = go.GetComponent<Player.Player>();
+					_playerManager = go.GetComponent<Characters.Player>();
 				}
 				return _playerManager;
 			}

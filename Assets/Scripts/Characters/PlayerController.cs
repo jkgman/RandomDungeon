@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using System.Collections;
 
-namespace Dungeon.Player
+namespace Dungeon.Characters
 {
 /// <summary>
 /// Handles player movement and rotation.

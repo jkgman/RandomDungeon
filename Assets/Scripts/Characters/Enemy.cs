@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dungeon.Enemy
+namespace Dungeon.Characters
 {
 	public class Enemy : Character, ITargetable
 	{

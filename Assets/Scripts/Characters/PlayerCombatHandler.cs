@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine;
 
-namespace Dungeon.Player
+namespace Dungeon.Characters
 {
 
 

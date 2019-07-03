@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dungeon.Player
+namespace Dungeon.Characters
 {
 
 	public class PlayerStats : Stats

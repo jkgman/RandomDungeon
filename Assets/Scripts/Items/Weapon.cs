@@ -30,7 +30,13 @@ namespace Dungeon.Items
 	/// </summary>
 	public class Weapon : MonoBehaviour
 	{
-
+		[System.Serializable]
+		public struct AttackAnimationData
+		{
+			public AnimationClip chargeClip;
+			public AnimationClip attackClip;
+			public AnimationClip recoveryClip;
+		}
 
 		[System.Serializable]
 		private struct AttackData
@@ -42,7 +48,7 @@ namespace Dungeon.Items
 			public AnimationCurve chargeMoveCurve;
 			public AnimationCurve attackMoveCurve;
 			public AnimationCurve recoveryMoveCurve;
-			public Player.AttackAnimationData animData;
+			public AttackAnimationData animData;
 		}
 
 		[System.Serializable]
@@ -362,13 +368,13 @@ namespace Dungeon.Items
 			if (!IsAttacking || CurrentAttackState != AttackState.attack)
 				return;
 
-			ITakeDamage dmg = other.GetComponent<ITakeDamage>();
+			ITakeDamage dmg = other.GetComponentInParent<ITakeDamage>();
 
 			if (dmg != null && other.transform != CurrentEquipper)
 			{
 				//Position and force are placeholder tests.
 				Vector3 position = other.ClosestPointOnBounds(transform.position);
-				Vector3 force = (other.transform.position - transform.parent.position).normalized * GetCurrentDamage()*2f;
+				Vector3 force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage()*2f;
 				dmg.TakeDamageAtPositionWithForce(GetCurrentDamage(), position, force);
 			}
 		}
@@ -378,7 +384,7 @@ namespace Dungeon.Items
 			if (!IsAttacking || CurrentAttackState != AttackState.attack)
 				return;
 
-			ITakeDamage dmg = other.GetComponent<ITakeDamage>();
+			ITakeDamage dmg = other.GetComponentInParent<ITakeDamage>();
 
 			if (dmg != null && other.transform != CurrentEquipper)
 			{

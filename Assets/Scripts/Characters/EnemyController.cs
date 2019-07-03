@@ -5,15 +5,31 @@ using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
+	private enum EnemyState
+	{
+		idle,
+		strolling,
+		following,
+		attacking
+	}
 
-	float attackDelayTimer;
-	float attackDelay;
-	public float turnSpeed;
-	public float viewRangeModifier = 5;
-	bool canAttack;
-	bool timerReset;
-	public LayerMask obstacles;
-	NavMeshAgent navMeshAgent;
+	[SerializeField] private LayerMask obstacles;
+	[SerializeField] private float turnSpeed;
+	[SerializeField] private float viewRangeModifier = 5;
+	[SerializeField] private float strollDistance;
+	[SerializeField] private bool calculateStrollDistanceFromSpawn;
+	[SerializeField] private float attackDelay;
+	[SerializeField] private float minIdleTime;
+	[SerializeField] private float maxIdleTime;
+
+	private Vector3 startPoint;
+
+
+	private float idleTime;
+	private float attackDelayTimer;
+	private bool canAttack;
+	private bool timerReset;
+	private NavMeshAgent navMeshAgent;
 
 
 
@@ -32,8 +48,34 @@ public class EnemyController : MonoBehaviour
 			return _playerTrans;
 		}
 	}
-	
-	
+
+
+
+
+	private void Awake()
+	{
+		navMeshAgent = GetComponent<NavMeshAgent>();
+	}
+	private void OnEnable()
+	{
+		startPoint = transform.position;
+	}
+
+	private void Update()
+	{
+		Move();
+		if (PlayerTrans && CanSeeTarget())
+		{
+			RotateTowardsTraget();
+
+			if (CanAttack())
+			{
+				Attack();
+			}
+		}
+	}
+
+
 	public Vector3 TargetDirection()
 	{
 		return PlayerTrans.position - transform.position;
@@ -77,24 +119,7 @@ public class EnemyController : MonoBehaviour
 			return true;
 	}
 
-	private void Awake()
-	{
-		navMeshAgent = GetComponent<NavMeshAgent>();
-	}
 
-	private void Update()
-	{
-		Move();
-		if (PlayerTrans && CanSeeTarget())
-		{
-			RotateTowardsTraget();
-
-			if (CanAttack())
-			{
-				Attack();
-			}
-		}
-	}
 
 	public void Move()
 	{
@@ -102,7 +127,6 @@ public class EnemyController : MonoBehaviour
 			navMeshAgent.SetDestination(PlayerTrans.position);
 		else
 			navMeshAgent.SetDestination(transform.position);
-
 	}
 
 	public void RotateTowardsTraget()

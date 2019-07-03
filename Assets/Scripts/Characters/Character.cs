@@ -2,112 +2,116 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterBuffsAndEffects))]
-[RequireComponent(typeof(Stats))]
-public class Character : MonoBehaviour, ITakeDamage
-{
 
-	private Stats _stats;
-	public Stats Stats
+namespace Dungeon.Characters
+{ 
+	[RequireComponent(typeof(CharacterBuffsAndEffects))]
+	[RequireComponent(typeof(Stats))]
+	public class Character : MonoBehaviour, ITakeDamage
 	{
-		get
+		private enum CharacterColliderType
 		{
-			if (!_stats)
-				_stats = GetComponent<Stats>();
-
-			return _stats;
+			torso,
+			arm,
+			leg,
+			head
 		}
-	}
 
-	private CharacterBuffsAndEffects _effects;
-	public CharacterBuffsAndEffects Effects
-	{
-		get
+		[System.Serializable]
+		private struct CharacterCollider
 		{
-			if (!_effects)
-				_effects = GetComponent<CharacterBuffsAndEffects>();
-
-			return _effects;
+			public Collider col;
+			public CharacterColliderType colType;
 		}
-	}
-
-	public void Die()
-	{
-		StartCoroutine(DieRoutine());
-	}
-
-	protected virtual IEnumerator DieRoutine()
-	{
-		yield return null;
-	}
 
 
 
-	public void TakeDamage(float amount)
-	{
-		if (!Stats.health.IsAlive())
-			return;
-
-		Stats.health.SubstractHealth(amount);
-
-		if (!Stats.health.IsAlive())
+		private Stats _stats;
+		public Stats Stats
 		{
-			Die();
+			get
+			{
+				if (!_stats)
+					_stats = GetComponent<Stats>();
+
+				return _stats;
+			}
 		}
-	}
 
-	public void TakeDamageAtPosition(float amount, Vector3 position)
-	{
-		if (!Stats.health.IsAlive())
-			return;
-
-		Stats.health.SubstractHealth(amount);
-
-		if (Effects)
+		private CharacterBuffsAndEffects _effects;
+		public CharacterBuffsAndEffects Effects
 		{
-			Effects.PlayDamageParticles(position);
+			get
+			{
+				if (!_effects)
+					_effects = GetComponent<CharacterBuffsAndEffects>();
+
+				return _effects;
+			}
 		}
+
+		[SerializeField]private List<CharacterCollider> colliders;
+
+
+		void Update()
+		{
+			if (!Stats.health.IsAlive())
+				StartCoroutine(DieRoutine());
+		}
+
+		protected virtual IEnumerator DieRoutine()
+		{
+			yield return null;
+		}
+
+
+
+		public void TakeDamage(float amount)
+		{
+			if (!Stats.health.IsAlive())
+				return;
+
+			Stats.health.SubstractHealth(amount);
 		
-
-		if (!Stats.health.IsAlive())
-		{
-			Die();
-		}
-	}
-
-	public void TakeDamageWithForce(float amount,Vector3 hitForce)
-	{
-		if (!Stats.health.IsAlive())
-			return;
-
-		Stats.health.SubstractHealth(amount);
-
-		if (Effects)
-		{
-			Effects.PlayDamageParticles(hitForce);
 		}
 
-		if (!Stats.health.IsAlive())
+		public void TakeDamageAtPosition(float amount, Vector3 position)
 		{
-			Die();
-		}
-	}
+			if (!Stats.health.IsAlive())
+				return;
 
-	public void TakeDamageAtPositionWithForce(float amount, Vector3 position, Vector3 hitForce)
-	{
-		if (!Stats.health.IsAlive())
-			return;
+			Stats.health.SubstractHealth(amount);
 
-		Stats.health.SubstractHealth(amount);
-
-		if (Effects)
-		{
-			Effects.PlayDamageParticles(position, hitForce);
+			if (Effects)
+			{
+				Effects.PlayDamageParticles(position);
+			}
 		}
 
-		if (!Stats.health.IsAlive())
+		public void TakeDamageWithForce(float amount,Vector3 hitForce)
 		{
-			Die();
+			if (!Stats.health.IsAlive())
+				return;
+
+			Stats.health.SubstractHealth(amount);
+
+			if (Effects)
+			{
+				Effects.PlayDamageParticles(hitForce);
+			}
+		}
+
+		public void TakeDamageAtPositionWithForce(float amount, Vector3 position, Vector3 hitForce)
+		{
+			if (!Stats.health.IsAlive())
+				return;
+
+			Stats.health.SubstractHealth(amount);
+
+			if (Effects)
+			{
+				Effects.PlayDamageParticles(position, hitForce);
+			}
 		}
 	}
 }

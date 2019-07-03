@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Dungeon.Player
+namespace Dungeon.Characters
 {
 
 	/// <summary>
