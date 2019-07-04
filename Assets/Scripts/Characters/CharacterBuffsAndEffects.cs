@@ -20,7 +20,9 @@ public class CharacterBuffsAndEffects : MonoBehaviour
 	{
 		if (deathVFX != null)
 		{
-			deathVFX.transform.parent = null;
+			if (deathVFX.GetVector3("Directional Force") != null)
+				deathVFX.SetVector3("Directional Force", Vector3.zero);
+			damageVFX.transform.position = transform.position;
 			deathVFX.enabled = true;
 			deathVFX.Play();
 		}
@@ -70,12 +72,15 @@ public class CharacterBuffsAndEffects : MonoBehaviour
 	{
 		if (meshVisualsParent)
 			meshVisualsParent.gameObject.SetActive(false);
-
-		if (GetComponent<Collider>())
-			GetComponent<Collider>().enabled = false;
+			
 	}
 
+	public void SetVisible()
+	{
+		if (meshVisualsParent)
+			meshVisualsParent.gameObject.SetActive(true);
 
+	}
 
 
 }

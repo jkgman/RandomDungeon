@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+
 namespace Dungeon.Characters
 {
+	using Dungeon.Items;
 
 	public class CharacterCombatHandler : MonoBehaviour
 	{
@@ -13,8 +15,12 @@ namespace Dungeon.Characters
 		[Header("Attack shit")]
 		[SerializeField] protected Transform rightHand;
 		[SerializeField] protected Transform leftHand;
-		protected Items.Weapon currentWeapon;
 		protected IEnumerator currentAttackCo;
+		private Weapon currentWeapon;
+		protected Weapon GetCurrentWeapon()
+		{
+			return currentWeapon;
+		}
 
 		public bool IsBlocking
 		{
@@ -53,7 +59,7 @@ namespace Dungeon.Characters
 
 		protected virtual void Awake()
 		{
-			currentWeapon = GetComponentInChildren<Items.Weapon>();
+			currentWeapon = GetComponentInChildren<Weapon>();
 			if (currentWeapon)
 				currentWeapon.CurrentEquipper = transform;
 		}
@@ -83,7 +89,10 @@ namespace Dungeon.Characters
 		protected virtual void Attack()
 		{
 			if (currentAttackCo != null)
+			{
 				StopCoroutine(currentAttackCo);
+				Debug.Log("Stopped attack coroutine");
+			}
 
 			currentAttackCo = LightAttackRoutine();
 			StartCoroutine(currentAttackCo);
@@ -91,6 +100,7 @@ namespace Dungeon.Characters
 
 		protected IEnumerator LightAttackRoutine()
 		{
+			Debug.Log("attack coroutine started");
 			currentWeapon.StartAttacking(AttackType.lightAttack);
 			SetAttackDurations();
 

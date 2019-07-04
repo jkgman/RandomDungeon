@@ -7,7 +7,6 @@ namespace Dungeon.Characters
 	public class Stats : MonoBehaviour
 	{
 		[SerializeField] private float damageStackInterval = 0.1f;
-		private float lastTimeDamaged = 0;
 
 		public float maxHealth;
 		public Health health;
@@ -27,7 +26,7 @@ namespace Dungeon.Characters
 
 		private void Awake()
 		{
-			health = new Health(maxHealth);
+			health = new Health(maxHealth, damageStackInterval);
 			stamina = new Stamina(maxStamina);
 		}
 	}

@@ -39,7 +39,7 @@ namespace Dungeon.Items
 		}
 
 		[System.Serializable]
-		private struct AttackData
+		protected struct AttackData
 		{
 			public float chargeDuration;                 //Anticipation should be the longest part of attack
 			public float attackDuration;                 //Fast part where contact happens
@@ -51,39 +51,13 @@ namespace Dungeon.Items
 			public AttackAnimationData animData;
 		}
 
-		[System.Serializable]
-		private struct AllowedActionsGeneral
-		{
-			public bool allowAttackDuringCharge;
-			public bool allowAttackDuringAttack;
-			public bool allowAttackDuringRecovery;
-			public bool allowComboDuringCharge;
-			public bool allowComboDuringAttack;
-			public bool allowComboDuringRecovery;
-
-		}
-
-		[System.Serializable]
-		private struct AllowedActionsSpecific
-		{
-			public bool rotatableDuringCharge;
-			public bool rotatableDuringAttack;
-			public bool rotatableDuringRecovery;
-			public bool movableDuringCharge;
-			public bool movableDuringAttack;
-			public bool movableDuringRecovery;
-		}
-
 
 		[Header("General data")]
-		[SerializeField] private bool isEquipped;
-		[SerializeField] private bool staggerableDuringAction;
-		[SerializeField] private List<AttackData> lightAttacks = new List<AttackData>();
-		[SerializeField] private List<AttackData> heavyAttacks = new List<AttackData>();
+		[SerializeField] protected bool isEquipped;
+		[SerializeField] protected bool staggerableDuringAction;
+		[SerializeField] protected List<AttackData> lightAttacks = new List<AttackData>();
+		[SerializeField] protected List<AttackData> heavyAttacks = new List<AttackData>();
 
-		[SerializeField] private AllowedActionsSpecific actionsDuringTargeting;
-		[SerializeField] private AllowedActionsSpecific actionsDuringFree;
-		[SerializeField] private AllowedActionsGeneral actionsGeneral;
 
 		public Transform CurrentEquipper
 		{
@@ -130,84 +104,6 @@ namespace Dungeon.Items
 			}
 		}
 
-		public bool CanRotate(bool hasTarget)
-		{
-			switch (CurrentAttackState)
-			{
-				case AttackState.charge:
-					if (hasTarget)
-						return actionsDuringTargeting.rotatableDuringCharge;
-					else
-						return actionsDuringFree.rotatableDuringCharge;
-
-				case AttackState.attack:
-					if (hasTarget)
-						return actionsDuringTargeting.rotatableDuringAttack;
-					else
-						return actionsDuringFree.rotatableDuringAttack;
-
-				case AttackState.recovery:
-					if (hasTarget)
-						return actionsDuringTargeting.rotatableDuringRecovery;
-					else
-						return actionsDuringFree.rotatableDuringRecovery;
-
-				default:
-					return true;
-			}
-
-		}
-
-		public bool CanMove(bool hasTarget)
-		{
-			switch (CurrentAttackState)
-			{
-				case AttackState.charge:
-					if (hasTarget)
-						return actionsDuringTargeting.movableDuringCharge;
-					else
-						return actionsDuringFree.movableDuringCharge;
-
-				case AttackState.attack:
-					if (hasTarget)
-						return actionsDuringTargeting.movableDuringAttack;
-					else
-						return actionsDuringFree.movableDuringAttack;
-
-				case AttackState.recovery:
-					if (hasTarget)
-						return actionsDuringTargeting.movableDuringRecovery;
-					else
-						return actionsDuringFree.movableDuringRecovery;
-				default:
-				return true;
-			}
-		}
-
-		public bool CanAttack(bool hasTarget)
-		{
-			if (IsAttacking)
-			{
-				switch (CurrentAttackState)
-			{
-				case AttackState.charge:
-					return hasTarget ? actionsGeneral.allowAttackDuringCharge : actionsGeneral.allowAttackDuringCharge;
-					
-				case AttackState.attack:
-					return hasTarget ? actionsGeneral.allowAttackDuringAttack : actionsGeneral.allowAttackDuringAttack;
-					
-				case AttackState.recovery:
-					return hasTarget ? actionsGeneral.allowAttackDuringRecovery : actionsGeneral.allowAttackDuringRecovery;
-					
-				default:
-					return true;
-			}
-			}
-			else
-			{
-				return true;
-			}
-		}
 
 		public AttackType CurrentAttackType
 		{
@@ -231,10 +127,9 @@ namespace Dungeon.Items
 			private set;
 		}
 
-		public void StartAttacking(AttackType type)
+		public virtual void StartAttacking(AttackType type)
 		{
 			CurrentAttackType = type;
-			CurrentAttackIndex = CanCombo() && IsAttacking ? CurrentAttackIndex + 1 : 0;
 			IsAttacking = true;
 		}
 
@@ -335,33 +230,6 @@ namespace Dungeon.Items
 			}
 		}
 
-		private bool CanCombo()
-		{
-			bool rightTiming = false; //check against current allowed actions.
-			bool hasCombo = false; // check if attacktype has more attacks on list.
-
-			if (CurrentAttackType == AttackType.lightAttack)
-				hasCombo = CurrentAttackIndex < lightAttacks.Count - 1;
-			if (CurrentAttackType == AttackType.heavyAttack)
-				hasCombo = CurrentAttackIndex < heavyAttacks.Count - 1;
-
-			switch (CurrentAttackState)
-			{
-				case AttackState.charge:
-					rightTiming = actionsGeneral.allowComboDuringCharge;
-					break;
-				case AttackState.attack:
-					rightTiming = actionsGeneral.allowComboDuringAttack;
-					break;
-				case AttackState.recovery:
-					rightTiming = actionsGeneral.allowComboDuringRecovery;
-					break;
-				default:
-					break;
-			}
-
-			return rightTiming && hasCombo;
-		}
 
 		private void OnTriggerEnter(Collider other)
 		{
@@ -386,8 +254,9 @@ namespace Dungeon.Items
 
 			ITakeDamage dmg = other.GetComponentInParent<ITakeDamage>();
 
-			if (dmg != null && other.transform != CurrentEquipper)
+			if (dmg != null && dmg.GetTransform() != CurrentEquipper)
 			{
+				Debug.Log("Attack trigger, dmg: " + dmg + "CurrentEquipper: " + CurrentEquipper.name);
 				//Position and force are placeholder tests.
 				Vector3 position = other.ClosestPointOnBounds(transform.position);
 				Vector3 force = (other.transform.position - transform.parent.position).normalized * GetCurrentDamage() *0.5f;

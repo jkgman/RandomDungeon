@@ -19,25 +19,15 @@ namespace Dungeon.Characters.Enemies
 		[SerializeField] private float maxIdleTime;
 		[SerializeField] private float minStrollTime;
 		[SerializeField] private float maxStrollTime;
-		[SerializeField] private float strollDistance;
-		[SerializeField] private bool calculateStrollDistanceFromSpawn;
-		private Vector3 startPoint;
 
 		private float idleDuration;
 		private float currentIdleTime;
 		private float strollDuration;
 		private float currentStrollTime;
-		bool isActive = true;
 
 
 
-
-		private void OnEnable()
-		{
-			startPoint = transform.position;
-		}
-
-		private EnemyState _currentState;
+		private EnemyState _currentState = EnemyState.idle;
 		public EnemyState GetCurrentState()
 		{
 			return _currentState;
@@ -58,11 +48,7 @@ namespace Dungeon.Characters.Enemies
 		{
 			return transform.position;
 		}
-
-		public Transform GetTransform()
-		{
-			return transform;
-		}
+		
 
 		private EnemyCombatHandler _combat;
 		private EnemyCombatHandler Combat
@@ -87,8 +73,15 @@ namespace Dungeon.Characters.Enemies
 
 
 
-		void Update()
+		protected override void Update()
 		{
+			base.Update();
+
+			if (!isActive)
+				return;
+
+			UpdateEnemyState();
+			Debug.Log("Current State:" + GetCurrentState().ToString());
 			switch (GetCurrentState())
 			{
 				case EnemyState.idle:
@@ -109,9 +102,9 @@ namespace Dungeon.Characters.Enemies
 		}
 
 
-		public void SetNewEnemyState()
+		public void UpdateEnemyState()
 		{
-			if (Combat.CanAttack())
+			if (Combat.TargetIsAttackable())
 			{
 				SetCurrentState(EnemyState.attacking);
 			}
@@ -161,26 +154,23 @@ namespace Dungeon.Characters.Enemies
 
 		private void IdleUpdate()
 		{
+			Controller.Idle();
 			currentIdleTime += Time.deltaTime;
 		}
 		private void StrollingUpdate()
 		{
+			Controller.Stroll();
 			currentStrollTime += Time.deltaTime;
 		}
 		private void FollowingUpdate()
 		{
-			if (Combat.CanAttack() || !Combat.CanFindTarget())
-				SetNewEnemyState();
-
 			Controller.Following(Combat.GetTargetPosition(), Combat.CanSeeTarget());
 
 		}
 		private void AttackingUpdate()
 		{
-			if (Combat.CanAttack())
-				Combat.AttackUpdate();
-			else
-				SetNewEnemyState();
+			Controller.RotateTowardsPosition(Combat.GetTargetPosition());
+			Combat.AttackUpdate();
 		}
 
 
@@ -189,11 +179,14 @@ namespace Dungeon.Characters.Enemies
 		{
 			//Death animation or whatever.
 			//For now it is just a particle effect and disappear.
+			Debug.Log("Enemy dies nad disables");
+			dieRoutineStarted = true;
 
 			Effects.PlayDeathParticles();
 			Effects.SetInvisible();
-
+			DisableColliders();
 			isActive = false;
+
 			yield return new WaitForSeconds(2f);
 			Destroy(this.gameObject);
 		}

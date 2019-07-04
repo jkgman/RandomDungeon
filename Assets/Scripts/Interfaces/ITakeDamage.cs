@@ -8,4 +8,5 @@ public interface ITakeDamage
 	void TakeDamageAtPosition(float amount, Vector3 position);
 	void TakeDamageWithForce(float amount, Vector3 hitForce);
 	void TakeDamageAtPositionWithForce(float amount, Vector3 position, Vector3 hitForce);
+	Transform GetTransform();
 }

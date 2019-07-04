@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 namespace Dungeon.Characters
 {
@@ -114,5 +116,34 @@ namespace Dungeon.Characters
 		}
 
 		#endregion
+
+
+
+		protected override IEnumerator DieRoutine()
+		{
+			//Death animation or whatever.
+			//For now it is just a particle effect and disappear.
+			dieRoutineStarted = true;
+			Effects.PlayDeathParticles();
+			Effects.SetInvisible();
+			DisableColliders();
+
+			isActive = false;
+
+			yield return new WaitForSeconds(2f);
+			Respawn();
+		}
+
+		void Respawn()
+		{
+			transform.position = PController.GetSpawnPosition();
+			Stats.health.AddHealth(100000f);
+			Effects.SetVisible();
+			EnableColliders();
+			isActive = true;
+			dieRoutineStarted = false;
+		}
+
+
 	}
 }

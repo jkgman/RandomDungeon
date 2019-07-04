@@ -24,9 +24,9 @@ namespace Dungeon.Characters
 
 
 		private float vSpeed = 0;
-		private bool isRunning;
 		private bool isGrounded;
 		private Vector3 slopeNormal;
+		private Vector3 spawnPosition;
 
 
 		[Header("Inputs")]
@@ -82,6 +82,11 @@ namespace Dungeon.Characters
 			return moveSpeed * runSpeedMultiplier;
 		}
 
+		public Vector3 GetSpawnPosition()
+		{
+			return spawnPosition;
+		}
+
 		/// <summary>
 		/// Gets input direction relative to camera's flat forward direction.
 		/// </summary>
@@ -104,24 +109,18 @@ namespace Dungeon.Characters
 				return dir.normalized;
 			}
 		}
-
-
-
-
-		private bool IsRunning
+		
+		protected override void SetRunning(bool value)
 		{
-			get { return isRunning; }
-			set
+			if (Player.AllowRun())
 			{
-				if (Player.AllowRun())
-				{
-					isRunning = value;
-				}
-				else
-				{
-					isRunning = false;
-				}
+				base.SetRunning(value);
 			}
+			else
+			{
+				base.SetRunning(false);
+			}
+			
 		}
 
 		#endregion
@@ -201,6 +200,11 @@ namespace Dungeon.Characters
 		void Awake()
 		{
 			ControlsSubscribe();
+			
+		}
+		void OnEnable()
+		{
+			spawnPosition = transform.position;
 		}
 		void OnDisable()
 		{
@@ -247,15 +251,15 @@ namespace Dungeon.Characters
 			}
 			else if (moveInputRaw.magnitude > 0)
 			{
-				Vector3 newMoveSpeed = new Vector3(moveInputRaw.x, 0, moveInputRaw.y) * moveSpeed * (isRunning ? runSpeedMultiplier : 1f);
-				currentMoveSpeed = Vector3.Lerp(moveVelocityAtToggle, newMoveSpeed, (Time.time - moveInputToggleTime) / accelerationSpeed);
+				Vector3 newMoveSpeed = new Vector3(moveInputRaw.x, 0, moveInputRaw.y) * moveSpeed * (GetRunning() ? runSpeedMultiplier : 1f);
+				currentMoveSpeed = Vector3.Lerp(moveVelocityAtToggle, newMoveSpeed, (Time.time - moveInputToggleTime) / accelerationDuration);
 			}
 			else
 			{
 				if (moveVelocityAtToggle.magnitude < currentMoveSpeed.magnitude)
 					moveVelocityAtToggle = currentMoveSpeed;
 				
-				currentMoveSpeed = Vector3.Lerp(moveVelocityAtToggle, Vector3.zero, (Time.time - moveInputToggleTime) / deaccelerationSpeed);
+				currentMoveSpeed = Vector3.Lerp(moveVelocityAtToggle, Vector3.zero, (Time.time - moveInputToggleTime) / deaccelerationDuration);
 			}
 
 		}
@@ -483,12 +487,12 @@ namespace Dungeon.Characters
 		{
 			if (Time.time - inputRunStartTime > Player.inputMaxPressTime)
 			{
-				IsRunning = true;
+				SetRunning(true);
 			}
 		}
 		void InputRunCancelled(InputAction.CallbackContext context) 
 		{
-			IsRunning = false;
+			SetRunning(false);
 		}
 
 		#endregion

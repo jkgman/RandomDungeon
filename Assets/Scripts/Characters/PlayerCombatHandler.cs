@@ -4,10 +4,10 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine;
 
+
 namespace Dungeon.Characters
 {
-
-
+	using Dungeon.Items;
 	/// <summary>
 	/// Handles Inputs and actions related to combat such as attacks, dodges and blocks
 	/// </summary>
@@ -34,6 +34,10 @@ namespace Dungeon.Characters
 		//[Header("Other shit")]
 
 
+		protected PlayerWeapon CurrentWeapon
+		{
+			get{ return (PlayerWeapon)GetCurrentWeapon(); }
+		}
 
 		float inputDodgeStartTime = 0;
 		float inputTargetSwitchTime = 0;
@@ -50,10 +54,7 @@ namespace Dungeon.Characters
 		{
 			base.Awake();
 			ControlsSubscribe();
-
-			currentWeapon = GetComponentInChildren<Items.Weapon>();
-			if (currentWeapon)
-				currentWeapon.CurrentEquipper = transform;
+			
 		}
 
 		protected override void Start()
@@ -146,15 +147,15 @@ namespace Dungeon.Characters
 
 		void UpdateDebug()
 		{
-			if (currentWeapon && PlayerDebugCanvas.Instance)
+			if (GetCurrentWeapon() && PlayerDebugCanvas.Instance)
 			{
-				if (currentWeapon.IsAttacking)
+				if (GetCurrentWeapon().IsAttacking)
 				{
-					if (currentWeapon.CurrentAttackState == AttackState.charge)
+					if (GetCurrentWeapon().CurrentAttackState == AttackState.charge)
 						PlayerDebugCanvas.Instance.SetDebugText("Charge");
-					if (currentWeapon.CurrentAttackState == AttackState.attack)
+					if (GetCurrentWeapon().CurrentAttackState == AttackState.attack)
 						PlayerDebugCanvas.Instance.SetDebugText("Attack");
-					if (currentWeapon.CurrentAttackState == AttackState.recovery)
+					if (GetCurrentWeapon().CurrentAttackState == AttackState.recovery)
 						PlayerDebugCanvas.Instance.SetDebugText("Recovery");
 				}
 				else
@@ -352,6 +353,7 @@ namespace Dungeon.Characters
 
 		protected override void Attack()
 		{
+			Debug.Log("Tried attack. Allowed:" + Player.AllowAttack());
 			if (Player.AllowAttack())
 			{
 				base.Attack();
@@ -363,7 +365,7 @@ namespace Dungeon.Characters
 		{
 			base.CharacterMovementDuringAttack(moveDirection, moveOffset);
 
-			if (currentWeapon.CanRotate(Target != null))
+			if (CurrentWeapon.CanRotate(Target != null))
 				Player.PController.ExternalRotateToInputDirection();
 
 		}
@@ -480,8 +482,8 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (currentWeapon && currentWeapon.IsAttacking)
-				output = currentWeapon.CanMove(Target != null) ? output : false;
+			if (CurrentWeapon && CurrentWeapon.IsAttacking)
+				output = CurrentWeapon.CanMove(Target != null) ? output : false;
 
 			return output;
 		}
@@ -493,8 +495,8 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = IsBlocking ? false : output;
-			if (currentWeapon && currentWeapon.IsAttacking)
-				output = currentWeapon.CanMove(Target != null) ? false : output;
+			if (CurrentWeapon && CurrentWeapon.IsAttacking)
+				output = CurrentWeapon.CanMove(Target != null) ? false : output;
 
 			return output;
 		}
@@ -505,7 +507,7 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			output = currentWeapon.CanAttack(Target != null) ? output : false;
+			output = CurrentWeapon.CanAttack(Target != null) ? output : false;
 
 			return output;
 		}
@@ -516,8 +518,8 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (currentWeapon)
-				output = currentWeapon.IsAttacking ? false : output;
+			if (CurrentWeapon)
+				output = CurrentWeapon.IsAttacking ? false : output;
 
 			return output;
 		}
@@ -527,7 +529,7 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (currentWeapon && currentWeapon.IsAttacking)
+			if (CurrentWeapon && CurrentWeapon.IsAttacking)
 				output = false;
 				
 			return output;

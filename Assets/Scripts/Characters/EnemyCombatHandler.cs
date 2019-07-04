@@ -3,20 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+
 namespace Dungeon.Characters
 {
+	using Dungeon.Items;
 
 	public class EnemyCombatHandler : CharacterCombatHandler
 	{
 		[SerializeField] private float targetFindDistance;
 		[SerializeField] private float attackDelay;
-		[SerializeField] private LayerMask obstacles;
+		[SerializeField] private LayerMask obstacleMask;
 		private float attackDelayTimer;
-		private bool canAttack;
 		private bool attackTimerReset;
 		private Transform target;
 		private NavMeshAgent navMeshAgent;
 		private float targetSeenLastTime;
+		protected EnemyWeapon CurrentWeapon
+		{
+			get { return (EnemyWeapon)GetCurrentWeapon(); }
+		}
 
 
 		protected override void Awake()
@@ -45,13 +50,13 @@ namespace Dungeon.Characters
 		public bool CanSeeTarget()
 		{
 
-			if (Physics.Raycast(transform.position, GetTargetDirection(), navMeshAgent.stoppingDistance + targetFindDistance, obstacles))
+			if (Physics.Raycast(transform.position, GetTargetDirection(), GetTargetDirection().magnitude, obstacleMask))
 			{
-				//if the player is behind an obstacle
 				return false;
 			}
 			else
 			{
+				//if the player is behind an obstacle
 				targetSeenLastTime = Time.time;
 				return true;
 			}
@@ -70,13 +75,28 @@ namespace Dungeon.Characters
 			return false;
 		}
 
-		public bool CanAttack()
+		public bool TargetIsAttackable()
 		{
 			//Check that target is close enough and delayTimer has run
+			bool canAttack = true;
 
-			if (attackDelayTimer < Time.time - attackDelay)
-				canAttack = true;
+			if (!CanSeeTarget())
+			{
+				canAttack = false;
+			}
 
+			float sqrLen = GetTargetDirection().sqrMagnitude;
+			if (sqrLen > navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance)
+			{
+				canAttack = false;
+			}
+
+			return canAttack;
+		}
+
+		public void AttackUpdate()
+		{
+			bool canAttack = true;
 			float sqrLen = GetTargetDirection().sqrMagnitude;
 			if (sqrLen < navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance)
 			{
@@ -94,12 +114,15 @@ namespace Dungeon.Characters
 				attackTimerReset = false;
 			}
 
-			return canAttack;
-		}
-
-		public void AttackUpdate()
-		{
-			Attack();
+			if (!CurrentWeapon.IsAttacking && canAttack)
+			{
+				Debug.Log("attack called");
+				Attack();
+			}
+			else if (CurrentWeapon.IsAttacking)
+			{
+				attackTimerReset = false;
+			}
 		}
 
 	}

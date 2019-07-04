@@ -7,6 +7,8 @@ namespace Dungeon.Characters
 	public class Health
 	{
 		float maxHealth;
+		private float damageStackInterval = 0.1f;
+		private float lastTimeDamaged = 0;
 
 		public float CurrentHealth
 		{
@@ -14,10 +16,11 @@ namespace Dungeon.Characters
 			private set;
 		}
 
-		public Health(float in_maxHealth)
+		public Health(float in_maxHealth, float in_damageStackInterval)
 		{
 			maxHealth = in_maxHealth;
 			CurrentHealth = maxHealth;
+			damageStackInterval = in_damageStackInterval;
 		}
 
 
@@ -41,8 +44,13 @@ namespace Dungeon.Characters
 
 		public void SubstractHealth(float value)
 		{
-			CurrentHealth -= Mathf.Abs(value);
-			CurrentHealth = Mathf.Clamp(CurrentHealth, 0, maxHealth);
+			if (lastTimeDamaged + damageStackInterval < Time.time)
+			{
+				CurrentHealth -= Mathf.Abs(value);
+				CurrentHealth = Mathf.Clamp(CurrentHealth, 0, maxHealth);
+				Debug.Log("Current Health: " + CurrentHealth);
+				lastTimeDamaged = Time.time;
+			}
 
 		}
 	}

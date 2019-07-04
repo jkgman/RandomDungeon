@@ -12,8 +12,8 @@ namespace Dungeon.Characters
 		[SerializeField] protected float moveSpeed = 15f;
 		[SerializeField] protected float runSpeedMultiplier = 1.5f;
 		[SerializeField] protected float rotationSpeed = 10f;
-		[SerializeField, Range(0f, 1f)] protected float accelerationSpeed = 0.2f;
-		[SerializeField, Range(0f, 1f)] protected float deaccelerationSpeed = 0.5f;
+		[SerializeField, Range(0f, 1f)] protected float accelerationDuration = 0.2f;
+		[SerializeField, Range(0f, 1f)] protected float deaccelerationDuration = 0.5f;
 
 		protected Vector3 currentMoveSpeed;
 		protected Vector3 currentMoveOffset;
@@ -33,6 +33,15 @@ namespace Dungeon.Characters
 			}
 		}
 
+		private bool _isRunning;
+		protected bool GetRunning()
+		{
+			return _isRunning;
+		}
+		protected virtual void SetRunning(bool value)
+		{
+			_isRunning = value;
+		}
 
 
 

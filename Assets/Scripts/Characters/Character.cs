@@ -25,6 +25,12 @@ namespace Dungeon.Characters
 		}
 
 
+		protected bool isActive = true;
+		protected bool dieRoutineStarted = false;
+
+
+
+
 
 		private Stats _stats;
 		public Stats Stats
@@ -77,9 +83,9 @@ namespace Dungeon.Characters
 		[SerializeField]private List<CharacterCollider> colliders;
 
 
-		void Update()
+		protected virtual void Update()
 		{
-			if (!Stats.health.IsAlive())
+			if (!Stats.health.IsAlive() && !dieRoutineStarted)
 				StartCoroutine(DieRoutine());
 		}
 
@@ -136,6 +142,27 @@ namespace Dungeon.Characters
 			{
 				Effects.PlayDamageParticles(position, hitForce);
 			}
+		}
+
+
+		protected void EnableColliders()
+		{
+			for (int i = 0; i < colliders.Count; i++)
+			{
+				colliders[i].col.enabled = true;
+			}
+		}
+		protected void DisableColliders()
+		{
+			for (int i = 0; i < colliders.Count; i++)
+			{
+				colliders[i].col.enabled = false;
+			}
+		}
+
+		public Transform GetTransform()
+		{
+			return transform;
 		}
 	}
 }
