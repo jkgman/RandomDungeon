@@ -11,7 +11,7 @@ namespace Dungeon.Characters
 	/// <summary>
 	/// Handles Inputs and actions related to combat such as attacks, dodges and blocks
 	/// </summary>
-	public class PlayerCombatHandler : MonoBehaviour, IAllowedActions
+	public class PlayerCombatHandler : CharacterCombatHandler, IAllowedActions
 	{
 		[Header("Target crap")]
 
@@ -24,20 +24,14 @@ namespace Dungeon.Characters
 		public UnityEvent targetChangedEvent;
 
 
-		[Header("Attack shit")]
-		[SerializeField] private Transform rightHand;
-		[SerializeField] private Transform leftHand;
-		private Items.Weapon currentWeapon;
-		private IEnumerator currentAttackCo;
-
 		[Header("Dodge shit")]
 		[SerializeField] private float dodgeDistance = 3f;
 		[SerializeField] private float dodgeDuration = 0.35f;
 		[SerializeField, Range(0f,1f)] private float dodgeInvincibilityPercentage = 0.75f;
 
-		[Header("Block shit")]
+		//[Header("Block shit")]
 
-		[Header("Other shit")]
+		//[Header("Other shit")]
 
 
 
@@ -52,8 +46,9 @@ namespace Dungeon.Characters
 
 		#region Initialization
 
-		void Awake()
+		protected override void Awake()
 		{
+			base.Awake();
 			ControlsSubscribe();
 
 			currentWeapon = GetComponentInChildren<Items.Weapon>();
@@ -61,20 +56,25 @@ namespace Dungeon.Characters
 				currentWeapon.CurrentEquipper = transform;
 		}
 
-		void Start() {
+		protected override void Start()
+		{
+			base.Start();
 
 			if (targetChangedEvent == null)
 				targetChangedEvent = new UnityEvent();
 
-			if (PManager.GetCam && PManager.GetCam.CameraTransformsUpdated != null)
-				PManager.GetCam.CameraTransformsUpdated.AddListener(CameraReadyEvent);
+			if (Player.GetCam && Player.GetCam.CameraTransformsUpdated != null)
+				Player.GetCam.CameraTransformsUpdated.AddListener(CameraReadyEvent);
 
 		}
-		void OnDisable() {
+		protected override void OnDisable() 
+		{
+			base.OnDisable();
+
 			targetChangedEvent = null;
 
-			if (PManager.GetCam && PManager.GetCam.CameraTransformsUpdated != null)
-				PManager.GetCam.CameraTransformsUpdated.RemoveListener(CameraReadyEvent);
+			if (Player.GetCam && Player.GetCam.CameraTransformsUpdated != null)
+				Player.GetCam.CameraTransformsUpdated.RemoveListener(CameraReadyEvent);
 
 			ControlsUnsubscribe();
 		}
@@ -83,36 +83,16 @@ namespace Dungeon.Characters
 
 		#region Getters & Setters
 
-		public bool IsBlocking
-		{
-			get;
-			private set;
-		}
-		public bool IsDodging
-		{
-			get;
-			private set;
-		}
-		public bool IsStunned
-		{
-			get;
-			private set;
-		}
-		public bool IsInvincible
-		{
-			get;
-			private set;
-		}
 
-		private Player _pManager;
-		private Player PManager
+		private Player _player;
+		private Player Player
 		{
 			get
 			{
-				if (!_pManager)
-					_pManager = GetComponent<Player>();
+				if (!_player)
+					_player = GetComponent<Player>();
 
-				return _pManager;
+				return _player;
 			}
 		}
 
@@ -142,7 +122,7 @@ namespace Dungeon.Characters
 			} 
 			else
 			{
-				return -PManager.PController.GetFlatMoveDirection();
+				return -Player.PController.GetFlatMoveDirection();
 			}
 		}
 
@@ -195,7 +175,7 @@ namespace Dungeon.Characters
 		}
 
 		void SetTargetIndicator() {
-			if (Target == null || !PManager.GetCam) // Indicator relies on camera
+			if (Target == null || !Player.GetCam) // Indicator relies on camera
 			{
 				if (targetIndicator)
 					Destroy(targetIndicator);
@@ -204,11 +184,11 @@ namespace Dungeon.Characters
 				if (!targetIndicator)
 				{
 					if (targetIndicatorPrefab)
-						targetIndicator = Instantiate(targetIndicatorPrefab, Target.GetPosition(), Quaternion.LookRotation(PManager.GetCam.transform.position - Target.GetPosition()));
+						targetIndicator = Instantiate(targetIndicatorPrefab, Target.GetPosition(), Quaternion.LookRotation(Player.GetCam.transform.position - Target.GetPosition()));
 				} else
 				{
 					targetIndicator.transform.position = Target.GetPosition();
-					targetIndicator.transform.rotation = Quaternion.LookRotation(PManager.GetCam.GetCurrentDirection());
+					targetIndicator.transform.rotation = Quaternion.LookRotation(Player.GetCam.GetCurrentDirection());
 				}
 			}
 
@@ -232,7 +212,7 @@ namespace Dungeon.Characters
 
 		ITargetable[] FindTargets() {
 			//Sphere check on all nearby enemies.
-			//Adds objects with Enemy script in temp list
+			//Adds objects with ITargetable in temp list
 			//Converts list into output array.
 
 			List<ITargetable> temp = new List<ITargetable>();
@@ -288,7 +268,7 @@ namespace Dungeon.Characters
 
 		void SwitchTarget(int direction) {
 			ITargetable[] allTheBoisToBeTargeted = FindTargets();
-			CameraTargetingData camData = PManager.GetCam.GetTargetingData();
+			CameraTargetingData camData = Player.GetCam.GetTargetingData();
 
 			ITargetable newTarget = null;
 			float currentBestAngle = -1;
@@ -330,11 +310,11 @@ namespace Dungeon.Characters
 
 		#region Combat
 
-		void Doge()
+		void Dodge()
 		{
-			if (PManager.AllowDodge())
+			if (Player.AllowDodge())
 			{
-				Vector3 dodgeDir = PManager.PController.GetFlatMoveDirection(false);
+				Vector3 dodgeDir = Player.PController.GetFlatMoveDirection(false);
 				dodgeDir.y = 0;
 				StartCoroutine(DodgeRoutine(dodgeDir.normalized));
 				
@@ -351,179 +331,41 @@ namespace Dungeon.Characters
 			float angle = Vector3.SignedAngle(transform.forward, Vector3.forward, Vector3.up);
 			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * direction;
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized;
-			PManager.PAnimation.SetDodgeStarted(blend, dodgeDuration);
+			Player.PAnimation.SetDodgeStarted(blend, dodgeDuration);
 
 			while (IsDodging && t < dodgeDuration)
 			{
 				IsInvincible = (t / dodgeDuration > invincibilityMargin) && (t / dodgeDuration < 1 - invincibilityMargin);
 				float distThisFrame = (dodgeDistance / dodgeDuration) * Time.smoothDeltaTime;
 				Vector3 offset = direction * distThisFrame;
-				PManager.PController.ExternalMove(offset);
+				Player.PController.ExternalMove(offset);
 
 				yield return null;
 				t += Time.smoothDeltaTime;
 			}
 
 			IsDodging = false;
-			PManager.PAnimation.SetDodgeCancelled();
+			Player.PAnimation.SetDodgeCancelled();
 
 			yield return null;
 		}
 
-		void Attack()
+		protected override void Attack()
 		{
-			if (PManager.AllowAttack())
+			if (Player.AllowAttack())
 			{
-				if (currentAttackCo != null)
-					StopCoroutine(currentAttackCo);
-
-
-				currentAttackCo = LightAttackRoutine();
-				StartCoroutine(currentAttackCo);
+				base.Attack();
 			}
 		}
 
-		void SetAttackDurations()
+
+		protected override void CharacterMovementDuringAttack(Vector3 moveDirection, float moveOffset)
 		{
-			float charge = currentWeapon.GetChargeDuration();
-			float attack = currentWeapon.GetAttackDuration();
-			float recovery = currentWeapon.GetRecoveryDuration();
+			base.CharacterMovementDuringAttack(moveDirection, moveOffset);
 
-			PManager.PAnimation.SetAttackDurations(charge, attack, recovery);
-		}
+			if (currentWeapon.CanRotate(Target != null))
+				Player.PController.ExternalRotateToInputDirection();
 
-		IEnumerator LightAttackRoutine()
-		{
-			currentWeapon.StartAttacking(AttackType.lightAttack);
-			SetAttackDurations();
-
-			yield return null; //Wait for one frame because animator sucks ass (ignores booleans if setting durations in same frame)
-
-			yield return StartCoroutine(LightAttackCharge());
-			yield return StartCoroutine(LightAttackAttack());
-			yield return StartCoroutine(LightAttackRecovery());
-
-			currentWeapon.EndAttacking();
-
-		}
-
-		IEnumerator LightAttackCharge()
-		{
-			currentWeapon.CurrentAttackState = AttackState.charge;
-			PManager.PAnimation.SetChargeStarted();
-
-			float t = 0;
-			float t01 = 0;
-			float moveOffset = 0;
-			float offsetTotal = 0;
-			Vector3 moveDirection = PManager.PController.GetFlatMoveDirection(allowZero: false);
-
-			while (	currentWeapon.IsAttacking && 
-					currentWeapon.CurrentAttackType == AttackType.lightAttack && 
-					t < currentWeapon.GetCurrentActionDuration())
-			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
-				moveDirection = UpdateAttackMoveDirection(moveDirection);
-				PManager.PController.ExternalMove(moveDirection * moveOffset);
-
-				if (currentWeapon.CanRotate(Target != null))
-					PManager.PController.ExternalRotateToInputDirection();
-
-				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
-				t += Time.smoothDeltaTime;
-				yield return null;
-			}
-			
-			PManager.PAnimation.SetChargeCancelled();
-
-		}
-		IEnumerator LightAttackAttack()
-		{
-			currentWeapon.CurrentAttackState = AttackState.attack;
-			PManager.PAnimation.SetAttackStarted();
-			
-			float t = 0;
-			float t01 = 0;
-			float moveOffset = 0;
-			float offsetTotal = 0;
-
-			Vector3 moveDirection = PManager.PController.GetFlatMoveDirection(allowZero: false);
-
-			while (	currentWeapon.IsAttacking &&
-					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
-			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveDirection = UpdateAttackMoveDirection(moveDirection);
-
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
-				PManager.PController.ExternalMove(moveDirection * moveOffset);
-
-				if (currentWeapon.CanRotate(Target != null))
-					PManager.PController.ExternalRotateToInputDirection();
-
-				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
-				t += Time.smoothDeltaTime;
-				yield return null;
-			}
-			
-			PManager.PAnimation.SetAttackCancelled();
-
-		}
-		IEnumerator LightAttackRecovery()
-		{
-			currentWeapon.CurrentAttackState = AttackState.recovery;
-			PManager.PAnimation.SetRecoveryStarted();
-
-			float t = 0;
-			float t01 = 0;
-			float moveOffset = 0;
-			float offsetTotal = 0;
-
-			Vector3 moveDirection = PManager.PController.GetFlatMoveDirection(allowZero: false);
-
-
-			while (	currentWeapon.IsAttacking &&
-					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
-			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-
-				moveDirection = UpdateAttackMoveDirection(moveDirection);
-
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveOffset = currentWeapon.CurrentMoveDistance(t01) - offsetTotal;
-				PManager.PController.ExternalMove(moveDirection * moveOffset);
-
-				if (currentWeapon.CanRotate(Target != null))
-					PManager.PController.ExternalRotateToInputDirection();
-
-				offsetTotal = currentWeapon.CurrentMoveDistance(t01);
-				t += Time.smoothDeltaTime;
-				yield return null;
-			}
-			
-			PManager.PAnimation.SetRecoveryCancelled();
-		}
-
-		Vector3 UpdateAttackMoveDirection(Vector3 current)
-		{
-			Vector3 output = transform.forward;
-
-			//if (Target)
-			//{
-			//	if (currentWeapon.CanRotate(hasTarget: true))
-			//		output = GetFlatDirectionToTarget();
-			//}
-			//else
-			//{
-			//	if (currentWeapon.CanRotate(hasTarget: false))
-			//		output = PManager.PController.GetTransformedInputDirection(allowZero: false);
-			//}
-
-			return output;
 		}
 
 		#endregion
@@ -566,10 +408,10 @@ namespace Dungeon.Characters
 		void InputTargetLock(InputAction.CallbackContext context) 
 		{
 
-			bool success = SetTarget(PManager.GetCam.GetTargetingData());
+			bool success = SetTarget(Player.GetCam.GetTargetingData());
 			Debug.Log("InputTargetLock: " + success);
 			if (!success)
-				PManager.GetCam.ResetCamera();
+				Player.GetCam.ResetCamera();
 
 		}
 
@@ -611,9 +453,9 @@ namespace Dungeon.Characters
 		}
 		void InputDodgeCancelled(InputAction.CallbackContext context) 
 		{
-			if (Time.time - inputDodgeStartTime < PManager.inputMaxPressTime)
+			if (Time.time - inputDodgeStartTime < Player.inputMaxPressTime)
 			{
-				Doge();
+				Dodge();
 			}
 		}
 

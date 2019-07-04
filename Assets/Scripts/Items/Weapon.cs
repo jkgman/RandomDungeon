@@ -91,7 +91,7 @@ namespace Dungeon.Items
 			set;
 		}
 
-		public float CurrentMoveDistance(float evaluationTime)
+		public float GetMoveDistanceFromCurve(float evaluationTime)
 		{
 			switch (CurrentAttackType)
 			{

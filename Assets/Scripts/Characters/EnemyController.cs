@@ -1,145 +1,100 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿//using System;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyController : MonoBehaviour
+
+namespace Dungeon.Characters.Enemies
 {
-	private enum EnemyState
+
+	public class EnemyController : CharacterController
 	{
-		idle,
-		strolling,
-		following,
-		attacking
-	}
 
-	[SerializeField] private LayerMask obstacles;
-	[SerializeField] private float turnSpeed;
-	[SerializeField] private float viewRangeModifier = 5;
-	[SerializeField] private float strollDistance;
-	[SerializeField] private bool calculateStrollDistanceFromSpawn;
-	[SerializeField] private float attackDelay;
-	[SerializeField] private float minIdleTime;
-	[SerializeField] private float maxIdleTime;
-
-	private Vector3 startPoint;
-
-
-	private float idleTime;
-	private float attackDelayTimer;
-	private bool canAttack;
-	private bool timerReset;
-	private NavMeshAgent navMeshAgent;
+		private bool isRunning;
+		private bool newDestination;
+		private Vector3 currentDestination;
+		private NavMeshAgent navMeshAgent;
 
 
 
-	Transform _playerTrans;
-	Transform PlayerTrans
-	{
-		get
+		#region Getters & Setters		
+
+		EnemyAnimationHandler _eAnimHandler;
+		EnemyAnimationHandler EAnimHandler
 		{
-			if (!_playerTrans)
+			get
 			{
-				GameObject temp = GameObject.FindGameObjectWithTag("Player");
-				if (temp)
-					_playerTrans = temp.transform;
-			}
+				if (!_eAnimHandler)
+					_eAnimHandler = GetComponentInChildren<EnemyAnimationHandler>();
 
-			return _playerTrans;
-		}
-	}
-
-
-
-
-	private void Awake()
-	{
-		navMeshAgent = GetComponent<NavMeshAgent>();
-	}
-	private void OnEnable()
-	{
-		startPoint = transform.position;
-	}
-
-	private void Update()
-	{
-		Move();
-		if (PlayerTrans && CanSeeTarget())
-		{
-			RotateTowardsTraget();
-
-			if (CanAttack())
-			{
-				Attack();
+				return _eAnimHandler;
 			}
 		}
-	}
 
-
-	public Vector3 TargetDirection()
-	{
-		return PlayerTrans.position - transform.position;
-	}
-
-
-	public bool CanAttack()
-	{
-		if (attackDelayTimer < Time.time - attackDelay)
-			canAttack = true;
-
-		float sqrLen = TargetDirection().sqrMagnitude;
-		if (sqrLen < navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance)
+		public Vector3 GetDirection(Vector3 target)
 		{
-			//Reset timer once
-			if (!timerReset)
-			{
-				canAttack = false;
-				attackDelayTimer = Time.time;
-				timerReset = true;
-			}
-		}
-		else
-		{
-			canAttack = false;
-			timerReset = false;
+			return target - transform.position;
 		}
 
-		return canAttack;
-	}
 
-	public bool CanSeeTarget()
-	{
+		#endregion
 
-		if (Physics.Raycast(transform.position, TargetDirection(), navMeshAgent.stoppingDistance + viewRangeModifier, obstacles))
+
+		private void Awake()
 		{
-			//if the player is behind an obstacle
-			return false;
+			navMeshAgent = GetComponent<NavMeshAgent>();
 		}
-		else
-			return true;
-	}
 
 
-
-	public void Move()
-	{
-		if (PlayerTrans && TargetDirection().sqrMagnitude < viewRangeModifier*viewRangeModifier)
-			navMeshAgent.SetDestination(PlayerTrans.position);
-		else
-			navMeshAgent.SetDestination(transform.position);
-	}
-
-	public void RotateTowardsTraget()
-	{
-		if (PlayerTrans)
+		private void Strolling()
 		{
-			Quaternion targetRotation = Quaternion.LookRotation(TargetDirection());
-			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, turnSpeed);
-		}
-	}
-	public void Attack()
-	{
-		//Weapon attack etc.
+			if (newDestination)
+				navMeshAgent.SetDestination(currentDestination);
 
+		}
+
+		public void Following(Vector3 targetPosition, bool targetVisible)
+		{ 
+			navMeshAgent.SetDestination(targetPosition);
+
+			if (targetVisible)
+				RotateTowardsPosition(targetPosition);
+			else
+				RotateTowardsMovement();
+
+		}
+
+		private void RotateTowardsMovement()
+		{
+			Vector3 dir = navMeshAgent.nextPosition - transform.position;
+			dir.y = 0;
+			Quaternion targetRotation = Quaternion.LookRotation(dir);
+			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed);
+		}
+
+
+		public void RotateTowardsPosition(Vector3 in_position)
+		{
+			Quaternion targetRotation = Quaternion.LookRotation(GetDirection(in_position));
+			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed);
+		}
+
+
+
+
+		#region Animations
+
+
+		void UpdateAnimationData()
+		{
+			
+			float movePercentage = isRunning ? 1f : !navMeshAgent.isStopped ? 0.5f : 0;
+			
+			Vector2 blend = new Vector2(0, movePercentage);
+
+			AnimHandler.SetMovementPerformed(blend);
+
+		}
+
+		#endregion
 	}
 }

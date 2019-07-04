@@ -477,8 +477,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3183404835033271239}
-  m_LocalRotation: {x: -0.50000036, y: 0.4999997, z: 0.4999997, w: 0.50000036}
-  m_LocalPosition: {x: -5.960465e-10, y: 0.27992857, z: -0.0037423922}
+  m_LocalRotation: {x: -0.50000036, y: 0.49999967, z: 0.49999967, w: 0.50000036}
+  m_LocalPosition: {x: 0, y: 0.27992857, z: -0.003742218}
   m_LocalScale: {x: 9.999999, y: 9.999999, z: 10}
   m_Children:
   - {fileID: 3187134615122641067}
@@ -1388,6 +1388,7 @@ GameObject:
   - component: {fileID: 6212252257882444864}
   - component: {fileID: 8826152075915427889}
   - component: {fileID: 5592924266499549439}
+  - component: {fileID: 1496731353625701271}
   - component: {fileID: 8976699587235194805}
   m_Layer: 10
   m_Name: Enemy
@@ -1497,11 +1498,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0946bc41501653345a2ebd7380068cb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turnSpeed: 20
-  viewRangeModifier: 10
   obstacles:
     serializedVersion: 2
     m_Bits: 1
+  turnSpeed: 20
+  viewRangeModifier: 10
+  strollDistance: 0
+  calculateStrollDistanceFromSpawn: 0
+  attackDelay: 0
+  minIdleTime: 0
+  maxIdleTime: 0
+--- !u!114 &1496731353625701271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6212252257882444870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 390b76e70eefe554290afb03b6f9796c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!195 &8976699587235194805
 NavMeshAgent:
   m_ObjectHideFlags: 0

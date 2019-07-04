@@ -49,6 +49,30 @@ namespace Dungeon.Characters
 				return _effects;
 			}
 		}
+		private CharacterAnimationHandler _animationHandler;
+		public CharacterAnimationHandler AnimationHandler
+		{
+			get
+			{
+				if (!_animationHandler)
+					_animationHandler = GetComponent<CharacterAnimationHandler>();
+
+				return _animationHandler;
+			}
+		}
+
+		private CharacterController _characterController;
+		public CharacterController CharacterController
+		{
+			get
+			{
+				if (!_characterController)
+					_characterController = GetComponent<CharacterController>();
+
+				return _characterController;
+			}
+		}
+
 
 		[SerializeField]private List<CharacterCollider> colliders;
 
