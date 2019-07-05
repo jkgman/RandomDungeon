@@ -484,17 +484,17 @@ MonoBehaviour:
   actionsDuringTargeting:
     rotatableDuringCharge: 0
     rotatableDuringAttack: 0
-    rotatableDuringRecovery: 0
+    rotatableDuringRecovery: 1
     movableDuringCharge: 0
     movableDuringAttack: 0
-    movableDuringRecovery: 1
+    movableDuringRecovery: 0
   actionsDuringFree:
     rotatableDuringCharge: 1
     rotatableDuringAttack: 0
     rotatableDuringRecovery: 1
     movableDuringCharge: 0
     movableDuringAttack: 0
-    movableDuringRecovery: 1
+    movableDuringRecovery: 0
   actionsGeneral:
     allowAttackDuringCharge: 0
     allowAttackDuringAttack: 0
@@ -502,6 +502,7 @@ MonoBehaviour:
     allowComboDuringCharge: 0
     allowComboDuringAttack: 0
     allowComboDuringRecovery: 1
+    allowCancelDuringRecovery: 1
 --- !u!54 &3054648839849875980
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1300,7 +1301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24761e59d4106a14da9855bdf18ca94f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blendSpeed: 5
+  blendSpeed: 10
 --- !u!143 &3766095293103317566
 CharacterController:
   m_ObjectHideFlags: 0

@@ -50,9 +50,9 @@ namespace Dungeon.Characters
 
 		#region Initialization
 
-		protected override void Awake()
+		protected override void OnEnable()
 		{
-			base.Awake();
+			base.OnEnable();
 			ControlsSubscribe();
 			
 		}
@@ -394,17 +394,18 @@ namespace Dungeon.Characters
 			inputs.Player.Attack.started += InputAttackStarted;
 			inputs.Player.Attack.canceled += InputAttackCancelled;
 			inputs.Player.Attack.Enable();
+			inputs.Player.Move.performed += InputAttackCancellationPerformed;
+			inputs.Player.Move.Enable();
 		}
 
 		void ControlsUnsubscribe() 
 		{
 			inputs.Player.TargetLock.performed -= InputTargetLock;
-			inputs.Player.TargetLock.Disable();
 			inputs.Player.SwitchTarget.started -= InputTargetSwitch;
-			inputs.Player.SwitchTarget.Disable();
 			inputs.Player.RunAndDodge.started -= InputDodgeStarted;
 			inputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
-			inputs.Player.RunAndDodge.Enable();
+			inputs.Player.Move.performed -= InputAttackCancellationPerformed;
+
 		}
 
 		void InputTargetLock(InputAction.CallbackContext context) 
@@ -469,7 +470,12 @@ namespace Dungeon.Characters
 		{
 
 		}
-
+		void InputAttackCancellationPerformed(InputAction.CallbackContext context)
+		{
+			//Gets called by all inputs that have ability to cancel attack, such as movement
+			if (CurrentWeapon.IsAttacking)
+				CancelAttack();
+		}
 
 
 		#endregion

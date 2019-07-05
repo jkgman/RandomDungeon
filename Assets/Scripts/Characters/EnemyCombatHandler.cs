@@ -24,9 +24,9 @@ namespace Dungeon.Characters
 		}
 
 
-		protected override void Awake()
+		protected override void OnEnable()
 		{
-			base.Awake();
+			base.OnEnable();
 			navMeshAgent = GetComponent<NavMeshAgent>();
 		}
 

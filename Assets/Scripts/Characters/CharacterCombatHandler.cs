@@ -57,7 +57,7 @@ namespace Dungeon.Characters
 
 		#region Initialization
 
-		protected virtual void Awake()
+		protected virtual void OnEnable()
 		{
 			currentWeapon = GetComponentInChildren<Weapon>();
 			if (currentWeapon)
@@ -96,6 +96,18 @@ namespace Dungeon.Characters
 
 			currentAttackCo = LightAttackRoutine();
 			StartCoroutine(currentAttackCo);
+		}
+		protected virtual void CancelAttack()
+		{
+			if (currentWeapon.IsAttacking && currentWeapon.AttackCancellable())
+			{
+				if (currentAttackCo != null)
+				{
+					StopCoroutine(currentAttackCo);
+					Debug.Log("Stopped attack coroutine");
+					currentWeapon.EndAttacking();
+				}
+			}
 		}
 
 		protected IEnumerator LightAttackRoutine()

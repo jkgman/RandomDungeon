@@ -14,6 +14,7 @@ namespace Dungeon.Items
 			public bool allowComboDuringCharge;
 			public bool allowComboDuringAttack;
 			public bool allowComboDuringRecovery;
+			public bool allowCancelDuringRecovery;
 
 		}
 
@@ -37,6 +38,11 @@ namespace Dungeon.Items
 		[SerializeField] private AllowedActionsGeneral actionsGeneral;
 
 
+		public override bool AttackCancellable()
+		{
+			//Recovery can be skipped by other actions
+			return CurrentAttackState == AttackState.recovery && actionsGeneral.allowCancelDuringRecovery && IsAttacking;
+		}
 
 		public bool CanRotate(bool hasTarget)
 		{

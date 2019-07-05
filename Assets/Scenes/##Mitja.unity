@@ -416,7 +416,7 @@ PrefabInstance:
     - target: {fileID: 6212252257882444870, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6212252257882444867, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
@@ -481,12 +481,12 @@ PrefabInstance:
     - target: {fileID: 3614137154360470874, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8976699587235194805, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_StoppingDistance
-      value: 1.1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 3182991277793584501, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
@@ -1071,7 +1071,7 @@ PrefabInstance:
     - target: {fileID: 6212252257882444870, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6212252257882444867, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
@@ -1136,12 +1136,12 @@ PrefabInstance:
     - target: {fileID: 3614137154360470874, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8976699587235194805, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_StoppingDistance
-      value: 1.1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 3182991277793584501, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
@@ -1733,7 +1733,7 @@ PrefabInstance:
     - target: {fileID: 6212252257882444870, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6212252257882444867, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
@@ -1798,12 +1798,12 @@ PrefabInstance:
     - target: {fileID: 3614137154360470874, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8976699587235194805, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
       propertyPath: m_StoppingDistance
-      value: 1.1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 3182991277793584501, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
@@ -2169,6 +2169,26 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 8968979683193756260, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: actionsDuringTargeting.rotatableDuringRecovery
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8968979683193756260, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: actionsGeneral.allowCancelDuringRecovery
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8968979683193756260, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: actionsDuringTargeting.movableDuringRecovery
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8968979683193756260, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: actionsDuringFree.movableDuringRecovery
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
 --- !u!2083052967 &5504766694074673567
@@ -2296,10 +2316,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 3276428255098172041, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
+    - target: {fileID: 8976699587235194805, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
         type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 1
+      propertyPath: m_StoppingDistance
+      value: 1.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fab49606a9aebf74dbf0f02f3b5eb7c2, type: 3}

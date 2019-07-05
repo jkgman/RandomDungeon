@@ -1,5 +1,18 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!65 &3606080787685737587
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1328367332559660973}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.045982495, y: 0.2674963, z: 0.020000018}
+  m_Center: {x: -0.000000029450153, y: -0.097980805, z: -0.000000065638645}
 --- !u!114 &5698389123337184363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105,19 +118,6 @@ MonoBehaviour:
       attackClip: {fileID: 7400000, guid: e82cb943db5c3bf4a807d361b5dfc58f, type: 2}
       recoveryClip: {fileID: 7400000, guid: 197bd21561cf53547aac015a140d0d9c, type: 2}
   heavyAttacks: []
---- !u!65 &3606080787685737587
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1328367332559660973}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.045982495, y: 0.2674963, z: 0.020000018}
-  m_Center: {x: -0.000000029450153, y: -0.097980805, z: -0.000000065638645}
 --- !u!1 &3181961643350857569
 GameObject:
   m_ObjectHideFlags: 0
@@ -319,7 +319,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: f297797635a2b7445ad2ea55cec7353b, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1

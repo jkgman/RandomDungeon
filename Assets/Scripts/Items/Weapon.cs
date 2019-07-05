@@ -65,6 +65,11 @@ namespace Dungeon.Items
 			set;
 		}
 
+		public virtual bool AttackCancellable()
+		{
+			return false;
+		}
+
 		public float GetMoveDistanceFromCurve(float evaluationTime)
 		{
 			switch (CurrentAttackType)
@@ -130,6 +135,7 @@ namespace Dungeon.Items
 		public virtual void StartAttacking(AttackType type)
 		{
 			CurrentAttackType = type;
+			CurrentAttackState = AttackState.charge;
 			IsAttacking = true;
 		}
 
