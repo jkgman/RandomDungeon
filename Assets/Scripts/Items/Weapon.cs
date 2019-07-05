@@ -248,7 +248,7 @@ namespace Dungeon.Items
 			{
 				//Position and force are placeholder tests.
 				Vector3 position = other.ClosestPointOnBounds(transform.position);
-				Vector3 force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage()*2f;
+				Vector3 force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage()*0.5f;
 				dmg.TakeDamageAtPositionWithForce(GetCurrentDamage(), position, force);
 			}
 		}

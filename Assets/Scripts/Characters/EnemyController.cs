@@ -20,19 +20,7 @@ namespace Dungeon.Characters.Enemies
 
 
 		#region Getters & Setters		
-
-		EnemyAnimationHandler _eAnimHandler;
-		EnemyAnimationHandler EAnimHandler
-		{
-			get
-			{
-				if (!_eAnimHandler)
-					_eAnimHandler = GetComponentInChildren<EnemyAnimationHandler>();
-
-				return _eAnimHandler;
-			}
-		}
-
+		
 		public Vector3 GetDirection(Vector3 target)
 		{
 			return target - transform.position;
@@ -65,11 +53,13 @@ namespace Dungeon.Characters.Enemies
 				currentDestination = CreateNewDestination();
 				navMeshAgent.SetDestination(currentDestination);
 			}
+			UpdateAnimationData();
 		}
 		public void Idle()
 		{
 			if (!navMeshAgent.isStopped)
 				navMeshAgent.SetDestination(transform.position);
+			UpdateAnimationData();
 		}
 
 		private Vector3 CreateNewDestination()
@@ -98,7 +88,7 @@ namespace Dungeon.Characters.Enemies
 				SetRunning(false);
 				RotateTowardsMovement();
 			}
-
+			UpdateAnimationData();
 		}
 
 		private void RotateTowardsMovement()
