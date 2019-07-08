@@ -373,358 +373,358 @@ public class DelaunyTriangulationV2 : MonoBehaviour
         }
     }
 }
-public enum Side
-{
-    AB, BC, CA 
-}
-public class Node
-{
+//public enum Side
+//{
+//    AB, BC, CA 
+//}
+//public class Node
+//{
 
-    List<Node> connectedNodes = new List<Node>();
-    Vector2 pos;
+//    List<Node> connectedNodes = new List<Node>();
+//    Vector2 pos;
 
-    public Node(Vector2 pos)
-    {
-        this.pos = pos;
-    }
-    public override bool Equals(object obj)
-    {
+//    public Node(Vector2 pos)
+//    {
+//        this.pos = pos;
+//    }
+//    public override bool Equals(object obj)
+//    {
 
-        if (obj == null || GetType() != obj.GetType())
-        {
-            return false;
-        }
+//        if (obj == null || GetType() != obj.GetType())
+//        {
+//            return false;
+//        }
 
-        if (pos == ((Node)obj).pos)
-        {
-            return true;
-        }
-        return false;
-    }
-    public override int GetHashCode()
-    {
-        // TODO: write your implementation of GetHashCode() here
-        throw new System.NotImplementedException();
-        return base.GetHashCode();
-    }
+//        if (pos == ((Node)obj).pos)
+//        {
+//            return true;
+//        }
+//        return false;
+//    }
+//    public override int GetHashCode()
+//    {
+//        // TODO: write your implementation of GetHashCode() here
+//        throw new System.NotImplementedException();
+//        return base.GetHashCode();
+//    }
 
     
 
-    public Vector2 Pos2D { get => pos; }
-    public Vector3 Pos3D { get => new Vector3(pos.x, 0, pos.y); }
-    public List<Node> GetConnections { get => connectedNodes; private set => connectedNodes = value; }
-    public void AddConnection(Node connection)
-    {
-        connectedNodes.Add(connection);
-    }
-    public void RemoveConnection(Node connection)
-    {
-        connectedNodes.Remove(connection);
-    }
-}
-public class Tri
-{
-    Node a;
-    Node b;
-    Node c;
-    public Tri ABNeighbor;
-    public Side ABNeighborConnectingSide;
-    public Tri BCNeighbor;
-    public Side BCNeighborConnectingSide;
-    public Tri CANeighbor;
-    public Side CANeighborConnectingSide;
+//    public Vector2 Pos2D { get => pos; }
+//    public Vector3 Pos3D { get => new Vector3(pos.x, 0, pos.y); }
+//    public List<Node> GetConnections { get => connectedNodes; private set => connectedNodes = value; }
+//    public void AddConnection(Node connection)
+//    {
+//        connectedNodes.Add(connection);
+//    }
+//    public void RemoveConnection(Node connection)
+//    {
+//        connectedNodes.Remove(connection);
+//    }
+//}
+//public class Tri
+//{
+//    Node a;
+//    Node b;
+//    Node c;
+//    public Tri ABNeighbor;
+//    public Side ABNeighborConnectingSide;
+//    public Tri BCNeighbor;
+//    public Side BCNeighborConnectingSide;
+//    public Tri CANeighbor;
+//    public Side CANeighborConnectingSide;
 
-    public override bool Equals(object obj)
-    {
+//    public override bool Equals(object obj)
+//    {
 
-        if (obj == null || GetType() != obj.GetType())
-        {
-            return false;
-        }
+//        if (obj == null || GetType() != obj.GetType())
+//        {
+//            return false;
+//        }
 
-        if (A == ((Tri)obj).A && B == ((Tri)obj).B && C == ((Tri)obj).C)
-        {
-            return true;
-        }
-        if (A == ((Tri)obj).C && B == ((Tri)obj).A && C == ((Tri)obj).B)
-        {
-            return true;
-        }
-        if (A == ((Tri)obj).B && B == ((Tri)obj).C && C == ((Tri)obj).A)
-        {
-            return true;
-        }
-        return false;
-    }
-    public override int GetHashCode()
-    {
-        // TODO: write your implementation of GetHashCode() here
-        throw new System.NotImplementedException();
-        return base.GetHashCode();
-    }
-    /*Getters and Setters*/
-    public Node[] GetNodes()
-    {
-        Node[] nodes = new Node[] { A, B, C };
-        return nodes;
-    }
-    public Node A { get => a; private set => a = value; }
-    public Node B { get => b; private set => b = value; }
-    public Node C { get => c; private set => c = value; }
-    public void UpdateNeighbor(Side side, Tri tri, Side neighborSide) {
-        SetNeighbor(side, tri, neighborSide);
-        tri.SetNeighbor(neighborSide, this, side);
-    }
-    private void SetNeighbor(Side side, Tri tri, Side neighborSide)
-    {
-        if (side == Side.AB)
-        {
-            ABNeighbor = tri;
-            ABNeighborConnectingSide = neighborSide;
-        }
-        else if (side == Side.BC)
-        {
-            BCNeighbor = tri;
-            BCNeighborConnectingSide = neighborSide;
-        }
-        else
-        {
-            CANeighbor = tri;
-            CANeighborConnectingSide = neighborSide;
-        }
+//        if (A == ((Tri)obj).A && B == ((Tri)obj).B && C == ((Tri)obj).C)
+//        {
+//            return true;
+//        }
+//        if (A == ((Tri)obj).C && B == ((Tri)obj).A && C == ((Tri)obj).B)
+//        {
+//            return true;
+//        }
+//        if (A == ((Tri)obj).B && B == ((Tri)obj).C && C == ((Tri)obj).A)
+//        {
+//            return true;
+//        }
+//        return false;
+//    }
+//    public override int GetHashCode()
+//    {
+//        // TODO: write your implementation of GetHashCode() here
+//        throw new System.NotImplementedException();
+//        return base.GetHashCode();
+//    }
+//    /*Getters and Setters*/
+//    public Node[] GetNodes()
+//    {
+//        Node[] nodes = new Node[] { A, B, C };
+//        return nodes;
+//    }
+//    public Node A { get => a; private set => a = value; }
+//    public Node B { get => b; private set => b = value; }
+//    public Node C { get => c; private set => c = value; }
+//    public void UpdateNeighbor(Side side, Tri tri, Side neighborSide) {
+//        SetNeighbor(side, tri, neighborSide);
+//        tri.SetNeighbor(neighborSide, this, side);
+//    }
+//    private void SetNeighbor(Side side, Tri tri, Side neighborSide)
+//    {
+//        if (side == Side.AB)
+//        {
+//            ABNeighbor = tri;
+//            ABNeighborConnectingSide = neighborSide;
+//        }
+//        else if (side == Side.BC)
+//        {
+//            BCNeighbor = tri;
+//            BCNeighborConnectingSide = neighborSide;
+//        }
+//        else
+//        {
+//            CANeighbor = tri;
+//            CANeighborConnectingSide = neighborSide;
+//        }
         
-    }
-    public Tri GetNeighbor(Side side)
-    {
-        switch (side)
-        {
-            case Side.AB:
-                return ABNeighbor;
-            case Side.BC:
-                return BCNeighbor;
-            case Side.CA:
-                return CANeighbor;
-            default:
-                return null;
-        }
-    }
-    public Side GetNeighborConnectingSide(Side side)
-    {
-        switch (side)
-        {
-            case Side.AB:
-                return ABNeighborConnectingSide;
-            case Side.BC:
-                return BCNeighborConnectingSide;
-            case Side.CA:
-                return CANeighborConnectingSide;
-            default:
-                return Side.AB;
-        }
-    }
-    /*Initializer*/
-    public Tri(Node a, Node b, Node c)
-    {
-        A = a;
-        B = b;
-        C = c;
+//    }
+//    public Tri GetNeighbor(Side side)
+//    {
+//        switch (side)
+//        {
+//            case Side.AB:
+//                return ABNeighbor;
+//            case Side.BC:
+//                return BCNeighbor;
+//            case Side.CA:
+//                return CANeighbor;
+//            default:
+//                return null;
+//        }
+//    }
+//    public Side GetNeighborConnectingSide(Side side)
+//    {
+//        switch (side)
+//        {
+//            case Side.AB:
+//                return ABNeighborConnectingSide;
+//            case Side.BC:
+//                return BCNeighborConnectingSide;
+//            case Side.CA:
+//                return CANeighborConnectingSide;
+//            default:
+//                return Side.AB;
+//        }
+//    }
+//    /*Initializer*/
+//    public Tri(Node a, Node b, Node c)
+//    {
+//        A = a;
+//        B = b;
+//        C = c;
         
-    }
+//    }
 
-    public Tri AddNodeConnections() {
-        A.AddConnection(B);
-        A.AddConnection(C);
-        B.AddConnection(A);
-        B.AddConnection(C);
-        C.AddConnection(A);
-        C.AddConnection(B);
-        return this;
-    }
-    public Tri RemoveNodeConnections()
-    {
-        A.RemoveConnection(B);
-        A.RemoveConnection(C);
-        B.RemoveConnection(A);
-        B.RemoveConnection(C);
-        C.RemoveConnection(A);
-        C.RemoveConnection(B);
-        return this;
-    }
-    public Node NextNode(Node node) {
-        if (node == A)
-        {
-            return B;
-        }
-        else if (node == B)
-        {
-            return C;
-        }
-        else if (node == C)
-        {
-            return A;
-        }
-        else {
-            Debug.LogWarning("couldnt find node " + node.Pos2D + " in tri " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D);
-            return null;
-        }
-    }
-    public Node PrevNode(Node node)
-    {
-        if (node == A)
-        {
-            return C;
-        }
-        else if (node == B)
-        {
-            return A;
-        }
-        else if (node == C)
-        {
-            return B;
-        }
-        else
-        {
-            Debug.LogWarning("couldnt find node " + node.Pos2D + " in tri " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D);
-            return null;
-        }
-    }
-    public Node OpposingNode(Side side)
-    {
-        switch (side)
-        {
-            case Side.AB:
-                return C;
-            case Side.BC:
-                return A;
-            case Side.CA:
-                return B;
-            default:
-                return null;
-        }
-    }
-    public bool HasSide(Side side)
-    {
-        switch (side)
-        {
-            case Side.AB:
-                if (ABNeighbor == null)
-                {
-                    return false;
-                }
-                break;
-            case Side.BC:
-                if (BCNeighbor == null)
-                {
-                    return false;
-                }
-                break;
-            case Side.CA:
-                if (CANeighbor == null)
-                {
-                    return false;
-                }
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
-    public Side NextSide(Side side) {
-        if (side == Side.AB)
-        {
-            return Side.BC;
-        }
-        else if (side == Side.BC)
-        {
-            return Side.CA;
-        }
-        else
-        {
-            return Side.AB;
-        }
-    }
-    public Side PrevSide(Side side)
-    {
-        if (side == Side.CA)
-        {
-            return Side.BC;
-        }
-        else if (side == Side.BC) 
-        {
-            return Side.AB;
-        }
-        else
-        {
-            return Side.CA;
-        }
-    }
-    public bool InTri(Node node)
-    {
-        Vector3 vertA = A.Pos3D, vertB = B.Pos3D, vertC = C.Pos3D;
-        Vector3 point = node.Pos3D;
+//    public Tri AddNodeConnections() {
+//        A.AddConnection(B);
+//        A.AddConnection(C);
+//        B.AddConnection(A);
+//        B.AddConnection(C);
+//        C.AddConnection(A);
+//        C.AddConnection(B);
+//        return this;
+//    }
+//    public Tri RemoveNodeConnections()
+//    {
+//        A.RemoveConnection(B);
+//        A.RemoveConnection(C);
+//        B.RemoveConnection(A);
+//        B.RemoveConnection(C);
+//        C.RemoveConnection(A);
+//        C.RemoveConnection(B);
+//        return this;
+//    }
+//    public Node NextNode(Node node) {
+//        if (node == A)
+//        {
+//            return B;
+//        }
+//        else if (node == B)
+//        {
+//            return C;
+//        }
+//        else if (node == C)
+//        {
+//            return A;
+//        }
+//        else {
+//            Debug.LogWarning("couldnt find node " + node.Pos2D + " in tri " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D);
+//            return null;
+//        }
+//    }
+//    public Node PrevNode(Node node)
+//    {
+//        if (node == A)
+//        {
+//            return C;
+//        }
+//        else if (node == B)
+//        {
+//            return A;
+//        }
+//        else if (node == C)
+//        {
+//            return B;
+//        }
+//        else
+//        {
+//            Debug.LogWarning("couldnt find node " + node.Pos2D + " in tri " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D);
+//            return null;
+//        }
+//    }
+//    public Node OpposingNode(Side side)
+//    {
+//        switch (side)
+//        {
+//            case Side.AB:
+//                return C;
+//            case Side.BC:
+//                return A;
+//            case Side.CA:
+//                return B;
+//            default:
+//                return null;
+//        }
+//    }
+//    public bool HasSide(Side side)
+//    {
+//        switch (side)
+//        {
+//            case Side.AB:
+//                if (ABNeighbor == null)
+//                {
+//                    return false;
+//                }
+//                break;
+//            case Side.BC:
+//                if (BCNeighbor == null)
+//                {
+//                    return false;
+//                }
+//                break;
+//            case Side.CA:
+//                if (CANeighbor == null)
+//                {
+//                    return false;
+//                }
+//                break;
+//            default:
+//                break;
+//        }
+//        return true;
+//    }
+//    public Side NextSide(Side side) {
+//        if (side == Side.AB)
+//        {
+//            return Side.BC;
+//        }
+//        else if (side == Side.BC)
+//        {
+//            return Side.CA;
+//        }
+//        else
+//        {
+//            return Side.AB;
+//        }
+//    }
+//    public Side PrevSide(Side side)
+//    {
+//        if (side == Side.CA)
+//        {
+//            return Side.BC;
+//        }
+//        else if (side == Side.BC) 
+//        {
+//            return Side.AB;
+//        }
+//        else
+//        {
+//            return Side.CA;
+//        }
+//    }
+//    public bool InTri(Node node)
+//    {
+//        Vector3 vertA = A.Pos3D, vertB = B.Pos3D, vertC = C.Pos3D;
+//        Vector3 point = node.Pos3D;
 
-        Vector3 sideA = vertB - vertA;
-        float certaintyA = Vector3.Cross(point - vertA, sideA).y;
-        if (certaintyA < 0)
-        {
-            return false;
-        }
+//        Vector3 sideA = vertB - vertA;
+//        float certaintyA = Vector3.Cross(point - vertA, sideA).y;
+//        if (certaintyA < 0)
+//        {
+//            return false;
+//        }
 
-        Vector3 sideB = vertC - vertB;
-        float certaintyB = Vector3.Cross(point - vertB, sideB).y;
-        if (certaintyB < 0)
-        {
-            return false;
-        }
+//        Vector3 sideB = vertC - vertB;
+//        float certaintyB = Vector3.Cross(point - vertB, sideB).y;
+//        if (certaintyB < 0)
+//        {
+//            return false;
+//        }
 
-        Vector3 sideC = vertA - vertC;
-        float certaintyC = Vector3.Cross(point - vertC, sideC).y;
-        if (certaintyC < 0)
-        {
-            return false;
-        }
+//        Vector3 sideC = vertA - vertC;
+//        float certaintyC = Vector3.Cross(point - vertC, sideC).y;
+//        if (certaintyC < 0)
+//        {
+//            return false;
+//        }
 
-        return true;
-    }
-    public string PrintTri() {
-        return "Tri with nodes " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D;
-    }
-    public Node FirstNodeOnSide(Side side) {
-        if (side == Side.AB)
-        {
-            return A;
-        }else if (side == Side.BC)
-        {
-            return B;
-        }
-        else
-        {
-            return C;
-        }
-    }
-    public Node LastNodeOnSide(Side side)
-    {
-        if (side == Side.AB)
-        {
-            return B;
-        }
-        else if (side == Side.BC)
-        {
-            return C;
-        }
-        else
-        {
-            return A;
-        }
-    }
-    public bool SharesNode(Node node) {
-        for (int i = 0; i < 3; i++)
-        {
-            if (GetNodes()[i] == node)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-}
+//        return true;
+//    }
+//    public string PrintTri() {
+//        return "Tri with nodes " + A.Pos2D + " " + B.Pos2D + " " + C.Pos2D;
+//    }
+//    public Node FirstNodeOnSide(Side side) {
+//        if (side == Side.AB)
+//        {
+//            return A;
+//        }else if (side == Side.BC)
+//        {
+//            return B;
+//        }
+//        else
+//        {
+//            return C;
+//        }
+//    }
+//    public Node LastNodeOnSide(Side side)
+//    {
+//        if (side == Side.AB)
+//        {
+//            return B;
+//        }
+//        else if (side == Side.BC)
+//        {
+//            return C;
+//        }
+//        else
+//        {
+//            return A;
+//        }
+//    }
+//    public bool SharesNode(Node node) {
+//        for (int i = 0; i < 3; i++)
+//        {
+//            if (GetNodes()[i] == node)
+//            {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//}

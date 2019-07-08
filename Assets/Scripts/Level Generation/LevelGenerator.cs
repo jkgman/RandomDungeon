@@ -10,8 +10,10 @@ public class LevelGenerator : MonoBehaviour
     
     public LevelSettings settings;
     private List<Room> instantiatedRooms = new List<Room>();
-    private DelaunyTriangulationV2 triangulate;
+    private DelaunayTriangulation triangulate;
     public static LevelGenerator instance;
+    public GameObject bridge;
+
     void Awake()
     {
         if (instance == null)
@@ -29,6 +31,7 @@ public class LevelGenerator : MonoBehaviour
     List<Vector2> points;
     Vector2 regionSize = Vector2.one;
     public bool gizmos = true;
+
     private void Start()
     {
         Generate(true);
@@ -111,14 +114,47 @@ public class LevelGenerator : MonoBehaviour
         {
             startingNodes.Add(instantiatedRooms[i].node);
         }
-        triangulate = GetComponent<DelaunyTriangulationV2>();
+        triangulate = GetComponent<DelaunayTriangulation>();
         List<Node> starting = new List<Node>();
         starting.Add(new Node(new Vector2(0,settings.arcRadius/2)));
         //starting.Add(new Node(startpoints[0]));
         //starting.Add(new Node(startpoints[1]));
-        triangulate.DelaunayTriangulation(starting, startingNodes,new Vector2(xMin,yMin), new Vector2(xMax,yMax));
+        triangulate.RunDelaunayTriangulation(starting, startingNodes,new Vector2(xMin,yMin), new Vector2(xMax,yMax));
+        MakeConnections();
     }
 
+    private void MakeConnections() {
+        List<Tri> tris = triangulate.getTris();
+        List<BridgePath> paths = new List<BridgePath>();
+        for (int i = 0; i < tris.Count; i++)
+        {
+            BridgePath pathab = new BridgePath(tris[i].A.Pos3D, tris[i].B.Pos3D);
+            BridgePath pathbc = new BridgePath(tris[i].B.Pos3D, tris[i].C.Pos3D);
+            BridgePath pathca = new BridgePath(tris[i].C.Pos3D, tris[i].A.Pos3D);
+            if (!paths.Contains(pathab)) {
+                paths.Add(pathab);
+            }
+            if (!paths.Contains(pathbc))
+            {
+                paths.Add(pathbc);
+            }
+            if (!paths.Contains(pathca))
+            {
+                paths.Add(pathca);
+            }
+        }
+        for (int i = 0; i < paths.Count; i++)
+        {
+            GameObject currentbridge = Instantiate(bridge);
+            currentbridge.transform.position = paths[i].PointB + ((paths[i].PointA - paths[i].PointB)/2);
+            currentbridge.transform.LookAt(paths[i].PointA);
+            currentbridge.transform.localScale = Vector3.forward * (paths[i].PointA - paths[i].PointB).magnitude+ (Vector3.one - Vector3.forward);
+            currentbridge.transform.parent = gameObject.transform;
+        }
+
+        //create list of all connection
+        //spawn bridge from start to finnish
+    }
     private void OnValidate()
     {
         if (autoGenerate)
@@ -182,5 +218,38 @@ public class LevelGeneratorEditor : Editor
     private void OnEnable()
     {
         gen = (LevelGenerator)target;
+    }
+}
+public class BridgePath{
+    Vector3 pointA;
+    Vector3 pointB;
+    public BridgePath(Vector3 PointA, Vector3 PointB)
+    {
+        this.pointA = PointA;
+        this.pointB = PointB;
+    }
+
+    public Vector3 PointA { get => pointA; private set => pointA = value; }
+    public Vector3 PointB { get => pointB; private set => pointB = value; }
+
+    public override bool Equals(object obj)
+    {
+
+        if (obj == null || GetType() != obj.GetType())
+        {
+            return false;
+        }
+
+        if ((PointA == ((BridgePath)obj).PointA && PointB == ((BridgePath)obj).PointB)|| (PointB == ((BridgePath)obj).PointA && PointA == ((BridgePath)obj).PointB))
+        {
+            return true;
+        }
+        return false;
+    }
+    public override int GetHashCode()
+    {
+        // TODO: write your implementation of GetHashCode() here
+        throw new System.NotImplementedException();
+        return base.GetHashCode();
     }
 }
