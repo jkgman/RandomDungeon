@@ -13,7 +13,7 @@ public class LevelGenerator : MonoBehaviour
     private DelaunayTriangulation triangulate;
     public static LevelGenerator instance;
     public GameObject bridge;
-
+    public int enemyCount;
     void Awake()
     {
         if (instance == null)
@@ -121,6 +121,19 @@ public class LevelGenerator : MonoBehaviour
         //starting.Add(new Node(startpoints[1]));
         triangulate.RunDelaunayTriangulation(starting, startingNodes,new Vector2(xMin,yMin), new Vector2(xMax,yMax));
         MakeConnections();
+        SpawnEnemies();    
+    }
+    private void SpawnEnemies() {
+        int enemywithKey = Random.Range(0, enemyCount);
+        for (int i = 0; i < enemyCount; i++)
+        {
+            //spawn an enemy at random room random spawn
+            if (i == enemywithKey)
+            {
+                //set enemy to drop key
+            }
+            
+        }
     }
 
     private void MakeConnections() {
@@ -148,7 +161,7 @@ public class LevelGenerator : MonoBehaviour
             GameObject currentbridge = Instantiate(bridge);
             currentbridge.transform.position = paths[i].PointB + ((paths[i].PointA - paths[i].PointB)/2);
             currentbridge.transform.LookAt(paths[i].PointA);
-            currentbridge.transform.localScale = Vector3.forward * (paths[i].PointA - paths[i].PointB).magnitude+ (Vector3.one - Vector3.forward);
+            currentbridge.transform.localScale = Vector3.forward * (paths[i].PointA - paths[i].PointB).magnitude + (new Vector3(1,.8f,1) - Vector3.forward);
             currentbridge.transform.parent = gameObject.transform;
         }
 

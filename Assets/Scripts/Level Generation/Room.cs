@@ -9,13 +9,12 @@ public class Room : MonoBehaviour
     public Room[] ConnectedRooms;
     public bool hardPos = false;
     public Node node;
-
-    //private void OnDrawGizmos()
-    //{
-    //    Gizmos.DrawWireSphere(transform.position, RoomRadius);
-    //    for (int i = 0; i < connectionPoints.Length; i++)
-    //    {
-    //        Gizmos.DrawSphere(transform.position + connectionPoints[i], .5f);
-    //    }
-    //}
+    public List<Vector3> spawnpositions = new List<Vector3>();
+    private void OnDrawGizmos()
+    {
+        for (int i = 0; i < spawnpositions.Count; i++)
+        {
+            Gizmos.DrawSphere(spawnpositions[i] + transform.position,.1f);
+        }
+    }
 }
