@@ -7,13 +7,14 @@ public class Room : MonoBehaviour
     public float RoomRadius;
     public Vector3[] connectionPoints;
     public Room[] ConnectedRooms;
-
+    public bool hardPos = false;
+    public Node node;
+    public List<Vector3> spawnpositions = new List<Vector3>();
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(transform.position, RoomRadius);
-        for (int i = 0; i < connectionPoints.Length; i++)
+        for (int i = 0; i < spawnpositions.Count; i++)
         {
-            Gizmos.DrawSphere(transform.position + connectionPoints[i], .5f);
+            Gizmos.DrawSphere(spawnpositions[i] + transform.position,.1f);
         }
     }
 }

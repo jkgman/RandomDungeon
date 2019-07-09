@@ -14,8 +14,33 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609,
         type: 3}
+      propertyPath: spawnpositions.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609,
+        type: 3}
       propertyPath: RoomRadius
       value: 7.14
+      objectReference: {fileID: 0}
+    - target: {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[0].y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[0].z
+      value: 2.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[1].y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[1].z
+      value: -2.85
       objectReference: {fileID: 0}
     - target: {fileID: 8459056969746459012, guid: 705d66e4ccd92cf4e8278661de58c609,
         type: 3}

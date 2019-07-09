@@ -12,6 +12,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cube Variant 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780,
+        type: 3}
+      propertyPath: spawnpositions.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780,
+        type: 3}
+      propertyPath: RoomRadius
+      value: 8.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[0].x
+      value: -4.68
+      objectReference: {fileID: 0}
+    - target: {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[0].y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[1].x
+      value: 3.76
+      objectReference: {fileID: 0}
+    - target: {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780,
+        type: 3}
+      propertyPath: spawnpositions.Array.data[1].y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7031215509468300585, guid: a9ddfe2394745564f9f404251ad1a780,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -76,11 +106,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalScale.z
       value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780,
-        type: 3}
-      propertyPath: RoomRadius
-      value: 8.88
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a9ddfe2394745564f9f404251ad1a780, type: 3}

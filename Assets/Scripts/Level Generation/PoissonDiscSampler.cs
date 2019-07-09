@@ -19,7 +19,6 @@ public static class PoissonDiscSampler
         {
             spawnPoints.Add(startPoints[i]);
             points.Add(startPoints[i]);
-            Debug.Log((int)(startPoints[i].x / cellSize) + " " + (int)(startPoints[i].y / cellSize));
             grid[(int)(startPoints[i].x / cellSize), (int)(startPoints[i].y / cellSize)] = points.Count;
         }
         
@@ -58,6 +57,7 @@ public static class PoissonDiscSampler
         }
 
         return points;
+        
     }
 
     static bool IsValid(Vector2 candidate, Vector2 sampleRegionSize, float cellSize, float radius, List<Vector2> points, int[,] grid)
