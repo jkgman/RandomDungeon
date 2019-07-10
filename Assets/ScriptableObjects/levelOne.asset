@@ -16,10 +16,18 @@ MonoBehaviour:
   arcWidth: 60.5
   arcRadius: 106
   reqRooms:
-  - {fileID: 3039573083186108089, guid: f2aab1d66f9561941ae26af85279d711, type: 3}
-  - {fileID: 3039573083186108089, guid: f2aab1d66f9561941ae26af85279d711, type: 3}
+  - {fileID: 8604880033043637545, guid: 7cc496ac641b9344c89dfcd205096324, type: 3}
+  - {fileID: 1676610710621880054, guid: 3cac16ceef42268448c52bfaf1f8c1a8, type: 3}
   rndRoomPool:
   - {fileID: 4293601808776251321, guid: 705d66e4ccd92cf4e8278661de58c609, type: 3}
   - {fileID: 3414447765630069524, guid: a9ddfe2394745564f9f404251ad1a780, type: 3}
   - {fileID: 7251326221172780505, guid: c57dc610afb8bfe48b3ab17da378deae, type: 3}
   tower: {fileID: 9159231308846830610, guid: c33266e267c48d343826bfc569897873, type: 3}
+  enemies:
+  - EnemyPrefab: {fileID: 6212252257882444870, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
+      type: 3}
+    CountForLevel: 10
+    ForceKey: 0
+  EnemyCount: 0
+  forcedKey: 0
+  requiredEnemy: 0
