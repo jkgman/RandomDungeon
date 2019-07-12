@@ -36,7 +36,8 @@ namespace Dungeon.Characters.Enemies
             }
         }
         public void Drop() {
-            Instantiate(drop, transform.position, transform.rotation);
+			if (drop)
+	            Instantiate(drop, transform.position, transform.rotation);
         }
         #endregion
 
@@ -94,7 +95,7 @@ namespace Dungeon.Characters.Enemies
 				return;
 
 			UpdateEnemyState();
-			Debug.Log("Current State:" + GetCurrentState().ToString());
+
 			switch (GetCurrentState())
 			{
 				case EnemyState.idle:
