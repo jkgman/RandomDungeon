@@ -13,12 +13,13 @@ GameObject:
   - component: {fileID: 8667711807899023603}
   - component: {fileID: 2041763346042374714}
   - component: {fileID: 4293601808776251321}
+  - component: {fileID: 4631868484001583696}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 40
   m_IsActive: 1
 --- !u!4 &8459056969746459012
 Transform:
@@ -111,3 +112,15 @@ MonoBehaviour:
   spawnpositions:
   - {x: 3, y: 1, z: 2.26}
   - {x: -2.24, y: 1, z: -2.38}
+--- !u!114 &4631868484001583696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389884305894859634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e038bf700cfa444fb16c6ef963be9f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
