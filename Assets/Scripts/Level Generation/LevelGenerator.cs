@@ -188,7 +188,7 @@ public class LevelGenerator : MonoBehaviour
                 GameObject currentbridge = Instantiate(bridge);
                 currentbridge.transform.position = paths[i].PointB + ((paths[i].PointA - paths[i].PointB) / 2);
                 currentbridge.transform.LookAt(paths[i].PointA);
-                currentbridge.transform.localScale = Vector3.forward * (paths[i].PointA - paths[i].PointB).magnitude + (new Vector3(1, .8f, 1) - Vector3.forward);
+                currentbridge.transform.localScale = Vector3.forward * (paths[i].PointA - paths[i].PointB).magnitude + (new Vector3(3, .8f, 1) - Vector3.forward);
                 currentbridge.transform.parent = gameObject.transform;
             }
         }

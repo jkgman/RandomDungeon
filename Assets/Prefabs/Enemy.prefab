@@ -1703,7 +1703,7 @@ MonoBehaviour:
   - col: {fileID: 7182638871977614135}
     colType: 0
   minIdleTime: 0
-  maxIdleTime: 20
+  maxIdleTime: 1
   minStrollTime: 5
   maxStrollTime: 20
 --- !u!114 &6212252257882444864
@@ -1753,6 +1753,7 @@ MonoBehaviour:
   rotationSpeed: 35
   accelerationDuration: 0.2
   deaccelerationDuration: 0.5
+  currentDestination: {x: 0, y: 0, z: 0}
   maxStrollDistance: 10
   calculateStrollDistanceFromSpawn: 1
 --- !u!114 &3873488301980957831

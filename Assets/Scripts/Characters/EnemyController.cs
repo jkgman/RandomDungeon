@@ -11,7 +11,7 @@ namespace Dungeon.Characters.Enemies
 	{
 
 		private bool newDestination;
-		private Vector3 currentDestination;
+		public Vector3 currentDestination;
 		private NavMeshAgent navMeshAgent;
 		[SerializeField] private float maxStrollDistance;
 		[SerializeField] private bool calculateStrollDistanceFromSpawn;
@@ -48,10 +48,10 @@ namespace Dungeon.Characters.Enemies
 		public void Stroll()
 		{
 
-			bool atDestination = (transform.position - currentDestination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance + 0.1f;
 			if (navMeshAgent.isOnNavMesh)
 			{
-				if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale)
+				bool atDestination = (transform.position - currentDestination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance + 0.1f;
+				if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale || navMeshAgent.isStopped)
 				{
 					currentDestination = CreateNewDestination();
 					navMeshAgent.SetDestination(currentDestination);
@@ -134,5 +134,13 @@ namespace Dungeon.Characters.Enemies
 		}
 
 		#endregion
+
+
+
+		void OnDrawGizmos()
+		{
+			Gizmos.color = Color.green;
+			Gizmos.DrawSphere(currentDestination, .2f);
+		}
 	}
 }
