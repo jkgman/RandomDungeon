@@ -381,6 +381,14 @@ namespace Dungeon.Characters
 				Debug.LogWarning("No Unity Character Controller found in Player. Movement not applied.");
 		}
 
+		void LateSetMovementVariables()
+		{
+			if (currentMoveOffset.sqrMagnitude > 0)
+				lastNonZeroMoveDirection = currentMoveOffset.normalized;
+			else if (moveInputRaw.sqrMagnitude > 0 && Player.AllowMove())
+				lastNonZeroMoveDirection = GetTransformedInputDirection();
+		}
+
 
 		public void ExternalRotateToInputDirection(bool instant = false)
 		{
