@@ -11,7 +11,7 @@ namespace Dungeon.Characters.Enemies
 	{
 
 		private bool newDestination;
-		private Vector3 currentDestination;
+		public Vector3 currentDestination;
 		private NavMeshAgent navMeshAgent;
 		[SerializeField] private float maxStrollDistance;
 		[SerializeField] private bool calculateStrollDistanceFromSpawn;
@@ -47,18 +47,25 @@ namespace Dungeon.Characters.Enemies
 
 		public void Stroll()
 		{
-			bool atDestination = (transform.position - currentDestination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance + 0.1f;
-			if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale)
+
+			if (navMeshAgent.isOnNavMesh)
 			{
-				currentDestination = CreateNewDestination();
-				navMeshAgent.SetDestination(currentDestination);
+				bool atDestination = (transform.position - navMeshAgent.destination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance * 1.1f;
+				if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale)
+				{
+					currentDestination = CreateNewDestination();
+					navMeshAgent.SetDestination(currentDestination);
+				}
 			}
 			UpdateAnimationData();
 		}
 		public void Idle()
 		{
-			if (!navMeshAgent.isStopped)
-				navMeshAgent.SetDestination(transform.position);
+			if (navMeshAgent.isOnNavMesh)
+			{
+				if (!navMeshAgent.isStopped)
+					navMeshAgent.SetDestination(transform.position);
+			}
 			UpdateAnimationData();
 		}
 
@@ -68,15 +75,16 @@ namespace Dungeon.Characters.Enemies
 			Vector3 originalPosition = calculateStrollDistanceFromSpawn ? startPoint : transform.position;
 			
 			Vector2 offset = UnityEngine.Random.insideUnitCircle * maxStrollDistance;
-			output = new Vector3(offset.x, 0, offset.y) + originalPosition;
-			Debug.Log("New destination: " + output);
+			output = new Vector3(offset.x + originalPosition.x, transform.position.y, offset.y + originalPosition.z);
+			
 
 			return output;
 		}
 
 		public void Following(Vector3 targetPosition, bool targetVisible)
 		{ 
-			navMeshAgent.SetDestination(targetPosition);
+			if (navMeshAgent.isOnNavMesh)
+				navMeshAgent.SetDestination(targetPosition);
 
 			if (targetVisible)
 			{
@@ -116,8 +124,8 @@ namespace Dungeon.Characters.Enemies
 
 		void UpdateAnimationData()
 		{
-			
-			float movePercentage = GetRunning() ? 1f : !navMeshAgent.isStopped ? 0.5f : 0;
+			bool stopped = !navMeshAgent.isOnNavMesh || navMeshAgent.isStopped;
+			float movePercentage = GetRunning() ? 1f : !stopped ? 0.5f : 0;
 			
 			Vector2 blend = new Vector2(0, movePercentage);
 
@@ -126,5 +134,13 @@ namespace Dungeon.Characters.Enemies
 		}
 
 		#endregion
+
+
+
+		void OnDrawGizmos()
+		{
+			Gizmos.color = Color.green;
+			Gizmos.DrawSphere(currentDestination, .2f);
+		}
 	}
 }

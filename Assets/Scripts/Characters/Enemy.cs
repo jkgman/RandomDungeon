@@ -25,9 +25,23 @@ namespace Dungeon.Characters.Enemies
 		private float strollDuration;
 		private float currentStrollTime;
 
+        //Todo: this can be handled different down the line, for now one enemy will have key as a variable and drop it on death
+        #region Drop
+        private GameObject drop;
+        public void SetDrop(GameObject obj) {
+            Debug.Log("drop");
+            if (drop != null)
+            {
+                drop = obj;
+            }
+        }
+        public void Drop() {
+			if (drop)
+	            Instantiate(drop, transform.position, transform.rotation);
+        }
+        #endregion
 
-
-		private EnemyState _currentState = EnemyState.idle;
+        private EnemyState _currentState = EnemyState.idle;
 		public EnemyState GetCurrentState()
 		{
 			return _currentState;
@@ -81,7 +95,7 @@ namespace Dungeon.Characters.Enemies
 				return;
 
 			UpdateEnemyState();
-			Debug.Log("Current State:" + GetCurrentState().ToString());
+
 			switch (GetCurrentState())
 			{
 				case EnemyState.idle:
@@ -99,6 +113,7 @@ namespace Dungeon.Characters.Enemies
 				default:
 					break;
 			}
+
 		}
 
 
@@ -181,6 +196,9 @@ namespace Dungeon.Characters.Enemies
 			//For now it is just a particle effect and disappear.
 			Debug.Log("Enemy dies nad disables");
 			dieRoutineStarted = true;
+
+            //Todo: Drop call
+            Drop();
 
 			Effects.PlayDeathParticles();
 			Effects.SetInvisible();

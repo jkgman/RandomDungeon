@@ -87,6 +87,9 @@ namespace Dungeon.Characters
 		{
 			if (!Stats.health.IsAlive() && !dieRoutineStarted)
 				StartCoroutine(DieRoutine());
+
+			if (transform.position.y < -200f)
+				Stats.health.SubstractHealth(10000f);
 		}
 
 		protected virtual IEnumerator DieRoutine()
