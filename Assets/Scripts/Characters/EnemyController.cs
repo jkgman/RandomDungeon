@@ -50,7 +50,7 @@ namespace Dungeon.Characters.Enemies
 
 			if (navMeshAgent.isOnNavMesh)
 			{
-				bool atDestination = (transform.position - navMeshAgent.destination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance + 0.1f;
+				bool atDestination = (transform.position - navMeshAgent.destination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance * 1.1f;
 				if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale)
 				{
 					currentDestination = CreateNewDestination();

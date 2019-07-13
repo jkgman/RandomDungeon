@@ -42,13 +42,13 @@ public class AgentLinkMover : MonoBehaviour
         Vector3 endPos = data.endPos + Vector3.up * agent.baseOffset;
         while (agent.transform.position != endPos)
         {
+            yield return null;
             agent.transform.position = Vector3.MoveTowards(agent.transform.position, endPos, agent.speed * Time.deltaTime);
 			Debug.Log("Traversing offmesh");
-			if (agent.transform.position == endPos)
-			{
-				break;
-			}
-            yield return null;
+			//if (agent.transform.position == endPos)
+			//{
+			//	break;
+			//}
         }
 		Debug.Log("Finished Traversing");
     }
