@@ -43,8 +43,14 @@ public class AgentLinkMover : MonoBehaviour
         while (agent.transform.position != endPos)
         {
             agent.transform.position = Vector3.MoveTowards(agent.transform.position, endPos, agent.speed * Time.deltaTime);
+			Debug.Log("Traversing offmesh");
+			if (agent.transform.position == endPos)
+			{
+				break;
+			}
             yield return null;
         }
+		Debug.Log("Finished Traversing");
     }
 
     IEnumerator Parabola(NavMeshAgent agent, float height, float duration)

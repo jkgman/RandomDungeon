@@ -1633,6 +1633,7 @@ GameObject:
   - component: {fileID: 3873488301980957831}
   - component: {fileID: 1496731353625701271}
   - component: {fileID: 8976699587235194805}
+  - component: {fileID: 7260297169089378275}
   m_Layer: 10
   m_Name: Enemy
   m_TagString: Untagged
@@ -1803,13 +1804,32 @@ NavMeshAgent:
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 1.5
-  m_AutoTraverseOffMeshLink: 1
+  m_AutoTraverseOffMeshLink: 0
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 0
+--- !u!114 &7260297169089378275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6212252257882444870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03bc8063c9e95401f9a8a38bc716750d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Method: 1
+  m_Curve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &8417191889679759685
 GameObject:
   m_ObjectHideFlags: 0
@@ -2007,15 +2027,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7dcf00af55a430c45a679f9b53a50eb9, type: 3}
---- !u!1 &1328367332559660973 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 100000, guid: 7dcf00af55a430c45a679f9b53a50eb9,
-    type: 3}
-  m_PrefabInstance: {fileID: 1328367332559560973}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1328367332559698829 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 7dcf00af55a430c45a679f9b53a50eb9,
+    type: 3}
+  m_PrefabInstance: {fileID: 1328367332559560973}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1328367332559660973 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: 7dcf00af55a430c45a679f9b53a50eb9,
     type: 3}
   m_PrefabInstance: {fileID: 1328367332559560973}
   m_PrefabAsset: {fileID: 0}

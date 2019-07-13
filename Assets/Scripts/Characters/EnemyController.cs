@@ -50,8 +50,8 @@ namespace Dungeon.Characters.Enemies
 
 			if (navMeshAgent.isOnNavMesh)
 			{
-				bool atDestination = (transform.position - currentDestination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance + 0.1f;
-				if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale || navMeshAgent.isStopped)
+				bool atDestination = (transform.position - navMeshAgent.destination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance + 0.1f;
+				if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale)
 				{
 					currentDestination = CreateNewDestination();
 					navMeshAgent.SetDestination(currentDestination);
@@ -75,8 +75,8 @@ namespace Dungeon.Characters.Enemies
 			Vector3 originalPosition = calculateStrollDistanceFromSpawn ? startPoint : transform.position;
 			
 			Vector2 offset = UnityEngine.Random.insideUnitCircle * maxStrollDistance;
-			output = new Vector3(offset.x, 0, offset.y) + originalPosition;
-
+			output = new Vector3(offset.x + originalPosition.x, transform.position.y, offset.y + originalPosition.z);
+			
 
 			return output;
 		}

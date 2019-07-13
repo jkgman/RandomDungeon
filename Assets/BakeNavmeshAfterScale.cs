@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshSurface))]
 public class BakeNavmeshAfterScale : MonoBehaviour
 {
 	NavMeshSurface surface;
-	NavMeshData meshData;
 	Vector3 scale;
-	void Awake()
+
+	void OnEnable()
 	{
-		meshData = new NavMeshData();
+		surface = GetComponent<NavMeshSurface>();
 		scale = transform.lossyScale;
 	}
 	void Update()
 	{
-		if (scale != transform.lossyScale)
+		if (surface && scale != transform.lossyScale || surface.navMeshData == null)
 		{
-			surface.UpdateNavMesh(meshData);
+			surface.RemoveData();
+			surface.BuildNavMesh();
 			scale = transform.lossyScale;
 		}
 	}
