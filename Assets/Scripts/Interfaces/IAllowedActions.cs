@@ -8,5 +8,14 @@ public interface IAllowedActions
 	bool AllowRotate();
 	bool AllowRun();
 	bool AllowAttack();
+}
+
+public interface IAllowedPlayerActions : IAllowedActions
+{
 	bool AllowDodge();
+}
+
+public interface IAllowedEnemyActions : IAllowedActions
+{
+
 }

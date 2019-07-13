@@ -8,7 +8,7 @@ namespace Dungeon.Characters
 	/// <summary>
 	/// Master script of player that holds references to sub-scripts.
 	/// </summary>
-	public class Player : Character, IAllowedActions
+	public class Player : Character, IAllowedPlayerActions
 	{
 		
 		//If same key uses multiple bindings depending on the length of input, this is used.

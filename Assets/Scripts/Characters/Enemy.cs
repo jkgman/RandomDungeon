@@ -12,7 +12,7 @@ namespace Dungeon.Characters.Enemies
 		attacking
 	}
 
-	public class Enemy : Character, ITargetable
+	public class Enemy : Character, ITargetable, IAllowedEnemyActions
 	{
 
 		[SerializeField] private float minIdleTime;
@@ -64,23 +64,23 @@ namespace Dungeon.Characters.Enemies
 		}
 		
 
-		private EnemyCombatHandler _combat;
-		private EnemyCombatHandler Combat
+		private EnemyCombatHandler _eCombat;
+		private EnemyCombatHandler ECombat
 		{
 			get{
-				if (!_combat)
-					_combat = GetComponent<EnemyCombatHandler>();
-				return _combat;
+				if (!_eCombat)
+					_eCombat = GetComponent<EnemyCombatHandler>();
+				return _eCombat;
 			}
 		}
-		private EnemyController _controller;
-		private EnemyController Controller
+		private EnemyController _eController;
+		private EnemyController EController
 		{
 			get
 			{
-				if (!_controller)
-					_controller = GetComponent<EnemyController>();
-				return _controller;
+				if (!_eController)
+					_eController = GetComponent<EnemyController>();
+				return _eController;
 			}
 		}
 
@@ -119,11 +119,11 @@ namespace Dungeon.Characters.Enemies
 
 		public void UpdateEnemyState()
 		{
-			if (Combat.TargetIsAttackable())
+			if (ECombat.AllowAttack())
 			{
 				SetCurrentState(EnemyState.attacking);
 			}
-			else if (Combat.CanFindTarget())
+			else if (ECombat.CanFindTarget())
 			{
 				SetCurrentState(EnemyState.following);
 			}
@@ -169,23 +169,23 @@ namespace Dungeon.Characters.Enemies
 
 		private void IdleUpdate()
 		{
-			Controller.Idle();
+			EController.Idle();
 			currentIdleTime += Time.deltaTime;
 		}
 		private void StrollingUpdate()
 		{
-			Controller.Stroll();
+			EController.Stroll();
 			currentStrollTime += Time.deltaTime;
 		}
 		private void FollowingUpdate()
 		{
-			Controller.Following(Combat.GetTargetPosition(), Combat.CanSeeTarget());
+			EController.Following(ECombat.GetTargetPosition(), ECombat.CanSeeTarget());
 
 		}
 		private void AttackingUpdate()
 		{
-			Controller.RotateTowardsPosition(Combat.GetTargetPosition());
-			Combat.AttackUpdate();
+			EController.RotateTowardsPosition(ECombat.GetTargetPosition());
+			ECombat.AttackUpdate();
 		}
 
 
@@ -207,6 +207,43 @@ namespace Dungeon.Characters.Enemies
 
 			yield return new WaitForSeconds(2f);
 			Destroy(this.gameObject);
+		}
+
+		public bool AllowMove()
+		{
+			bool output = true;
+
+			output = EController.AllowMove() ? output : false;
+			output = ECombat.AllowMove() ? output : false;
+
+			return output;
+		}
+		public bool AllowRun()
+		{
+			bool output = true;
+
+			output = EController.AllowRun() ? output : false;
+			output = ECombat.AllowRun() ? output : false;
+
+			return output;
+		}
+		public bool AllowAttack()
+		{
+			bool output = true;
+
+			output = EController.AllowAttack() ? output : false;
+			output = ECombat.AllowAttack() ? output : false;
+
+			return output;
+		}
+		public bool AllowRotate()
+		{
+			bool output = true;
+
+			output = EController.AllowRotate() ? output : false;
+			output = ECombat.AllowRotate() ? output : false;
+
+			return output;
 		}
 	}
 }

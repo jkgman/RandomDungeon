@@ -9,7 +9,7 @@ namespace Dungeon.Characters
 /// <summary>
 /// Handles player movement and rotation.
 /// </summary>
-	public class PlayerController : CharacterController, IAllowedActions
+	public class PlayerController : CharacterController, IAllowedPlayerActions
 	{
 
 		[SerializeField] private bool debugVisuals = false;
@@ -40,7 +40,6 @@ namespace Dungeon.Characters
 
 		private Inputs inputs;
 		private Vector2 moveInputRaw;
-		bool lookRotFromInput = true;
 
 
 
@@ -334,27 +333,21 @@ namespace Dungeon.Characters
 
 		private void UpdateLookRotRaw()
 		{
-			if (Player.AllowRotate() && GetTransformedInputDirection().magnitude > 0)
-				lookRotFromInput = true;
 
 			if (Player.AllowRotate())
 			{
 				if (Player.PCombat.Target != null)
 				{
-					var lookpos = Player.PCombat.Target.GetPosition() - transform.position;
-					lookpos.y = 0;
-					lookRotRaw = Quaternion.LookRotation(lookpos);
+					var lookdir = Player.PCombat.Target.GetPosition() - transform.position;
+					lookdir.y = 0;
+					lookRotRaw = Quaternion.LookRotation(lookdir);
 				}
-				else if (lookRotFromInput)
+				else/* if (GetTransformedInputDirection().sqrMagnitude > 0)*/
 				{
-					var lookpos = GetFlatMoveDirection(allowZero: false);
-					lookpos.y = 0;
-					lookRotRaw = Quaternion.LookRotation(lookpos);
+					var lookdir = GetFlatMoveDirection(allowZero: false);
+					lookdir.y = 0;
+					lookRotRaw = Quaternion.LookRotation(lookdir);
 				}
-			}
-			else
-			{
-				lookRotFromInput = false;
 			}
 
 		}
@@ -388,14 +381,6 @@ namespace Dungeon.Characters
 				Debug.LogWarning("No Unity Character Controller found in Player. Movement not applied.");
 		}
 
-		void LateSetMovementVariables()
-		{
-			if (currentMoveOffset.magnitude > 0)
-				lastNonZeroMoveDirection = currentMoveOffset.normalized;
-			else if (moveInputRaw.magnitude > 0 && Player.AllowMove())
-				lastNonZeroMoveDirection = GetTransformedInputDirection();
-		}
-
 
 		public void ExternalRotateToInputDirection(bool instant = false)
 		{
@@ -416,7 +401,10 @@ namespace Dungeon.Characters
 				}
 			}
 		}
-
+		public override void ExternalMove(Vector3 offset)
+		{
+			UnityController.Move(offset);
+		}
 		#endregion
 
 		#region HandleInputs
@@ -525,22 +513,6 @@ namespace Dungeon.Characters
 			Gizmos.color = Color.red;
 
 			Gizmos.DrawRay(transform.position, Vector3.down * UnityController.height * 0.5f);
-			//Gizmos.DrawLine(transform.position, transform.position + relativeRight.normalized);
-			//Gizmos.DrawRay(transform.position, newForward.normalized*3f);
-			//Gizmos.DrawWireSphere(groundCheckPosition, Controller.radius);
-		
-		
-			//if (Application.isPlaying && updateGizmos)
-			//	guiPositions[guiPosIndex] = transform.position;
-			//for (int i = 0; i < guiPositions.Length; i++)
-			//{
-			//	if (guiPositions[i] != null)
-			//		Gizmos.DrawWireSphere(guiPositions[i], 0.15f);
-			//}
-			//guiPosIndex++;
-			//if (guiPosIndex >= guiPositions.Length)
-			//	guiPosIndex = 0;
-
 
 			setGizmos = false;
 		}

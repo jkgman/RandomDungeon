@@ -44,8 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b65f2c6343bfc74e91901ffe3835d80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  distDefault: 6
-  distTargeting: 6
+  distDefault: 5.5
+  distTargeting: 5
   angleVTargeting: -20
   angleHTargeting: 15
   lookSensitivityMouse: 10

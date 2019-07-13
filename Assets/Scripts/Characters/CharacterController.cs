@@ -74,7 +74,7 @@ namespace Dungeon.Characters
 
 		public virtual void ExternalMove(Vector3 offset)
 		{
-
+			
 		}
 		public virtual void ExternalRotate(Vector3 lookDirection, bool instant = false)
 		{
