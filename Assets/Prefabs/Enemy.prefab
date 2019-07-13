@@ -152,7 +152,7 @@ MonoBehaviour:
   isEquipped: 1
   staggerableDuringAction: 1
   lightAttacks:
-  - chargeDuration: 1
+  - chargeDuration: 0.5
     attackDuration: 0.3
     recoveryDuration: 0.5
     attackDamage: 10
@@ -1633,6 +1633,7 @@ GameObject:
   - component: {fileID: 3873488301980957831}
   - component: {fileID: 1496731353625701271}
   - component: {fileID: 8976699587235194805}
+  - component: {fileID: 7260297169089378275}
   m_Layer: 10
   m_Name: Enemy
   m_TagString: Untagged
@@ -1703,7 +1704,7 @@ MonoBehaviour:
   - col: {fileID: 7182638871977614135}
     colType: 0
   minIdleTime: 0
-  maxIdleTime: 20
+  maxIdleTime: 1
   minStrollTime: 5
   maxStrollTime: 20
 --- !u!114 &6212252257882444864
@@ -1748,11 +1749,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0946bc41501653345a2ebd7380068cb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3.5
+  moveSpeed: 2
   runSpeedMultiplier: 1.5
-  rotationSpeed: 35
+  rotationSpeed: 80
   accelerationDuration: 0.2
   deaccelerationDuration: 0.5
+  currentDestination: {x: 0, y: 0, z: 0}
   maxStrollDistance: 10
   calculateStrollDistanceFromSpawn: 1
 --- !u!114 &3873488301980957831
@@ -1797,18 +1799,37 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
+  m_Speed: 2
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 1.5
-  m_AutoTraverseOffMeshLink: 1
+  m_AutoTraverseOffMeshLink: 0
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 0
+--- !u!114 &7260297169089378275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6212252257882444870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03bc8063c9e95401f9a8a38bc716750d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Method: 1
+  m_Curve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &8417191889679759685
 GameObject:
   m_ObjectHideFlags: 0
@@ -2006,15 +2027,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7dcf00af55a430c45a679f9b53a50eb9, type: 3}
---- !u!1 &1328367332559660973 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 100000, guid: 7dcf00af55a430c45a679f9b53a50eb9,
-    type: 3}
-  m_PrefabInstance: {fileID: 1328367332559560973}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1328367332559698829 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 7dcf00af55a430c45a679f9b53a50eb9,
+    type: 3}
+  m_PrefabInstance: {fileID: 1328367332559560973}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1328367332559660973 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: 7dcf00af55a430c45a679f9b53a50eb9,
     type: 3}
   m_PrefabInstance: {fileID: 1328367332559560973}
   m_PrefabAsset: {fileID: 0}
