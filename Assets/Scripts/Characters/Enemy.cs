@@ -27,7 +27,7 @@ namespace Dungeon.Characters.Enemies
 
         //Todo: this can be handled different down the line, for now one enemy will have key as a variable and drop it on death
         #region Drop
-        private GameObject drop;
+        [SerializeField] private GameObject drop;
         public void SetDrop(GameObject obj) {
             Debug.Log("drop");
             if (drop != null)
