@@ -8,10 +8,24 @@
 [Oo]bj/
 [Tt]emp/
 [Uu]nityGenerated/
+
 # file on crash reports
 sysinfo.txt
+
 # Unity3D generated meta files
 *.pidb.meta
+*.pdb.meta
+
+# Unity3D Generated File On Crash Reports
+*/sysinfo.txt
+
+# Builds
+*.apk
+*.unitypackage
+
+# Visual Studio cache directory
+/.vs/
+/.vscode/
 
 ###
 # VS/MD solution and project files
@@ -39,3 +53,7 @@ sysinfo.txt
 Icon?
 ehthumbs.db
 Thumbs.db
+
+fmod_editor\.log
+/Assets/FMODStudioCache\.asset
+fmod\.log

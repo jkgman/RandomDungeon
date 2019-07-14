@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.01.10.00">
+    <object class="Bank" id="{39400aa5-faa8-490d-abd6-cc18fd2ede24}">
+        <property name="name">
+            <value>InGame-Effects</value>
+        </property>
+        <relationship name="folder">
+            <destination>{cda1667d-114d-4fed-844b-b5828f24ca55}</destination>
+        </relationship>
+    </object>
+</objects>

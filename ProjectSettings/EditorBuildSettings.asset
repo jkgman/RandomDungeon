@@ -5,7 +5,16 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 0
+    path: Assets/Scenes/##Mitja.unity
+    guid: 987a5b1662bf9f448bf0c5b4db094319
   - enabled: 1
-    path: Assets/Example Folders/Scenes/samplescene.unity
-    guid: cbfe36cfddfde964d9dfce63a355d5dd
+    path: Assets/Scenes/00SplashScreen.unity
+    guid: f5ab8d261445f914f8613a3e5f1320bd
+  - enabled: 1
+    path: Assets/Scenes/01MainMenu.unity
+    guid: a82ef8a8621f62c4f94a4c96ea47c4c5
+  - enabled: 1
+    path: Assets/Scenes/02Game.unity
+    guid: 8e8abda1f19e64046b83f46d042b8669
   m_configObjects: {}
