@@ -143,7 +143,7 @@ namespace Dungeon.Characters
 			{
 				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
 				moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
-				moveDirection = UpdateAttackMoveDirection(moveDirection);
+				moveDirection = UpdateAttackMoveDirection();
 				CharacterMovementDuringAttack(moveDirection, moveOffset);
 
 				offsetTotal = currentWeapon.GetMoveDistanceFromCurve(t01);
@@ -173,14 +173,13 @@ namespace Dungeon.Characters
 
 			Vector3 moveDirection = Character.CharacterController.GetFlatMoveDirection(allowZero: false);
 
-			while (currentWeapon.IsAttacking &&
+			while ( currentWeapon.IsAttacking &&
 					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
 					t < currentWeapon.GetCurrentActionDuration())
 			{
 				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveDirection = UpdateAttackMoveDirection(moveDirection);
+				moveDirection = UpdateAttackMoveDirection();
 
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
 				moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
 				Character.CharacterController.ExternalMove(moveDirection * moveOffset);
 
@@ -205,13 +204,13 @@ namespace Dungeon.Characters
 			Vector3 moveDirection = Character.CharacterController.GetFlatMoveDirection(allowZero: false);
 
 
-			while (currentWeapon.IsAttacking &&
+			while ( currentWeapon.IsAttacking &&
 					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
 					t < currentWeapon.GetCurrentActionDuration())
 			{
 				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
 
-				moveDirection = UpdateAttackMoveDirection(moveDirection);
+				moveDirection = UpdateAttackMoveDirection();
 
 				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
 				moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
@@ -225,7 +224,7 @@ namespace Dungeon.Characters
 			Character.AnimationHandler.SetRecoveryCancelled();
 		}
 
-		protected virtual Vector3 UpdateAttackMoveDirection(Vector3 current)
+		protected virtual Vector3 UpdateAttackMoveDirection()
 		{
 			return transform.forward;
 		}

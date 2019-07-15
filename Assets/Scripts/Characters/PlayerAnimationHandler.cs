@@ -1,30 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.Animations;
 
 namespace Dungeon.Characters
 {
 
 	public class PlayerAnimationHandler : CharacterAnimationHandler
 	{
-		private AnimatorState dodgeState;
 
-
-		//Assigns values to animationState variables from the animator.
-		protected override void SetStateVariables()
-		{
-			base.SetStateVariables();
-
-			for (int i = 0; i < animatorStates.Count; i++)
-			{
-				if (animatorStates[i].name == DODGE_STATE)
-				{
-					dodgeState = animatorStates[i];
-					break;
-				}
-			}
-		}
+		private AnimationState dodgeState;
 
 
 		//Called when dodge action starts
@@ -35,11 +19,9 @@ namespace Dungeon.Characters
 
 			if (dodgeState)
 			{
-				Motion motion = dodgeState.motion;
-				float currentDuration = motion.averageDuration;
 
 				if (d > 0)
-					dodgeState.speed = currentDuration / d;
+					dodgeState.speed = dodgeState.length / d;
 				else
 					dodgeState.speed = ANIM_DEFAULT_SPEED;
 			}

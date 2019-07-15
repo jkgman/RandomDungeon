@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using Dungeon.Characters.Enemies;
 /// <summary>
 /// Generate an inter connected map of rooms from the start of an arc to the end
@@ -237,28 +236,6 @@ public class LevelGenerator : MonoBehaviour
                 }
             }
         }
-    }
-}
-
-[CustomEditor(typeof(LevelGenerator))]
-public class LevelGeneratorEditor : Editor
-{
-    LevelGenerator gen;
-    Editor levelSettings;
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
-        if (GUILayout.Button("Generate"))
-        {
-            gen.Generate(false);
-        }
-        CreateCachedEditor(gen.settings, null, ref levelSettings);
-        levelSettings.OnInspectorGUI();
-    }
-
-    private void OnEnable()
-    {
-        gen = (LevelGenerator)target;
     }
 }
 public class BridgePath{

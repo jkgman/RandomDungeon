@@ -7,12 +7,11 @@ using UnityEngine.AI;
 namespace Dungeon.Characters.Enemies
 {
 
-	public class EnemyController : CharacterController
+	public class EnemyController : CharacterController, IAllowedEnemyActions
 	{
 
 		private bool newDestination;
 		public Vector3 currentDestination;
-		private NavMeshAgent navMeshAgent;
 		[SerializeField] private float maxStrollDistance;
 		[SerializeField] private bool calculateStrollDistanceFromSpawn;
 		private Vector3 startPoint;
@@ -20,7 +19,30 @@ namespace Dungeon.Characters.Enemies
 
 
 		#region Getters & Setters		
-		
+
+		private NavMeshAgent _agent;
+		private NavMeshAgent Agent
+		{
+			get
+			{
+				if (!_agent)
+					_agent = GetComponent<NavMeshAgent>();
+				return _agent;
+			}
+		}
+
+		private Enemy _enemy;
+		private Enemy Enemy
+		{
+			get
+			{
+				if (!_enemy)
+					_enemy = GetComponent<Enemy>();
+				return _enemy;
+			}
+		}
+
+
 		public Vector3 GetDirection(Vector3 target)
 		{
 			return target - transform.position;
@@ -29,15 +51,15 @@ namespace Dungeon.Characters.Enemies
 
 		#endregion
 
-
-		private void Awake()
-		{
-			navMeshAgent = GetComponent<NavMeshAgent>();
-		}
-
+		
 		private void OnEnable()
 		{
 			startPoint = transform.position;
+			if (Agent)
+			{
+				Agent.speed = moveSpeed;
+				Agent.updateRotation = false;
+			}
 		}
 
 		private void LateUpdate()
@@ -47,24 +69,26 @@ namespace Dungeon.Characters.Enemies
 
 		public void Stroll()
 		{
-
-			if (navMeshAgent.isOnNavMesh)
+			if (Agent.isOnNavMesh)
 			{
-				bool atDestination = (transform.position - navMeshAgent.destination).sqrMagnitude <= navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance * 1.1f;
-				if ((!navMeshAgent.pathPending && !navMeshAgent.hasPath) || atDestination || navMeshAgent.isPathStale)
+				SetRunning(false);
+				bool atDestination = (transform.position - Agent.destination).sqrMagnitude <= Agent.stoppingDistance * Agent.stoppingDistance * 1.1f;
+				if ((!Agent.pathPending && !Agent.hasPath) || atDestination || Agent.isPathStale)
 				{
 					currentDestination = CreateNewDestination();
-					navMeshAgent.SetDestination(currentDestination);
+					Agent.SetDestination(currentDestination);
 				}
 			}
+
+			RotateTowardsMovement();
 			UpdateAnimationData();
 		}
 		public void Idle()
 		{
-			if (navMeshAgent.isOnNavMesh)
+			if (Agent.isOnNavMesh)
 			{
-				if (!navMeshAgent.isStopped)
-					navMeshAgent.SetDestination(transform.position);
+				if (!Agent.isStopped)
+					Agent.SetDestination(transform.position);
 			}
 			UpdateAnimationData();
 		}
@@ -83,8 +107,8 @@ namespace Dungeon.Characters.Enemies
 
 		public void Following(Vector3 targetPosition, bool targetVisible)
 		{ 
-			if (navMeshAgent.isOnNavMesh)
-				navMeshAgent.SetDestination(targetPosition);
+			if (Agent.isOnNavMesh)
+				Agent.SetDestination(targetPosition);
 
 			if (targetVisible)
 			{
@@ -101,30 +125,52 @@ namespace Dungeon.Characters.Enemies
 
 		private void RotateTowardsMovement()
 		{
+			if (!Enemy.AllowRotate())
+				return;
+
 			Vector3 dir = transform.position - lastPosition;
 			dir.y = 0;
-			Quaternion targetRotation = Quaternion.LookRotation(dir);
-			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed);
+			if (dir.sqrMagnitude != 0)
+			{
+				Quaternion targetRotation = Quaternion.LookRotation(dir);
+				transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed);
+			}
 		}
 
 
 		public void RotateTowardsPosition(Vector3 in_position)
 		{
+			if (!Enemy.AllowRotate())
+				return;
+
 			Vector3 dir = GetDirection(in_position);
 			dir.y = 0;
 			Quaternion targetRotation = Quaternion.LookRotation(dir);
 			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed);
 		}
 
+		protected override void SetRunning(bool value)
+		{
+			base.SetRunning(value);
 
+			if (Agent)
+			{
+				Agent.speed = GetRunning() ? moveSpeed * runSpeedMultiplier : moveSpeed;
 
+			}
+		}
+		public override void ExternalMove(Vector3 offset)
+		{
+			Agent.ResetPath();
+			Agent.Move(offset);
+		}
 
 		#region Animations
 
 
 		void UpdateAnimationData()
 		{
-			bool stopped = !navMeshAgent.isOnNavMesh || navMeshAgent.isStopped;
+			bool stopped = !Agent.isOnNavMesh || Agent.isStopped;
 			float movePercentage = GetRunning() ? 1f : !stopped ? 0.5f : 0;
 			
 			Vector2 blend = new Vector2(0, movePercentage);
@@ -137,10 +183,30 @@ namespace Dungeon.Characters.Enemies
 
 
 
-		void OnDrawGizmos()
+		#region IAllowedActions
+
+		public bool AllowMove()
 		{
-			Gizmos.color = Color.green;
-			Gizmos.DrawSphere(currentDestination, .2f);
+			//This script currently does not have anything disabling its own actions.
+			return true;
 		}
+
+		public bool AllowRun()
+		{
+			//This script currently does not have anything disabling its own actions.
+			return true;
+		}
+		public bool AllowRotate()
+		{
+			//This script currently does not have anything disabling its own actions.
+			return true;
+		}
+		public bool AllowAttack()
+		{
+			//This script currently does not have anything disabling other classes' actions.
+			return true;
+		}
+
+		#endregion
 	}
 }
