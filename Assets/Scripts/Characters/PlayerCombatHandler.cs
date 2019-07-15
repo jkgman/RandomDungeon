@@ -11,7 +11,7 @@ namespace Dungeon.Characters
 	/// <summary>
 	/// Handles Inputs and actions related to combat such as attacks, dodges and blocks
 	/// </summary>
-	public class PlayerCombatHandler : CharacterCombatHandler, IAllowedActions
+	public class PlayerCombatHandler : CharacterCombatHandler, IAllowedPlayerActions
 	{
 		[Header("Target crap")]
 
@@ -535,7 +535,7 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
+			if (CurrentWeapon && CurrentWeapon.IsAttacking && CurrentWeapon.CanRotate(Target != null))
 				output = false;
 				
 			return output;

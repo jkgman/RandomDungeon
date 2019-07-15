@@ -50,7 +50,37 @@ namespace Dungeon.Items
 			public AnimationCurve recoveryMoveCurve;
 			public AttackAnimationData animData;
 		}
+		[System.Serializable]
+		protected struct AllowedActionsGeneral
+		{
+			public bool allowAttackDuringCharge;
+			public bool allowAttackDuringAttack;
+			public bool allowAttackDuringRecovery;
+			public bool allowComboDuringCharge;
+			public bool allowComboDuringAttack;
+			public bool allowComboDuringRecovery;
+			public bool allowCancelDuringRecovery;
 
+		}
+
+		[System.Serializable]
+		protected struct AllowedActionsSpecific
+		{
+			public bool rotatableDuringCharge;
+			public bool rotatableDuringAttack;
+			public bool rotatableDuringRecovery;
+			public bool movableDuringCharge;
+			public bool movableDuringAttack;
+			public bool movableDuringRecovery;
+		}
+
+
+
+
+
+		[SerializeField] protected AllowedActionsSpecific actionsDuringTargeting;
+		[SerializeField] protected AllowedActionsSpecific actionsDuringFree;
+		[SerializeField] protected AllowedActionsGeneral actionsGeneral;
 
 		[Header("General data")]
 		[SerializeField] protected bool isEquipped;
@@ -234,6 +264,114 @@ namespace Dungeon.Items
 				default:
 					return 0;
 			}
+		}
+
+
+		public bool CanRotate(bool hasTarget)
+		{
+			switch (CurrentAttackState)
+			{
+				case AttackState.charge:
+					if (hasTarget)
+						return actionsDuringTargeting.rotatableDuringCharge;
+					else
+						return actionsDuringFree.rotatableDuringCharge;
+
+				case AttackState.attack:
+					if (hasTarget)
+						return actionsDuringTargeting.rotatableDuringAttack;
+					else
+						return actionsDuringFree.rotatableDuringAttack;
+
+				case AttackState.recovery:
+					if (hasTarget)
+						return actionsDuringTargeting.rotatableDuringRecovery;
+					else
+						return actionsDuringFree.rotatableDuringRecovery;
+
+				default:
+					return true;
+			}
+
+		}
+
+		public bool CanMove(bool hasTarget)
+		{
+			switch (CurrentAttackState)
+			{
+				case AttackState.charge:
+					if (hasTarget)
+						return actionsDuringTargeting.movableDuringCharge;
+					else
+						return actionsDuringFree.movableDuringCharge;
+
+				case AttackState.attack:
+					if (hasTarget)
+						return actionsDuringTargeting.movableDuringAttack;
+					else
+						return actionsDuringFree.movableDuringAttack;
+
+				case AttackState.recovery:
+					if (hasTarget)
+						return actionsDuringTargeting.movableDuringRecovery;
+					else
+						return actionsDuringFree.movableDuringRecovery;
+				default:
+					return true;
+			}
+		}
+
+		public bool CanAttack(bool hasTarget)
+		{
+			if (IsAttacking)
+			{
+				switch (CurrentAttackState)
+				{
+					case AttackState.charge:
+						return hasTarget ? actionsGeneral.allowAttackDuringCharge : actionsGeneral.allowAttackDuringCharge;
+
+					case AttackState.attack:
+						return hasTarget ? actionsGeneral.allowAttackDuringAttack : actionsGeneral.allowAttackDuringAttack;
+
+					case AttackState.recovery:
+						return hasTarget ? actionsGeneral.allowAttackDuringRecovery : actionsGeneral.allowAttackDuringRecovery;
+
+					default:
+						return true;
+				}
+			}
+			else
+			{
+				return true;
+			}
+		}
+
+		protected bool CanCombo()
+		{
+			bool rightTiming = false; //check against current allowed actions.
+			bool hasCombo = false; // check if attacktype has more attacks on list.
+
+			if (CurrentAttackType == AttackType.lightAttack)
+				hasCombo = CurrentAttackIndex < lightAttacks.Count - 1;
+			if (CurrentAttackType == AttackType.heavyAttack)
+				hasCombo = CurrentAttackIndex < heavyAttacks.Count - 1;
+
+			switch (CurrentAttackState)
+			{
+				case AttackState.charge:
+					rightTiming = actionsGeneral.allowComboDuringCharge;
+					break;
+				case AttackState.attack:
+					rightTiming = actionsGeneral.allowComboDuringAttack;
+					break;
+				case AttackState.recovery:
+					rightTiming = actionsGeneral.allowComboDuringRecovery;
+					break;
+				default:
+					break;
+			}
+
+			return rightTiming && hasCombo;
 		}
 
 
