@@ -77,13 +77,13 @@ namespace Dungeon.Characters
 
 		#region Attack stuff
 
-		void SetAttackDurations()
+		void SetAttackData()
 		{
 			float charge = currentWeapon.GetChargeDuration();
 			float attack = currentWeapon.GetAttackDuration();
 			float recovery = currentWeapon.GetRecoveryDuration();
 
-			Character.AnimationHandler.SetAttackDurations(charge, attack, recovery);
+			Character.AnimationHandler.SetAttackData(currentWeapon.GetCurrentAttackData(), charge, attack, recovery);
 		}
 
 		protected virtual void Attack()
@@ -114,7 +114,7 @@ namespace Dungeon.Characters
 		{
 			Debug.Log("attack coroutine started");
 			currentWeapon.StartAttacking(AttackType.lightAttack);
-			SetAttackDurations();
+			SetAttackData();
 
 			yield return null; //Wait for one frame because animator sucks ass (ignores booleans if setting durations in same frame)
 

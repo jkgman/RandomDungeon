@@ -30,16 +30,9 @@ namespace Dungeon.Items
 	/// </summary>
 	public class Weapon : MonoBehaviour
 	{
-		[System.Serializable]
-		public struct AttackAnimationData
-		{
-			public AnimationClip chargeClip;
-			public AnimationClip attackClip;
-			public AnimationClip recoveryClip;
-		}
 
 		[System.Serializable]
-		protected struct AttackData
+		public struct AttackData
 		{
 			public float chargeDuration;                 //Anticipation should be the longest part of attack
 			public float attackDuration;                 //Fast part where contact happens
@@ -48,8 +41,12 @@ namespace Dungeon.Items
 			public AnimationCurve chargeMoveCurve;
 			public AnimationCurve attackMoveCurve;
 			public AnimationCurve recoveryMoveCurve;
-			public AttackAnimationData animData;
+			public AnimationClip chargeClip;
+			public AnimationClip attackClip;
+			public AnimationClip recoveryClip;
+			
 		}
+
 		[System.Serializable]
 		protected struct AllowedActionsGeneral
 		{
@@ -229,6 +226,18 @@ namespace Dungeon.Items
 			}
 		}
 
+		public AttackData GetCurrentAttackData()
+		{
+			switch (CurrentAttackType)
+			{
+				case AttackType.lightAttack:
+					return lightAttacks[CurrentAttackIndex];
+				case AttackType.heavyAttack:
+					return heavyAttacks[CurrentAttackIndex];
+				default:
+					return new AttackData();
+			}
+		}
 		public float GetChargeDuration()
 		{
 			switch (CurrentAttackType)

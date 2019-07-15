@@ -8,6 +8,7 @@ namespace Dungeon.Characters
 	public class PlayerAnimationHandler : CharacterAnimationHandler
 	{
 
+		protected const string DODGE_NAME = "DODGE";
 		private AnimationState dodgeState;
 
 
