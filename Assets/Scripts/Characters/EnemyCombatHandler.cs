@@ -8,9 +8,10 @@ namespace Dungeon.Characters
 {
 	using Dungeon.Items;
 
-	public class EnemyCombatHandler : CharacterCombatHandler
+	public class EnemyCombatHandler : CharacterCombatHandler , IAllowedEnemyActions
 	{
 		[SerializeField] private float targetFindDistance;
+		[SerializeField] private float maxAttackDistance;
 		[SerializeField] private float attackDelay;
 		[SerializeField] private LayerMask obstacleMask;
 		private float attackDelayTimer;
@@ -75,7 +76,7 @@ namespace Dungeon.Characters
 			return false;
 		}
 
-		public bool TargetIsAttackable()
+		private bool TargetIsAttackable()
 		{
 			//Check that target is close enough and delayTimer has run
 			bool canAttack = true;
@@ -86,7 +87,7 @@ namespace Dungeon.Characters
 			}
 
 			float sqrLen = GetTargetDirection().sqrMagnitude;
-			if (sqrLen > navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance)
+			if (sqrLen > maxAttackDistance * maxAttackDistance)
 			{
 				canAttack = false;
 			}
@@ -125,5 +126,60 @@ namespace Dungeon.Characters
 			}
 		}
 
+
+
+
+		#region IAllowedActions
+
+		public bool AllowMove()
+		{
+			bool output = true;
+
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
+			if (CurrentWeapon && CurrentWeapon.IsAttacking)
+				output = CurrentWeapon.CanMove(true) ? output : false;
+
+			return output;
+		}
+
+		public bool AllowRun()
+		{
+			bool output = true;
+
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
+			output = IsBlocking ? false : output;
+			if (CurrentWeapon && CurrentWeapon.IsAttacking)
+				output = CurrentWeapon.CanMove(true) ? false : output;
+
+			return output;
+		}
+
+		public bool AllowAttack()
+		{
+			bool output = true;
+
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
+			output = TargetIsAttackable() ? output : false;
+			output = CurrentWeapon.CanAttack(true) ? output : false;
+
+			return output;
+		}
+
+		public bool AllowRotate()
+		{
+			bool output = true;
+
+			output = IsDodging ? false : output;
+			output = IsStunned ? false : output;
+			if (CurrentWeapon && CurrentWeapon.IsAttacking)
+				output = CurrentWeapon.CanRotate(true) ? output : false;
+
+			return output;
+		}
+
+		#endregion
 	}
 }

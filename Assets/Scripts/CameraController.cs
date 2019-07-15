@@ -25,12 +25,12 @@ namespace Dungeon
 		//Different lerp speeds for different situations/states
 		private const float LERP_ANGLE_DEFAULT = 3f;            //Camera offset direction from player. good values 1-8, bigger value makes turn radius smaller
 		private const float LERP_ANGLE_TARGETING = 10f;			//Same as above, Affects positioning. 
-		private const float LERP_DUMMY_DEFAULT = 4.5f;			//Dummy is a position that follows player & target. It is used to determine camera positioning
-		private const float LERP_DUMMY_TARGETING = 8f;          //Dummy is a position that follows player & target. It is used to determine camera positioning
+		private const float LERP_DUMMY_DEFAULT = 8f;			//Dummy is a position that follows player & target. It is used to determine camera positioning
+		private const float LERP_DUMMY_TARGETING = 12f;          //Dummy is a position that follows player & target. It is used to determine camera positioning
 		private const float LERP_ROTATION_DEFAULT = 100f;		//Look rotation speed
-		private const float LERP_ROTATION_TARGETING = 30f;		//Look rotation speed
-		private const float LERP_LOOKAT_POS_DEFAULT = 30f;		//Dummy position for look rotation
-		private const float LERP_LOOKAT_POS_TARGETING = 60f;	//Dummy position for look rotation
+		private const float LERP_ROTATION_TARGETING = 50f;		//Look rotation speed
+		private const float LERP_LOOKAT_POS_DEFAULT = 50f;		//Dummy position for look rotation
+		private const float LERP_LOOKAT_POS_TARGETING = 80f;	//Dummy position for look rotation
 		private const float LERP_CAM_TO_DEFAULT = 2f;			//Speed of going back to default vertical angle when no inputs detected
 		private const float LERP_CAM_DISTANCE_TO_DEFAULT = 10f; //Speed of going back to default distance after hitting walls etc
 

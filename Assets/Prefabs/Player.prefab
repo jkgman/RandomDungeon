@@ -295,6 +295,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ecfefc0265bc9c429e0e1dbe996bf35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  actionsDuringTargeting:
+    rotatableDuringCharge: 0
+    rotatableDuringAttack: 0
+    rotatableDuringRecovery: 1
+    movableDuringCharge: 0
+    movableDuringAttack: 0
+    movableDuringRecovery: 0
+  actionsDuringFree:
+    rotatableDuringCharge: 1
+    rotatableDuringAttack: 0
+    rotatableDuringRecovery: 1
+    movableDuringCharge: 0
+    movableDuringAttack: 0
+    movableDuringRecovery: 0
+  actionsGeneral:
+    allowAttackDuringCharge: 0
+    allowAttackDuringAttack: 0
+    allowAttackDuringRecovery: 1
+    allowComboDuringCharge: 0
+    allowComboDuringAttack: 0
+    allowComboDuringRecovery: 1
+    allowCancelDuringRecovery: 1
   isEquipped: 1
   staggerableDuringAction: 1
   lightAttacks:
@@ -481,28 +503,6 @@ MonoBehaviour:
       recoveryClip: {fileID: -2888854659357403076, guid: c3e3e6e9d603f59448ec48c17012927f,
         type: 3}
   heavyAttacks: []
-  actionsDuringTargeting:
-    rotatableDuringCharge: 0
-    rotatableDuringAttack: 0
-    rotatableDuringRecovery: 1
-    movableDuringCharge: 0
-    movableDuringAttack: 0
-    movableDuringRecovery: 0
-  actionsDuringFree:
-    rotatableDuringCharge: 1
-    rotatableDuringAttack: 0
-    rotatableDuringRecovery: 1
-    movableDuringCharge: 0
-    movableDuringAttack: 0
-    movableDuringRecovery: 0
-  actionsGeneral:
-    allowAttackDuringCharge: 0
-    allowAttackDuringAttack: 0
-    allowAttackDuringRecovery: 1
-    allowComboDuringCharge: 0
-    allowComboDuringAttack: 0
-    allowComboDuringRecovery: 1
-    allowCancelDuringRecovery: 1
 --- !u!54 &3054648839849875980
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1249,7 +1249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a6ecbd6a4735c64cb23ece8ffe78cb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 7
+  moveSpeed: 5
   runSpeedMultiplier: 1.5
   rotationSpeed: 15
   accelerationDuration: 0.2

@@ -54,7 +54,7 @@ namespace Dungeon.Characters
 			Vector3 output = lastNonZeroMoveDirection;
 			output.y = 0;
 			if (output.magnitude == 0)
-				return Vector3.forward;
+				return transform.forward;
 			else
 				return output.normalized;
 		}
@@ -74,7 +74,7 @@ namespace Dungeon.Characters
 
 		public virtual void ExternalMove(Vector3 offset)
 		{
-
+			
 		}
 		public virtual void ExternalRotate(Vector3 lookDirection, bool instant = false)
 		{

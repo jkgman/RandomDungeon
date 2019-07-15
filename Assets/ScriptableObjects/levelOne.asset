@@ -26,7 +26,7 @@ MonoBehaviour:
   enemies:
   - EnemyPrefab: {fileID: 6212252257882444870, guid: fab49606a9aebf74dbf0f02f3b5eb7c2,
       type: 3}
-    CountForLevel: 1
+    CountForLevel: 20
     ForceKey: 0
   EnemyCount: 0
   forcedKey: 0

@@ -1,7 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.Animations;
+//using UnityEditor.Animations;
 
 namespace Dungeon.Characters
 {
@@ -18,18 +18,20 @@ namespace Dungeon.Characters
 		[SerializeField] protected float blendSpeed = 5f;
 		protected Vector2 currentMoveBlend = Vector2.zero;
 
-		protected AnimatorState chargeState;
-		protected AnimatorState attackState;
-		protected AnimatorState recoveryState;
-
 		protected string currentChargeClipName;
 		protected string currentAttackClipName;
 		protected string currentRecoveryClipName;
+		float chargeDuration;
+		float attackDuration;
+		float recoveryDuration;
 
+		protected RuntimeAnimatorController ac;
+		protected List<AnimationClip> animClips;
+		protected List<AnimationState> animationStates;
 
-		protected AnimatorController ac;
-		protected List<AnimatorState> animatorStates;
-
+		protected AnimationState chargeState;
+		protected AnimationState attackState;
+		protected AnimationState recoveryState;
 
 
 		#region Getters & Setters
@@ -47,76 +49,23 @@ namespace Dungeon.Characters
 		}
 
 		/// <summary>Get All states in current AnimatorController.</summary>
-		protected List<AnimatorState> GetAllStates()
+		protected List<AnimationState> GetAllStates()
 		{
-			List<AnimatorState> output = new List<AnimatorState>();
+			List<AnimationState> output = new List<AnimationState>();
 
-			ac = Animator.runtimeAnimatorController as AnimatorController;
+			//ac = Animator.runtimeAnimatorController;
+			//Animator.stat
+			//foreach (AnimatorControllerLayer i in ac.layers) //for each layer
+			//{
+			//	AnimatorStateMachine stateMachine = i.stateMachine;
+			//	List<AnimatorState> states = GetAllStatesInMachine(stateMachine);
 
-			foreach (AnimatorControllerLayer i in ac.layers) //for each layer
-			{
-				AnimatorStateMachine stateMachine = i.stateMachine;
-				List<AnimatorState> states = GetAllStatesInMachine(stateMachine);
-
-				foreach (var s in states)
-				{
-					if (!output.Contains(s))
-						output.Add(s);
-				}
-			}
-			return output;
-		}
-
-		/// <summary>Get all states in a state machine.</summary>
-		protected List<AnimatorState> GetAllStatesInMachine(AnimatorStateMachine stateMachine)
-		{
-			List<AnimatorState> output = new List<AnimatorState>();
-
-			if (stateMachine.stateMachines.Length > 0)
-			{
-				foreach (var sm in stateMachine.stateMachines)
-				{
-					List<AnimatorState> foundStates = GetStatesInChildMachine(sm);
-					for (int i = 0; i < foundStates.Count; i++)
-					{
-						if (!output.Contains(foundStates[i]))
-							output.Add(foundStates[i]);
-					}
-				}
-			}
-			foreach (var state in stateMachine.states)
-			{
-				if (!output.Contains(state.state))
-					output.Add(state.state);
-			}
-
-
-			return output;
-		}
-
-		/// <summary>Get all states in a child state machine.</summary>
-		protected List<AnimatorState> GetStatesInChildMachine(ChildAnimatorStateMachine childMachine)
-		{
-			List<AnimatorState> output = new List<AnimatorState>();
-			if (childMachine.stateMachine.stateMachines.Length > 0)
-			{
-				foreach (var sm in childMachine.stateMachine.stateMachines)
-				{
-					//Calls current function again if more child states are found inside this one.
-					List<AnimatorState> childStates = GetStatesInChildMachine(sm);
-					for (int i = 0; i < childStates.Count; i++)
-					{
-						if (!output.Contains(childStates[i]))
-							output.Add(childStates[i]);
-					}
-				}
-			}
-			foreach (var state in childMachine.stateMachine.states)
-			{
-				if (!output.Contains(state.state))
-					output.Add(state.state);
-			}
-
+			//	foreach (var s in states)
+			//	{
+			//		if (!output.Contains(s))
+			//			output.Add(s);
+			//	}
+			//}
 			return output;
 		}
 
@@ -125,29 +74,29 @@ namespace Dungeon.Characters
 
 		protected virtual void Awake()
 		{
-			animatorStates = GetAllStates();
+			animationStates = GetAllStates();
 			SetStateVariables();
 		}
 
 		//Assigns values to animationState variables from the animator.
 		protected virtual void SetStateVariables()
 		{
-			for (int i = 0; i < animatorStates.Count; i++)
+			for (int i = 0; i < animationStates.Count; i++)
 			{
-				if (animatorStates[i].name == CHARGE_STATE)
+				if (animationStates[i].name == CHARGE_STATE)
 				{
-					currentChargeClipName = animatorStates[i].motion.name;
-					chargeState = animatorStates[i];
+					currentChargeClipName = animationStates[i].clip.name;
+					chargeState = animationStates[i];
 				}
-				if (animatorStates[i].name == ATTACK_STATE)
+				if (animationStates[i].name == ATTACK_STATE)
 				{
-					currentAttackClipName = animatorStates[i].motion.name;
-					attackState = animatorStates[i];
+					currentAttackClipName = animationStates[i].clip.name;
+					attackState = animationStates[i];
 				}
-				if (animatorStates[i].name == RECOVERY_STATE)
+				if (animationStates[i].name == RECOVERY_STATE)
 				{
-					currentRecoveryClipName = animatorStates[i].motion.name;
-					recoveryState = animatorStates[i];
+					currentRecoveryClipName = animationStates[i].clip.name;
+					recoveryState = animationStates[i];
 				}
 			}
 		}
@@ -211,40 +160,36 @@ namespace Dungeon.Characters
 		/// <param name="chargeDuration">Duration of charge phase of the attack.</param>
 		/// <param name="attackDuration">Duration of hitting/attacking phase of the attack.</param>
 		/// <param name="recoveryDuration">Duration of recovery phase of the attack.</param>
-		public void SetAttackDurations(float chargeDuration, float attackDuration, float recoveryDuration)
+		public void SetAttackDurations(float in_chargeDuration, float in_attackDuration, float in_recoveryDuration)
 		{
-			if (chargeState)
-			{
-				Motion motion = chargeState.motion;
-				float currentDuration = motion.averageDuration;
+			chargeDuration = in_chargeDuration;
+			attackDuration = in_attackDuration;
+			recoveryDuration = in_recoveryDuration;
+			
+			//if (chargeState)
+			//{
 
-				if (chargeDuration > 0)
-					chargeState.speed = currentDuration / chargeDuration;
-				else
-					chargeState.speed = ANIM_DEFAULT_SPEED;
-			}
+			//	if (chargeDuration > 0)
+			//		chargeState.speed = chargeState.length / chargeDuration;
+			//	else
+			//		chargeState.speed = ANIM_DEFAULT_SPEED;
+			//}
 
-			if (attackState)
-			{
-				Motion motion = attackState.motion;
-				float currentDuration = motion.averageDuration;
+			//if (attackState)
+			//{
+			//	if (attackDuration > 0)
+			//		attackState.speed = attackState.length / attackDuration;
+			//	else
+			//		attackState.speed = ANIM_DEFAULT_SPEED;
+			//}
 
-				if (attackDuration > 0)
-					attackState.speed = currentDuration / attackDuration;
-				else
-					attackState.speed = ANIM_DEFAULT_SPEED;
-			}
-
-			if (recoveryState)
-			{
-				Motion motion = recoveryState.motion;
-				float currentDuration = motion.averageDuration;
-
-				if (recoveryDuration > 0)
-					recoveryState.speed = currentDuration / recoveryDuration;
-				else
-					recoveryState.speed = ANIM_DEFAULT_SPEED;
-			}
+			//if (recoveryState)
+			//{
+			//	if (recoveryDuration > 0)
+			//		recoveryState.speed = recoveryState.length / recoveryDuration;
+			//	else
+			//		recoveryState.speed = ANIM_DEFAULT_SPEED;
+			//}
 		}
 
 		//Called when Charge phase of attack starts
@@ -253,8 +198,32 @@ namespace Dungeon.Characters
 			Animator.SetBool("isAttacking", false);
 			Animator.SetBool("isRecovering", false);
 			Animator.SetBool("isCharging", true);
+			//SetChargeDuration();
 
 		}
+
+		//void SetChargeDuration()
+		//{
+		//	AnimatorStateInfo info = new AnimatorStateInfo();
+		//	for (int i = 0; i < Animator.layerCount; i++)
+		//	{
+		//		if (Animator.GetCurrentAnimatorStateInfo(i).IsName(CHARGE_STATE))
+		//			info = Animator.GetCurrentAnimatorStateInfo(i);
+		//		if (Animator.GetNextAnimatorStateInfo(i).IsName(CHARGE_STATE))
+		//			info = Animator.GetCurrentAnimatorStateInfo(i);
+
+		//	}
+
+		//	if (info.IsName(CHARGE_STATE))
+		//	{
+		//		if (chargeDuration > 0)
+		//			chargeState.speed = chargeState.length / chargeDuration;
+		//		else
+		//			chargeState.speed = ANIM_DEFAULT_SPEED;
+		//	}
+
+
+		//}
 		//Called when Recovery phase of attack ends. Usually goes to attack phase right after.
 		public void SetChargeCancelled()
 		{
