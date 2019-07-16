@@ -43,6 +43,11 @@ namespace Dungeon.Characters
 			_isRunning = value;
 		}
 
+		public virtual bool IsGrounded()
+		{
+			return true;
+		}
+
 
 
 

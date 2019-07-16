@@ -117,7 +117,7 @@ namespace Dungeon.Characters
 			{
 				if (Ragdoll.ragdollState != RagdollScript.RagdollState.ragdolled)
 				{
-					Ragdoll.Ragdolled = true;
+					Ragdoll.StartRagdoll();
 					DisableColliders();
 				}
 
@@ -126,9 +126,12 @@ namespace Dungeon.Characters
 			{
 				if (Ragdoll.ragdollState == RagdollScript.RagdollState.ragdolled)
 				{
-					Ragdoll.Ragdolled = false;
-					EnableColliders();
-					debugRagdoll = false;
+					if (CharacterController.IsGrounded())
+					{
+						Ragdoll.EndRagdoll();
+						EnableColliders();
+						debugRagdoll = false;
+					}
 				}
 			}
 		}

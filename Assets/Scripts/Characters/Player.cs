@@ -23,7 +23,7 @@ namespace Dungeon.Characters
 			
 			output = PController.AllowMove() ? output : false;
 			output = PCombat.AllowMove() ? output : false;
-			output = Ragdoll.Ragdolled ? output : false;
+			output = !Ragdoll.IsRagdolling ? output : false;
 
 			return output;
 		}
@@ -33,7 +33,7 @@ namespace Dungeon.Characters
 			
 			output = PController.AllowRun() ? output : false;
 			output = PCombat.AllowRun() ? output : false;
-			output = Ragdoll.Ragdolled ? output : false;
+			output = !Ragdoll.IsRagdolling ? output : false;
 
 			return output;
 		}
@@ -43,7 +43,7 @@ namespace Dungeon.Characters
 
 			output = PController.AllowAttack() ? output : false;
 			output = PCombat.AllowAttack() ? output : false;
-			output = Ragdoll.Ragdolled ? output : false;
+			output = !Ragdoll.IsRagdolling ? output : false;
 
 			return output;
 		}
@@ -53,7 +53,7 @@ namespace Dungeon.Characters
 
 			output = PController.AllowDodge() ? output : false;
 			output = PCombat.AllowDodge() ? output : false;
-			output = Ragdoll.Ragdolled ? output : false;
+			output = !Ragdoll.IsRagdolling ? output : false;
 
 			return output;
 		}
@@ -63,7 +63,7 @@ namespace Dungeon.Characters
 
 			output = PController.AllowRotate() ? output : false;
 			output = PCombat.AllowRotate() ? output : false;
-			output = Ragdoll.Ragdolled ? output : false;
+			output = !Ragdoll.IsRagdolling ? output : false;
 
 			return output;
 		}
@@ -141,7 +141,7 @@ namespace Dungeon.Characters
 			Effects.PlayDeathParticles();
 			//Effects.SetInvisible();
 			DisableColliders();
-			Ragdoll.Ragdolled = true;
+			Ragdoll.StartRagdoll();
 			isActive = false;
 
 			yield return new WaitForSeconds(2f);

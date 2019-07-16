@@ -114,60 +114,56 @@ namespace Dungeon.Characters
 			}
 		}
 
-		//public property that can be set to toggle between ragdolled and animated character
-		public bool Ragdolled
+
+		public bool IsRagdolling
 		{
-			get
+			get{ return ragdollState != RagdollState.animated; }
+		}
+
+		public void StartRagdoll()
+		{
+			if (ragdollState == RagdollState.animated)
 			{
-				return ragdollState != RagdollState.animated;
+				//Transition from animated to ragdolled
+				EnableRagdoll(); //allow the ragdoll RigidBodies to react to the environment
+				ragdollState = RagdollState.ragdolled;
 			}
-			set
+		}
+
+		public void EndRagdoll()
+		{
+			if (ragdollState == RagdollState.ragdolled)
 			{
-				if (value == true)
+				//Transition from ragdolled to animated through the blendToAnim state
+				DisableRagdoll(); //disable gravity etc.
+				ragdollingEndTime = Time.time; //store the state change time
+				anim.enabled = true; //enable animation
+				ragdollState = RagdollState.blendToAnim;
+
+				//Store the ragdolled position for blending
+				foreach (BodyPart b in bodyParts)
 				{
-					if (ragdollState == RagdollState.animated)
-					{
-						//Transition from animated to ragdolled
-						EnableRagdoll(); //allow the ragdoll RigidBodies to react to the environment
-						ragdollState = RagdollState.ragdolled;
-					}
+					b.storedRotation = b.transform.rotation;
+					b.storedPosition = b.transform.position;
+				}
+
+				//Remember some key positions
+				ragdolledFeetPosition = 0.5f * (anim.GetBoneTransform(HumanBodyBones.LeftToes).position + anim.GetBoneTransform(HumanBodyBones.RightToes).position);
+				ragdolledHeadPosition = anim.GetBoneTransform(HumanBodyBones.Head).position;
+				ragdolledHipPosition = anim.GetBoneTransform(HumanBodyBones.Hips).position;
+
+				//Initiate the get up animation
+				if (anim.GetBoneTransform(HumanBodyBones.Hips).forward.y > 0) //hip hips forward vector pointing upwards, initiate the get up from back animation
+				{
+					//anim.SetBool("GetUpFromBack", true);
+					anim.CrossFade("Get Up Back", 0, 0, 0, 0);
 				}
 				else
 				{
-					if (ragdollState == RagdollState.ragdolled)
-					{
-						//Transition from ragdolled to animated through the blendToAnim state
-						DisableRagdoll(); //disable gravity etc.
-						ragdollingEndTime = Time.time; //store the state change time
-						anim.enabled = true; //enable animation
-						ragdollState = RagdollState.blendToAnim;
-
-						//Store the ragdolled position for blending
-						foreach (BodyPart b in bodyParts)
-						{
-							b.storedRotation = b.transform.rotation;
-							b.storedPosition = b.transform.position;
-						}
-
-						//Remember some key positions
-						ragdolledFeetPosition = 0.5f * (anim.GetBoneTransform(HumanBodyBones.LeftToes).position + anim.GetBoneTransform(HumanBodyBones.RightToes).position);
-						ragdolledHeadPosition = anim.GetBoneTransform(HumanBodyBones.Head).position;
-						ragdolledHipPosition = anim.GetBoneTransform(HumanBodyBones.Hips).position;
-
-						//Initiate the get up animation
-						if (anim.GetBoneTransform(HumanBodyBones.Hips).forward.y > 0) //hip hips forward vector pointing upwards, initiate the get up from back animation
-						{
-							anim.SetBool("GetUpFromBack", true);
-							anim.CrossFade("Get Up Back", 0, 0, 0, 0);
-						}
-						else
-						{
-							anim.SetBool("GetUpFromBelly", true);
-							anim.CrossFade("Get Up Front", 0, 0, 0, 0);
-						}
-					} //if (state==RagdollState.ragdolled)
-				}   //if value==false	
-			} //set
+					//anim.SetBool("GetUpFromBelly", true);
+					anim.CrossFade("Get Up Front", 0, 0, 0, 0);
+				}
+			} //if (state==RagdollState.ragdolled)
 		}
 
 		private void ResetPosition()
@@ -231,7 +227,7 @@ namespace Dungeon.Characters
 				//and slerp all the rotations towards the ones stored when ending the ragdolling
 				foreach (BodyPart b in bodyParts)
 				{
-					if (b.transform != transform)
+					if (b.transform != mainModel.transform)
 					{ //this if is to prevent us from modifying the root of the character, only the actual body parts
 					  //position is only interpolated for the hips
 						if (b.transform == anim.GetBoneTransform(HumanBodyBones.Hips))
@@ -249,5 +245,6 @@ namespace Dungeon.Characters
 				}
 			}
 		}
+		
 	}
 }

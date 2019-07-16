@@ -132,7 +132,7 @@ namespace Dungeon.Characters
 
 		#region Tests & Checks & Calculations
 
-		bool IsGrounded() 
+		public override bool IsGrounded() 
 		{
 			bool g = RaycastGrounded() || ControllerGrounded();
 			isGrounded = g;
