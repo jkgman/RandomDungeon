@@ -114,12 +114,13 @@ namespace Dungeon.Characters
 			if (Player.AllowRun())
 			{
 				base.SetRunning(value);
+				Debug.Log("running:" + GetRunning());
 			}
 			else
 			{
 				base.SetRunning(false);
+				Debug.Log("not running");
 			}
-			
 		}
 
 		#endregion
@@ -432,7 +433,7 @@ namespace Dungeon.Characters
 			inputs.Player.RunAndDodge.started += InputRunStarted;
 			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
 			inputs.Player.RunAndDodge.canceled += InputRunCancelled;
-			inputs.Player.RunAndDodge.Disable();
+			inputs.Player.RunAndDodge.Enable();
 		}
 
 		void ControlsUnsubscribe()
