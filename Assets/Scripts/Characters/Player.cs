@@ -67,7 +67,16 @@ namespace Dungeon.Characters
 
 		#region Getters & Setters
 
+		private Inputs _inputs;
+		public Inputs Inputs
+		{
+			get{
+				if (_inputs == null)
+					_inputs = new Inputs();
 
+				return _inputs;
+			}
+		}
 		private PlayerController _pController;
 		public PlayerController PController
 		{

@@ -43,7 +43,10 @@ namespace Dungeon.Characters
 		float inputTargetSwitchTime = 0;
 		readonly float inputTargetSwitchInterval = 0.1f;
 
-		private Inputs inputs;
+		private Inputs PlayerInputs
+		{
+			get { return Player.Inputs; }
+		}
 
 
 
@@ -380,31 +383,28 @@ namespace Dungeon.Characters
 
 		void ControlsSubscribe() 
 		{
-			if (inputs == null)
-				inputs = new Inputs();
 
-
-			inputs.Player.TargetLock.performed += InputTargetLock;
-			inputs.Player.TargetLock.Enable();
-			inputs.Player.SwitchTarget.started += InputTargetSwitch;
-			inputs.Player.SwitchTarget.Enable();
-			inputs.Player.RunAndDodge.started += InputDodgeStarted;
-			inputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
-			inputs.Player.RunAndDodge.Enable();
-			inputs.Player.Attack.started += InputAttackStarted;
-			inputs.Player.Attack.canceled += InputAttackCancelled;
-			inputs.Player.Attack.Enable();
-			inputs.Player.Move.performed += InputAttackCancellationPerformed;
-			inputs.Player.Move.Enable();
+			PlayerInputs.Player.TargetLock.performed += InputTargetLock;
+			PlayerInputs.Player.TargetLock.Enable();
+			PlayerInputs.Player.SwitchTarget.started += InputTargetSwitch;
+			PlayerInputs.Player.SwitchTarget.Enable();
+			PlayerInputs.Player.RunAndDodge.started += InputDodgeStarted;
+			PlayerInputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
+			PlayerInputs.Player.RunAndDodge.Enable();
+			PlayerInputs.Player.Attack.started += InputAttackStarted;
+			PlayerInputs.Player.Attack.canceled += InputAttackCancelled;
+			PlayerInputs.Player.Attack.Enable();
+			//inputs.Player.Move.performed += InputAttackCancellationPerformed;
+			//inputs.Player.Move.Enable();
 		}
 
 		void ControlsUnsubscribe() 
 		{
-			inputs.Player.TargetLock.performed -= InputTargetLock;
-			inputs.Player.SwitchTarget.started -= InputTargetSwitch;
-			inputs.Player.RunAndDodge.started -= InputDodgeStarted;
-			inputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
-			inputs.Player.Move.performed -= InputAttackCancellationPerformed;
+			PlayerInputs.Player.TargetLock.performed -= InputTargetLock;
+			PlayerInputs.Player.SwitchTarget.started -= InputTargetSwitch;
+			PlayerInputs.Player.RunAndDodge.started -= InputDodgeStarted;
+			PlayerInputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
+			//inputs.Player.Move.performed -= InputAttackCancellationPerformed;
 
 		}
 
@@ -513,7 +513,11 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			output = CurrentWeapon.CanAttack(Target != null) ? output : false;
+
+			if (CurrentWeapon)
+				output = CurrentWeapon.CanAttack(Target != null) ? output : false;
+			else
+				output = false;
 
 			return output;
 		}

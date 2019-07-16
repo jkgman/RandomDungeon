@@ -38,7 +38,7 @@ namespace Dungeon.Characters
 		private Vector3 moveVelocityAtToggle; //Used for accelerations when input happens/doesnt happen
 		private float moveInputToggleTime;
 
-		private Inputs inputs;
+
 		private Vector2 moveInputRaw;
 
 
@@ -52,6 +52,11 @@ namespace Dungeon.Characters
 					_player = GetComponent<Player>();
 				return _player;
 			}
+		}
+
+		private Inputs PlayerInputs
+		{
+			get { return Player.Inputs; }
 		}
 
 		private UnityEngine.CharacterController _unityController;
@@ -422,32 +427,29 @@ namespace Dungeon.Characters
 
 		void ControlsSubscribe()
 		{
-			if (inputs == null)
-				inputs = new Inputs();
+			PlayerInputs.Player.Move.started += InputMoveStarted;
+			PlayerInputs.Player.Move.performed += InputMovePerformed;
+			PlayerInputs.Player.Move.canceled += InputMoveCancelled;
+			PlayerInputs.Player.Move.Enable();
 
-			inputs.Player.Move.started += InputMoveStarted;
-			inputs.Player.Move.performed += InputMovePerformed;
-			inputs.Player.Move.canceled += InputMoveCancelled;
-			inputs.Player.Move.Enable();
-
-			inputs.Player.RunAndDodge.started += InputRunStarted;
-			inputs.Player.RunAndDodge.performed += InputRunPerformed;
-			inputs.Player.RunAndDodge.canceled += InputRunCancelled;
-			inputs.Player.RunAndDodge.Enable();
+			PlayerInputs.Player.RunAndDodge.started += InputRunStarted;
+			PlayerInputs.Player.RunAndDodge.performed += InputRunPerformed;
+			PlayerInputs.Player.RunAndDodge.canceled += InputRunCancelled;
+			PlayerInputs.Player.RunAndDodge.Enable();
 		}
 
 		void ControlsUnsubscribe()
 		{
-			inputs.Player.Move.started += InputMoveStarted;
-			inputs.Player.Move.performed -= InputMovePerformed;
-			inputs.Player.Move.canceled -= InputMoveCancelled;
-			inputs.Player.Move.Disable();
+			PlayerInputs.Player.Move.started += InputMoveStarted;
+			PlayerInputs.Player.Move.performed -= InputMovePerformed;
+			PlayerInputs.Player.Move.canceled -= InputMoveCancelled;
+			PlayerInputs.Player.Move.Disable();
 
 
-			inputs.Player.RunAndDodge.started -= InputRunStarted;
-			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
-			inputs.Player.RunAndDodge.canceled -= InputRunCancelled;
-			inputs.Player.RunAndDodge.Disable();
+			PlayerInputs.Player.RunAndDodge.started -= InputRunStarted;
+			PlayerInputs.Player.RunAndDodge.performed -= InputRunPerformed;
+			PlayerInputs.Player.RunAndDodge.canceled -= InputRunCancelled;
+			PlayerInputs.Player.RunAndDodge.Disable();
 		}
 
 
