@@ -509,6 +509,7 @@ namespace Dungeon.Characters
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
 
 			AnimHandler.SetMovementPerformed(blend);
+			AnimHandler.SetGrounded(IsGrounded());
 
 		}
 

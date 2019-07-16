@@ -115,6 +115,11 @@ namespace Dungeon.Characters
 
 		}
 
+		public void SetGrounded(bool state)
+		{
+			Animator.SetBool("isGrounded", state);
+		}
+
 		/// <summary>
 		/// Updates animations to match weapon's current attack. Sets animation speeds according to weapon's current attack duration.
 		/// </summary>

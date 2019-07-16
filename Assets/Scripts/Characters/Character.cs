@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,8 +28,6 @@ namespace Dungeon.Characters
 
 		protected bool isActive = true;
 		protected bool dieRoutineStarted = false;
-
-
 
 
 
@@ -79,9 +78,26 @@ namespace Dungeon.Characters
 			}
 		}
 
+		private CharacterCombatHandler _characterCombatHandler;
+		public CharacterCombatHandler CharacterCombatHandler
+		{
+			get
+			{
+				if (!_characterController)
+					_characterCombatHandler = GetComponent<CharacterCombatHandler>();
 
-		[SerializeField]private List<CharacterCollider> colliders;
+				return _characterCombatHandler;
+			}
+		}
 
+		[SerializeField]
+		List<CharacterCollider> colliders;
+		[SerializeField]
+		bool debugRagdoll;
+		public RagdollScript Ragdoll
+		{
+			get{ return GetComponent<RagdollScript>(); }
+		}
 
 		protected virtual void Update()
 		{
@@ -90,6 +106,31 @@ namespace Dungeon.Characters
 
 			if (transform.position.y < -200f)
 				Stats.health.SubstractHealth(10000f);
+
+			DebugRagdoll();
+
+		}
+
+		private void DebugRagdoll()
+		{
+			if (debugRagdoll)
+			{
+				if (Ragdoll.ragdollState != RagdollScript.RagdollState.ragdolled)
+				{
+					Ragdoll.Ragdolled = true;
+					DisableColliders();
+				}
+
+			}
+			else
+			{
+				if (Ragdoll.ragdollState == RagdollScript.RagdollState.ragdolled)
+				{
+					Ragdoll.Ragdolled = false;
+					EnableColliders();
+					debugRagdoll = false;
+				}
+			}
 		}
 
 		protected virtual IEnumerator DieRoutine()
@@ -167,5 +208,9 @@ namespace Dungeon.Characters
 		{
 			return transform;
 		}
+
+
+
+
 	}
 }

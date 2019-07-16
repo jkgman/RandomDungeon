@@ -23,6 +23,7 @@ namespace Dungeon.Characters
 			
 			output = PController.AllowMove() ? output : false;
 			output = PCombat.AllowMove() ? output : false;
+			output = Ragdoll.Ragdolled ? output : false;
 
 			return output;
 		}
@@ -32,6 +33,7 @@ namespace Dungeon.Characters
 			
 			output = PController.AllowRun() ? output : false;
 			output = PCombat.AllowRun() ? output : false;
+			output = Ragdoll.Ragdolled ? output : false;
 
 			return output;
 		}
@@ -41,6 +43,7 @@ namespace Dungeon.Characters
 
 			output = PController.AllowAttack() ? output : false;
 			output = PCombat.AllowAttack() ? output : false;
+			output = Ragdoll.Ragdolled ? output : false;
 
 			return output;
 		}
@@ -50,6 +53,7 @@ namespace Dungeon.Characters
 
 			output = PController.AllowDodge() ? output : false;
 			output = PCombat.AllowDodge() ? output : false;
+			output = Ragdoll.Ragdolled ? output : false;
 
 			return output;
 		}
@@ -59,6 +63,7 @@ namespace Dungeon.Characters
 
 			output = PController.AllowRotate() ? output : false;
 			output = PCombat.AllowRotate() ? output : false;
+			output = Ragdoll.Ragdolled ? output : false;
 
 			return output;
 		}
@@ -134,9 +139,9 @@ namespace Dungeon.Characters
 			//For now it is just a particle effect and disappear.
 			dieRoutineStarted = true;
 			Effects.PlayDeathParticles();
-			Effects.SetInvisible();
+			//Effects.SetInvisible();
 			DisableColliders();
-
+			Ragdoll.Ragdolled = true;
 			isActive = false;
 
 			yield return new WaitForSeconds(2f);
@@ -145,6 +150,7 @@ namespace Dungeon.Characters
 
 		void Respawn()
 		{
+			Ragdoll.Reset();
 			transform.position = PController.GetSpawnPosition();
 			Stats.health.AddHealth(100000f);
 			Effects.SetVisible();
