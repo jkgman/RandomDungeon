@@ -238,43 +238,6 @@ namespace Dungeon.Items
 					return new AttackData();
 			}
 		}
-		public float GetChargeDuration()
-		{
-			switch (CurrentAttackType)
-			{
-				case AttackType.lightAttack:
-					return lightAttacks[CurrentAttackIndex].chargeDuration;
-				case AttackType.heavyAttack:
-					return heavyAttacks[CurrentAttackIndex].chargeDuration;
-				default:
-					return 0;
-			}
-		}
-		public float GetAttackDuration()
-		{
-			switch (CurrentAttackType)
-			{
-				case AttackType.lightAttack:
-					return lightAttacks[CurrentAttackIndex].attackDuration;
-				case AttackType.heavyAttack:
-					return heavyAttacks[CurrentAttackIndex].attackDuration;
-				default:
-					return 0;
-			}
-		}
-		public float GetRecoveryDuration()
-		{
-			switch (CurrentAttackType)
-			{
-				case AttackType.lightAttack:
-					return lightAttacks[CurrentAttackIndex].recoveryDuration;
-				case AttackType.heavyAttack:
-					return heavyAttacks[CurrentAttackIndex].recoveryDuration;
-				default:
-					return 0;
-			}
-		}
-
 
 		public bool CanRotate(bool hasTarget)
 		{

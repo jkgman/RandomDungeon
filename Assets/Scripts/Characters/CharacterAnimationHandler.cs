@@ -7,35 +7,20 @@ namespace Dungeon.Characters
 {
 	public class CharacterAnimationHandler : MonoBehaviour
 	{
-		private class AnimationClipOverrides : List<KeyValuePair<AnimationClip, AnimationClip>>
-		{
-			public AnimationClipOverrides(int capacity) : base(capacity) { }
-
-			public AnimationClip this[string name]
-			{
-				get { return this.Find(x => x.Key.name.Equals(name)).Value; }
-				set
-				{
-					int index = this.FindIndex(x => x.Key.name.Equals(name));
-					if (index != -1)
-						this[index] = new KeyValuePair<AnimationClip, AnimationClip>(this[index].Key, value);
-				}
-			}
-		}
 
 		protected const string CHARGE_NAME = "CHARGE";
 		protected const string ATTACK_NAME = "ATTACK";
 		protected const string RECOVERY_NAME = "RECOVERY";
-
 		protected const float ANIM_DEFAULT_SPEED = 1f;
+
 
 		//How fast blendTree values change.
 		[SerializeField] protected float blendSpeed = 5f;
 		protected Vector2 currentMoveBlend = Vector2.zero;
 		
-		protected RuntimeAnimatorController ac;
-		protected List<AnimationClip> animClips;
-		protected List<AnimationState> animationStates;
+		private List<KeyValuePair<AnimationClip, AnimationClip>> currentOverrides = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+		private RuntimeAnimatorController mainController;
+
 
 		#region Getters & Setters
 
@@ -57,41 +42,15 @@ namespace Dungeon.Characters
 		protected virtual void Awake()
 		{
 			mainController = Animator.runtimeAnimatorController;
-			//animationStates = GetAllStates();
-			//SetStateVariables();
 		}
 
-		//Assigns values to animationState variables from the animator.
-		//protected virtual void SetStateVariables()
-		//{
-		//	for (int i = 0; i < animationStates.Count; i++)
-		//	{
-		//		if (animationStates[i].name == CHARGE_STATE)
-		//		{
-		//			currentChargeClipName = animationStates[i].clip.name;
-		//			chargeState = animationStates[i];
-		//		}
-		//		if (animationStates[i].name == ATTACK_STATE)
-		//		{
-		//			currentAttackClipName = animationStates[i].clip.name;
-		//			attackState = animationStates[i];
-		//		}
-		//		if (animationStates[i].name == RECOVERY_STATE)
-		//		{
-		//			currentRecoveryClipName = animationStates[i].clip.name;
-		//			recoveryState = animationStates[i];
-		//		}
-		//	}
-		//}
 
-		List<KeyValuePair<AnimationClip, AnimationClip>> currentOverrides = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-		RuntimeAnimatorController mainController;
 		/// <summary>
 		/// Replaces a clip inside animator. Original animation is found with string name and replaced with inserted AnimationClip.
 		/// </summary>
 		/// <param name="animName">The currently existing animation in animator.</param>
 		/// <param name="in_clip">Clip to replace the current animation with.</param>
-		protected void OverrideClips(string animName, AnimationClip in_clip)
+		protected void AddOverrideClip(string animName, AnimationClip in_clip)
 		{
 			AnimatorOverrideController aoc = new AnimatorOverrideController();
 			aoc.runtimeAnimatorController = mainController;
@@ -121,17 +80,31 @@ namespace Dungeon.Characters
 		}
 
 		/// <summary>
-		/// Before attack starts, weapon gives appropriate animations for animator to play.
-		/// This way animator only has one attack state that plays all animations of all weapons.
+		/// Resets overridden clip back to default inside animator.
 		/// </summary>
-		public void OverrideAnimations(AnimatorOverrideController aoc)
+		/// <param name="animName">The currently existing animation's name in animator.</param>
+		protected void RemoveOverrideClip(string animName)
 		{
+			AnimatorOverrideController aoc = new AnimatorOverrideController();
+			aoc.runtimeAnimatorController = mainController;
+
+			for (int i = 0; i < currentOverrides.Count; i++)
+			{
+				if (currentOverrides[i].Key.name == animName)
+				{
+					currentOverrides.RemoveAt(i);
+				}
+			}
+
+			aoc.ApplyOverrides(currentOverrides);
 			Animator.runtimeAnimatorController = aoc;
 		}
 
 
-
-		//Called every frame a voluntary movement happens.
+		/// <summary>
+		/// Call every frame when movement input happens.
+		/// </summary>
+		/// <param name="blendParam">Normalized movement vector direction local to where character faces.</param>
 		public void SetMovementPerformed(Vector2 blendParam)
 		{
 			currentMoveBlend = Vector2.Lerp(currentMoveBlend, blendParam, Time.deltaTime * blendSpeed);
@@ -143,35 +116,28 @@ namespace Dungeon.Characters
 		}
 
 		/// <summary>
-		/// Before attack starts, all attack phases have durations determined by weapon and its current attack. This sets animations to match weapon's durations.
+		/// Updates animations to match weapon's current attack. Sets animation speeds according to weapon's current attack duration.
 		/// </summary>
-		/// <param name="chargeDuration">Duration of charge phase of the attack.</param>
-		/// <param name="attackDuration">Duration of hitting/attacking phase of the attack.</param>
-		/// <param name="recoveryDuration">Duration of recovery phase of the attack.</param>
-		public void SetAttackData(Items.Weapon.AttackData attackData, float in_chargeDuration, float in_attackDuration, float in_recoveryDuration)
+		public void SetAttackData(Items.Weapon.AttackData attackData)
 		{
-			//var aoc = new AnimatorOverrideController(Animator.runtimeAnimatorController);
 
 			if (attackData.chargeClip) {
-				Animator.SetFloat(CHARGE_NAME, attackData.chargeClip.length / in_chargeDuration);
-				//aoc[attackData.chargeClip.name] = attackData.chargeClip;
-				OverrideClips(attackData.chargeClip.name, attackData.chargeClip);
+				Animator.SetFloat(CHARGE_NAME, attackData.chargeClip.length / attackData.chargeDuration);
+				AddOverrideClip(attackData.chargeClip.name, attackData.chargeClip);
 			}
 			if (attackData.attackClip){
-				Animator.SetFloat(ATTACK_NAME, attackData.attackClip.length / in_attackDuration);
-				OverrideClips(attackData.attackClip.name, attackData.attackClip);
+				Animator.SetFloat(ATTACK_NAME, attackData.attackClip.length / attackData.attackDuration);
+				AddOverrideClip(attackData.attackClip.name, attackData.attackClip);
 			}
 			if (attackData.recoveryClip){
-				Animator.SetFloat(RECOVERY_NAME, attackData.recoveryClip.length / in_recoveryDuration);
-				OverrideClips(attackData.recoveryClip.name, attackData.recoveryClip);
+				Animator.SetFloat(RECOVERY_NAME, attackData.recoveryClip.length / attackData.recoveryDuration);
+				AddOverrideClip(attackData.recoveryClip.name, attackData.recoveryClip);
 			}
 
-			//aoc[attackData.attackClip.name] = attackData.attackClip;
-			//aoc[attackData.recoveryClip.name] = attackData.recoveryClip;
-			//Animator.runtimeAnimatorController = aoc;
 		}
-
-		//Called when Charge phase of attack starts
+		/// <summary>
+		///Called when Charge phase of attack starts
+		/// </summary>
 		public void SetChargeStarted()
 		{
 			Animator.SetBool("isAttacking", false);
@@ -180,13 +146,17 @@ namespace Dungeon.Characters
 
 		}
 
-		//Called when Recovery phase of attack ends. Usually goes to attack phase right after.
+		/// <summary>
+		///Called when Recovery phase of attack ends. Usually goes to attack phase right after.
+		/// </summary>
 		public void SetChargeCancelled()
 		{
 			Animator.SetBool("isCharging", false);
 		}
 
-		//Called when attack phase (hitting action inside the complete attack) starts
+		/// <summary>
+		///Called when attack phase (hitting action) starts.
+		/// </summary>
 		public void SetAttackStarted()
 		{
 			Animator.SetBool("isCharging", false);
@@ -195,23 +165,27 @@ namespace Dungeon.Characters
 
 		}
 
-		//Called when attack ends. Not necessarily "cancelled"
+		/// <summary>
+		///Called when attack (hitting phase of the whole attack) ends.
+		/// </summary>
 		public void SetAttackCancelled()
 		{
 			Animator.SetBool("isAttacking", false);
 		}
 
-		//Called when Recovery phase of attack starts
+		/// <summary>
+		///Called when Recovery phase of attack starts
+		/// </summary>
 		public void SetRecoveryStarted()
 		{
-
 			Animator.SetBool("isCharging", false);
 			Animator.SetBool("isAttacking", false);
 			Animator.SetBool("isRecovering", true);
 
-
 		}
-		//Called when Recovery phase of attack ends or is cancelled.
+		/// <summary>
+		///Called when Recovery phase of attack ends or is cancelled.
+		/// </summary>
 		public void SetRecoveryCancelled()
 		{
 			Animator.SetBool("isRecovering", false);

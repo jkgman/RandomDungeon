@@ -79,11 +79,7 @@ namespace Dungeon.Characters
 
 		void SetAttackData()
 		{
-			float charge = currentWeapon.GetChargeDuration();
-			float attack = currentWeapon.GetAttackDuration();
-			float recovery = currentWeapon.GetRecoveryDuration();
-
-			Character.AnimationHandler.SetAttackData(currentWeapon.GetCurrentAttackData(), charge, attack, recovery);
+			Character.AnimationHandler.SetAttackData(currentWeapon.GetCurrentAttackData());
 		}
 
 		protected virtual void Attack()
