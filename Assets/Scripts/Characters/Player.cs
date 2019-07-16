@@ -13,7 +13,7 @@ namespace Dungeon.Characters
 		
 		//If same key uses multiple bindings depending on the length of input, this is used.
 		//Example: Running=Press&Hold - Dodge=Press&Release
-		public readonly float inputMaxPressTime = 0.3f;
+		public readonly float inputSinglePressMaxTime = 0.3f;
 
 		#region IAllowedActions
 

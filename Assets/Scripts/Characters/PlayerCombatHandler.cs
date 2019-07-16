@@ -456,7 +456,7 @@ namespace Dungeon.Characters
 		}
 		void InputDodgeCancelled(InputAction.CallbackContext context) 
 		{
-			if (Time.time - inputDodgeStartTime < Player.inputMaxPressTime)
+			if (Time.time - inputDodgeStartTime < Player.inputSinglePressMaxTime)
 			{
 				Dodge();
 			}

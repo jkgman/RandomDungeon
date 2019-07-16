@@ -127,7 +127,7 @@ namespace Dungeon.Characters
 
 		#region Tests & Checks & Calculations
 
-		bool CheckGrounded() 
+		bool IsGrounded() 
 		{
 			bool g = RaycastGrounded() || ControllerGrounded();
 			isGrounded = g;
@@ -218,7 +218,7 @@ namespace Dungeon.Characters
 		void Update()
 		{
 			UpdateDebug();
-			CheckGrounded();                //Makes ground checks so they do not need to be repeated multiple times
+			IsGrounded();                //Makes ground checks so they do not need to be repeated multiple times
 			CalculateMoveSpeed();           //Assigns acceleration to inputs
 			UpdateVelocity();				//Sets movementOffset (velocity) from input's moveSpeed
 			Rotate();						//Rotates towards movement direction or towards target
@@ -431,7 +431,7 @@ namespace Dungeon.Characters
 			inputs.Player.Move.Enable();
 
 			inputs.Player.RunAndDodge.started += InputRunStarted;
-			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
+			inputs.Player.RunAndDodge.performed += InputRunPerformed;
 			inputs.Player.RunAndDodge.canceled += InputRunCancelled;
 			inputs.Player.RunAndDodge.Enable();
 		}
@@ -482,8 +482,10 @@ namespace Dungeon.Characters
 		}
 		void InputRunPerformed(InputAction.CallbackContext context) 
 		{
-			if (Time.time - inputRunStartTime > Player.inputMaxPressTime)
+			Debug.Log("Running input performed");
+			if (Time.time - inputRunStartTime > Player.inputSinglePressMaxTime)
 			{
+				Debug.Log("Setting running true");
 				SetRunning(true);
 			}
 		}
