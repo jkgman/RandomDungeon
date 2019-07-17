@@ -10,7 +10,7 @@ namespace Dungeon.Characters
 	[RequireComponent(typeof(Stats))]
 	public class Character : MonoBehaviour, ITakeDamage
 	{
-		private enum CharacterColliderType
+		protected enum CharacterColliderType
 		{
 			torso,
 			arm,
@@ -19,7 +19,7 @@ namespace Dungeon.Characters
 		}
 
 		[System.Serializable]
-		private struct CharacterCollider
+		protected struct CharacterCollider
 		{
 			public Collider col;
 			public CharacterColliderType colType;
@@ -30,6 +30,8 @@ namespace Dungeon.Characters
 		protected bool dieRoutineStarted = false;
 
 
+		[SerializeField]
+		protected List<CharacterCollider> colliders;
 
 		private Stats _stats;
 		public Stats Stats
@@ -90,14 +92,23 @@ namespace Dungeon.Characters
 			}
 		}
 
-		[SerializeField]
-		List<CharacterCollider> colliders;
-		[SerializeField]
-		bool debugRagdoll;
 		public RagdollScript Ragdoll
 		{
 			get{ return GetComponent<RagdollScript>(); }
 		}
+
+		public Vector3 GetPhysicalPosition()
+		{
+			if (Ragdoll.IsRagdolling)
+			{
+				return Ragdoll.GetPhysicalPosition();
+			}
+			else
+			{
+				return transform.position;
+			}
+		}
+
 
 		protected virtual void Update()
 		{
@@ -107,34 +118,8 @@ namespace Dungeon.Characters
 			if (transform.position.y < -200f)
 				Stats.health.SubstractHealth(10000f);
 
-			DebugRagdoll();
-
 		}
 
-		private void DebugRagdoll()
-		{
-			if (debugRagdoll)
-			{
-				if (Ragdoll.ragdollState != RagdollScript.RagdollState.ragdolled)
-				{
-					Ragdoll.StartRagdoll();
-					DisableColliders();
-				}
-
-			}
-			else
-			{
-				if (Ragdoll.ragdollState == RagdollScript.RagdollState.ragdolled)
-				{
-					if (CharacterController.IsGrounded())
-					{
-						Ragdoll.EndRagdoll();
-						EnableColliders();
-						debugRagdoll = false;
-					}
-				}
-			}
-		}
 
 		protected virtual IEnumerator DieRoutine()
 		{

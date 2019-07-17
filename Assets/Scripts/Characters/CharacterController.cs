@@ -15,6 +15,8 @@ namespace Dungeon.Characters
 		[SerializeField, Range(0f, 1f)] protected float accelerationDuration = 0.2f;
 		[SerializeField, Range(0f, 1f)] protected float deaccelerationDuration = 0.5f;
 
+		protected float moveSpeedMultiplier;
+		protected float rotationSpeedMultiplier;
 		protected Vector3 currentMoveSpeed;
 		protected Vector3 currentMoveOffset;
 		protected Vector3 lastNonZeroMoveDirection = Vector3.forward;
@@ -49,7 +51,14 @@ namespace Dungeon.Characters
 		}
 
 
-
+		public void SetMoveSpeedMultiplier(float multiplier)
+		{
+			moveSpeedMultiplier = multiplier;
+		}
+		public void SetRotationSpeedMultiplier(float multiplier)
+		{
+			rotationSpeedMultiplier = multiplier;
+		}
 
 		/// <summary>
 		/// Last non-zero direction where player has moved.
@@ -75,6 +84,13 @@ namespace Dungeon.Characters
 				return GetLastFlatMoveDirection();
 		}
 
+
+		protected virtual void Update()
+		{
+			//Always slowly restore these multipliers.
+			moveSpeedMultiplier = Mathf.Clamp01(moveSpeedMultiplier + Time.deltaTime);
+			rotationSpeedMultiplier = Mathf.Clamp01(rotationSpeedMultiplier + Time.deltaTime);
+		}
 
 
 		public virtual void ExternalMove(Vector3 offset)

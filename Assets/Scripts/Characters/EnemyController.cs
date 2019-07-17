@@ -175,7 +175,7 @@ namespace Dungeon.Characters.Enemies
 			
 			Vector2 blend = new Vector2(0, movePercentage);
 
-			AnimHandler.SetMovementPerformed(blend);
+			AnimHandler.SetMovementPerformed(!stopped, blend);
 
 		}
 

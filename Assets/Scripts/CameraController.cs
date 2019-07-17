@@ -88,7 +88,7 @@ namespace Dungeon
 		}
 		private Vector3 PlayerPos
 		{
-			get { return Player.transform.position; }
+			get { return Player.GetPhysicalPosition(); }
 		}
 		private ITargetable PlayerTarget
 		{

@@ -137,8 +137,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(true) ? output : false;
 
 			return output;
 		}
@@ -150,8 +148,9 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = IsBlocking ? false : output;
+
 			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(true) ? false : output;
+				output =  false;
 
 			return output;
 		}
@@ -163,7 +162,7 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = TargetIsAttackable() ? output : false;
-			output = CurrentWeapon.CanAttack(true) ? output : false;
+			output = CurrentWeapon.AttackPendingAllowed(currentAttackStateTime) ? output : false;
 
 			return output;
 		}
@@ -174,8 +173,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanRotate(true) ? output : false;
 
 			return output;
 		}

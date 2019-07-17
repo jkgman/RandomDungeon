@@ -25,6 +25,7 @@ namespace Dungeon.Characters
 			output = PCombat.AllowMove() ? output : false;
 			output = !Ragdoll.IsRagdolling ? output : false;
 
+			Debug.Log("Move allowed: " + output);
 			return output;
 		}
 		public bool AllowRun() 

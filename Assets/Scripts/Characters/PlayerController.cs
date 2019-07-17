@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System;
 
 namespace Dungeon.Characters
 {
@@ -18,12 +19,62 @@ namespace Dungeon.Characters
 
 		[SerializeField] private bool keepMomentumInAir = true;
 		[SerializeField] private float gravity = 5f;
+		[SerializeField] private float getUpDelay = 1f;
+		[SerializeField] private float staggerDuration = 0.25f;
+		[SerializeField] private float rollingDuration = 0.5f;
+		[SerializeField] private float fallSpeedToRoll = 1f;
+		[SerializeField] private float fallSpeedToLoseBalance = 2f;
 
 		[SerializeField] private LayerMask groundLayerMask;
 
 
 
 		private float vSpeed = 0;
+		private float lostBalanceTime;
+		private bool _lostBalance;
+		private bool LostBalance
+		{
+			get { return _lostBalance; }
+			set
+			{
+				if (value == true)
+					lostBalanceTime = Time.time;
+
+				_lostBalance = value;
+			}
+		}
+		
+		private float staggeredTime;
+		private bool _staggered;
+		private bool Staggered
+		{
+			get { return _staggered; }
+			set
+			{
+				if (value == true)
+					staggeredTime = Time.time;
+
+				_staggered = value;
+			}
+		}
+
+		[SerializeField]
+		private AnimationCurve rollingDistance;
+		private float rollingTime;
+		private bool _rolling;
+		private bool Rolling
+		{
+			get { return _rolling; }
+			set
+			{
+				if (value == true)
+					rollingTime = Time.time;
+
+				_rolling = value;
+			}
+		}
+
+
 		private bool isGrounded;
 		private Vector3 slopeNormal;
 		private Vector3 spawnPosition;
@@ -136,6 +187,7 @@ namespace Dungeon.Characters
 		{
 			bool g = RaycastGrounded() || ControllerGrounded();
 			isGrounded = g;
+			Debug.Log("Grounded: " + g);
 			return g;
 		}
 
@@ -147,7 +199,7 @@ namespace Dungeon.Characters
 		{
 			float distance = UnityController.height * 0.5f + UnityController.skinWidth - UnityController.radius * 0.9f;
 			//groundCheckPosition = transform.position + (Vector3.down * distance);
-			bool check = Physics.SphereCastAll(transform.position, UnityController.radius, Vector3.down, distance, groundLayerMask).Length > 0;
+			bool check = Physics.SphereCastAll(transform.position + UnityController.center, UnityController.radius, Vector3.down, distance, groundLayerMask).Length > 0;
 			return check;
 		}
 
@@ -220,10 +272,12 @@ namespace Dungeon.Characters
 
 		#region Updates
 
-		void Update()
+		protected override void Update()
 		{
+			base.Update();
 			UpdateDebug();
 			IsGrounded();                //Makes ground checks so they do not need to be repeated multiple times
+			UpdateBuffs();
 			CalculateMoveSpeed();           //Assigns acceleration to inputs
 			UpdateVelocity();				//Sets movementOffset (velocity) from input's moveSpeed
 			Rotate();						//Rotates towards movement direction or towards target
@@ -231,6 +285,58 @@ namespace Dungeon.Characters
 			MoveAlongSlope();				//Calculate modified move direction for smooth slope movement
 			ApplyMovementToController();    //Gives movement to Unity Character Controller
 			UpdateAnimationData();			//Send movement data for animation handling
+		}
+
+		private void UpdateBuffs()
+		{	
+			if (LostBalance && isGrounded)
+			{
+				if (Time.time - lostBalanceTime > getUpDelay)
+				{
+					LostBalance = false;
+					if (Player.Ragdoll)
+						Player.Ragdoll.EndRagdoll();
+				}
+				else
+				{
+					if (Player.Ragdoll)
+						Player.Ragdoll.StartRagdoll();
+
+				}
+			}
+			if (Rolling)
+			{
+				StartCoroutine(RollingRoutine());
+			}
+		}
+
+		IEnumerator RollingRoutine()
+		{
+			float currentOffset = 0;
+			float lastEvaluation = 0;
+			while (Time.time - rollingTime < rollingDuration && Rolling)
+			{
+				if (!isGrounded)
+				{
+					Rolling = true;
+					if (LostBalance)
+						Rolling = false;
+				}
+				else
+				{
+					currentOffset = rollingDistance.Evaluate((Time.time - rollingTime)/rollingDuration) - lastEvaluation;
+					lastEvaluation += currentOffset;
+					ExternalMove(transform.forward * currentOffset);
+
+					if (Time.time - rollingTime > rollingDuration)
+						Rolling = false;
+				}
+
+				yield return null;
+			}
+			Rolling = false;
+
+			yield return null;
 		}
 
 		void LateUpdate()
@@ -250,20 +356,17 @@ namespace Dungeon.Characters
 		
 		void CalculateMoveSpeed()
 		{
-			if (!Player.AllowMove())
+			if (Player.AllowMove() && moveInputRaw.sqrMagnitude > 0)
 			{
-				currentMoveSpeed = Vector3.zero;
-			}
-			else if (moveInputRaw.magnitude > 0)
-			{
-				Vector3 newMoveSpeed = new Vector3(moveInputRaw.x, 0, moveInputRaw.y) * moveSpeed * (GetRunning() ? runSpeedMultiplier : 1f);
+				Vector3 newMoveSpeed = new Vector3(moveInputRaw.x, 0, moveInputRaw.y) * moveSpeed * (GetRunning() ? runSpeedMultiplier : 1f) * moveSpeedMultiplier;
 				currentMoveSpeed = Vector3.Lerp(moveVelocityAtToggle, newMoveSpeed, (Time.time - moveInputToggleTime) / accelerationDuration);
 			}
 			else
 			{
 				if (moveVelocityAtToggle.magnitude < currentMoveSpeed.magnitude)
 					moveVelocityAtToggle = currentMoveSpeed;
-				
+
+				Debug.Log("Move not allowed");
 				currentMoveSpeed = Vector3.Lerp(moveVelocityAtToggle, Vector3.zero, (Time.time - moveInputToggleTime) / deaccelerationDuration);
 			}
 
@@ -271,6 +374,13 @@ namespace Dungeon.Characters
 
 		void ApplyGravity()
 		{
+
+			if (vSpeed < -fallSpeedToLoseBalance)
+				LostBalance = true;
+			else if (vSpeed < -fallSpeedToRoll)
+				Rolling = true;
+
+
 			if (isGrounded)
 			{
 				vSpeed = -gravity * Time.deltaTime;
@@ -333,7 +443,7 @@ namespace Dungeon.Characters
 		{
 			UpdateLookRotRaw();
 
-			transform.rotation = Quaternion.Slerp(transform.rotation, lookRotRaw, Time.deltaTime * rotationSpeed);
+			transform.rotation = Quaternion.Slerp(transform.rotation, lookRotRaw, Time.deltaTime * rotationSpeed * rotationSpeedMultiplier);
 			
 		}
 
@@ -465,7 +575,7 @@ namespace Dungeon.Characters
 		void InputMovePerformed(InputAction.CallbackContext context) 
 		{
 			moveInputRaw = context.ReadValue<Vector2>();
-
+			Debug.Log("MOVE INPUT:" + moveInputRaw);
 		}
 
 		void InputMoveCancelled(InputAction.CallbackContext context) 
@@ -508,8 +618,10 @@ namespace Dungeon.Characters
 			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * GetFlatMoveDirection();
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
 
-			AnimHandler.SetMovementPerformed(blend);
+			AnimHandler.SetMovementPerformed(moveInputRaw.sqrMagnitude>0, blend);
 			AnimHandler.SetGrounded(IsGrounded());
+			AnimHandler.LostBalance(LostBalance);
+			AnimHandler.Rolling(Rolling);
 
 		}
 
@@ -539,30 +651,38 @@ namespace Dungeon.Characters
 
 		public bool AllowMove() 
 		{
-			//This script currently does not have anything disabling its own actions.
-			return true;
+			bool output = true;
+			output = LostBalance ? false : output;
+			output = Rolling ? false : output;
+			return output;
 		}
 
 		public bool AllowRun() 
 		{
-			//This script currently does not have anything disabling its own actions.
-			return true;
+			bool output = true;
+			output = LostBalance ? false : output;
+			output = Rolling ? false : output;
+			return output;
 		}
 		public bool AllowRotate()
 		{
-			//This script currently does not have anything disabling its own actions.
-			return true;
+			bool output = true;
+			output = LostBalance ? false : output;
+			output = Rolling ? false : output;
+			return output;
 		}
 		public bool AllowAttack() 
 		{
-			//This script currently does not have anything disabling other classes' actions.
-			return true;
+			bool output = true;
+			output = LostBalance ? false : output;
+			return output;
 		}
 
 		public bool AllowDodge() 
 		{
-			//This script currently does not have anything disabling other classes' actions.
-			return true;
+			bool output = true;
+			output = LostBalance ? false : output;
+			return output;
 		}
 
 		#endregion

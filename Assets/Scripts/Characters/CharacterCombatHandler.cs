@@ -16,6 +16,10 @@ namespace Dungeon.Characters
 		[SerializeField] protected Transform rightHand;
 		[SerializeField] protected Transform leftHand;
 		protected IEnumerator currentAttackCo;
+
+		protected float currentAttackStateTime;
+		protected bool attackPending;
+
 		private Weapon currentWeapon;
 		protected Weapon GetCurrentWeapon()
 		{
@@ -72,6 +76,12 @@ namespace Dungeon.Characters
 
 		}
 
+		void Update()
+		{
+			currentAttackStateTime += Time.deltaTime;
+
+		}
+
 		#endregion
 
 
@@ -84,15 +94,38 @@ namespace Dungeon.Characters
 
 		protected virtual void Attack()
 		{
-			if (currentAttackCo != null)
+			if (currentWeapon.IsAttacking && !currentWeapon.AttackAllowed(currentAttackStateTime) && currentWeapon.AttackPendingAllowed(currentAttackStateTime))
 			{
-				StopCoroutine(currentAttackCo);
-				Debug.Log("Stopped attack coroutine");
+				//Start waiting until attack is available.
+				attackPending = true;
+				StartCoroutine(WaitForPendingAttack());
 			}
+			else //Start attck
+			{
+				if (currentAttackCo != null)
+				{
+					StopCoroutine(currentAttackCo);
+					Debug.Log("Stopped attack coroutine");
+				}
 
-			currentAttackCo = LightAttackRoutine();
-			StartCoroutine(currentAttackCo);
+				currentAttackCo = LightAttackRoutine();
+				StartCoroutine(currentAttackCo);
+			}
 		}
+
+		IEnumerator WaitForPendingAttack()
+		{
+			while(attackPending)
+			{
+				if (!currentWeapon.IsAttacking || currentWeapon.AttackAllowed(currentAttackStateTime))
+				{
+					attackPending = false;
+					Attack();
+				}
+				yield return null;
+			}
+		}
+
 		protected virtual void CancelAttack()
 		{
 			if (currentWeapon.IsAttacking && currentWeapon.AttackCancellable())
@@ -127,23 +160,23 @@ namespace Dungeon.Characters
 			currentWeapon.CurrentAttackState = AttackState.charge;
 			Character.AnimationHandler.SetChargeStarted();
 
-			float t = 0;
 			float t01 = 0;
-			float moveOffset = 0;
 			float offsetTotal = 0;
-			Vector3 moveDirection = Character.CharacterController.GetFlatMoveDirection(allowZero: false);
+			currentAttackStateTime = 0;
 
 			while (currentWeapon.IsAttacking &&
 					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
+					currentAttackStateTime < currentWeapon.GetCurrentActionDuration())
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
-				moveDirection = UpdateAttackMoveDirection();
-				CharacterMovementDuringAttack(moveDirection, moveOffset);
+				t01 = Mathf.Clamp01(currentAttackStateTime / currentWeapon.GetCurrentActionDuration());
+				MoveCharacter(offsetTotal, t01);
+
+				Character.CharacterController.SetMoveSpeedMultiplier(currentWeapon.GetMoveSpeedMultiplier(t01));
+				Character.CharacterController.SetRotationSpeedMultiplier(currentWeapon.GetRotationSpeedMultiplier(t01));
+
+
 
 				offsetTotal = currentWeapon.GetMoveDistanceFromCurve(t01);
-				t += Time.smoothDeltaTime;
 				yield return null;
 			}
 
@@ -151,9 +184,10 @@ namespace Dungeon.Characters
 
 		}
 
-		protected virtual void CharacterMovementDuringAttack(Vector3 moveDirection, float moveOffset)
+		protected void MoveCharacter(float offsetTotal, float t01)
 		{
-			Character.CharacterController.ExternalMove(moveDirection * moveOffset);
+			float moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
+			Character.CharacterController.ExternalMove(transform.forward * moveOffset);
 			
 		}
 
@@ -162,25 +196,21 @@ namespace Dungeon.Characters
 			currentWeapon.CurrentAttackState = AttackState.attack;
 			Character.AnimationHandler.SetAttackStarted();
 
-			float t = 0;
 			float t01 = 0;
-			float moveOffset = 0;
 			float offsetTotal = 0;
-
-			Vector3 moveDirection = Character.CharacterController.GetFlatMoveDirection(allowZero: false);
+			currentAttackStateTime = 0;
 
 			while ( currentWeapon.IsAttacking &&
 					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
+					currentAttackStateTime < currentWeapon.GetCurrentActionDuration())
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveDirection = UpdateAttackMoveDirection();
+				t01 = Mathf.Clamp01(currentAttackStateTime / currentWeapon.GetCurrentActionDuration());
 
-				moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
-				Character.CharacterController.ExternalMove(moveDirection * moveOffset);
+				MoveCharacter(offsetTotal, t01);
+				Character.CharacterController.SetMoveSpeedMultiplier(currentWeapon.GetMoveSpeedMultiplier(t01));
+				Character.CharacterController.SetRotationSpeedMultiplier(currentWeapon.GetRotationSpeedMultiplier(t01));
 
 				offsetTotal = currentWeapon.GetMoveDistanceFromCurve(t01);
-				t += Time.smoothDeltaTime;
 				yield return null;
 			}
 
@@ -192,39 +222,27 @@ namespace Dungeon.Characters
 			currentWeapon.CurrentAttackState = AttackState.recovery;
 			Character.AnimationHandler.SetRecoveryStarted();
 
-			float t = 0;
 			float t01 = 0;
-			float moveOffset = 0;
 			float offsetTotal = 0;
-
-			Vector3 moveDirection = Character.CharacterController.GetFlatMoveDirection(allowZero: false);
-
+			currentAttackStateTime = 0;
 
 			while ( currentWeapon.IsAttacking &&
 					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
+					currentAttackStateTime < currentWeapon.GetCurrentActionDuration())
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				t01 = Mathf.Clamp01(currentAttackStateTime / currentWeapon.GetCurrentActionDuration());
 
-				moveDirection = UpdateAttackMoveDirection();
-
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
-				moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
-				Character.CharacterController.ExternalMove(moveDirection * moveOffset);
+				MoveCharacter(offsetTotal, t01);
+				Character.CharacterController.SetMoveSpeedMultiplier(currentWeapon.GetMoveSpeedMultiplier(t01));
+				Character.CharacterController.SetRotationSpeedMultiplier(currentWeapon.GetRotationSpeedMultiplier(t01));
 
 				offsetTotal = currentWeapon.GetMoveDistanceFromCurve(t01);
-				t += Time.smoothDeltaTime;
 				yield return null;
 			}
 
 			Character.AnimationHandler.SetRecoveryCancelled();
 		}
-
-		protected virtual Vector3 UpdateAttackMoveDirection()
-		{
-			return transform.forward;
-		}
-
+		
 	#endregion
 	}
 }

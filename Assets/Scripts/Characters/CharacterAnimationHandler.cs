@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 //using UnityEditor.Animations;
@@ -8,10 +7,10 @@ namespace Dungeon.Characters
 	public class CharacterAnimationHandler : MonoBehaviour
 	{
 
-		protected const string CHARGE_NAME = "CHARGE";
-		protected const string ATTACK_NAME = "ATTACK";
-		protected const string RECOVERY_NAME = "RECOVERY";
-		protected const float ANIM_DEFAULT_SPEED = 1f;
+		protected readonly string defaultChargeAnimName = "default charge";		//Name should match animator's default clip name
+		protected readonly string defaultAttackAnimName = "default attack";		//Name should match animator's default clip name
+		protected readonly string defaultRecoveryAnimName = "default recovery"; //Name should match animator's default clip name
+		protected readonly float defaultAnimSpeed = 1f;
 
 
 		//How fast blendTree values change.
@@ -50,7 +49,7 @@ namespace Dungeon.Characters
 		/// </summary>
 		/// <param name="animName">The currently existing animation in animator.</param>
 		/// <param name="in_clip">Clip to replace the current animation with.</param>
-		protected void AddOverrideClip(string animName, AnimationClip in_clip)
+		public void AddOverrideClip(string animName, AnimationClip in_clip)
 		{
 			AnimatorOverrideController aoc = new AnimatorOverrideController();
 			aoc.runtimeAnimatorController = mainController;
@@ -100,16 +99,24 @@ namespace Dungeon.Characters
 			Animator.runtimeAnimatorController = aoc;
 		}
 
+		public void LostBalance(bool value)
+		{
+			Animator.SetBool("lostBalance", value);
+		}
 
+		public void Rolling(bool value)
+		{
+			Animator.SetBool("isRolling", value);
+		}
 		/// <summary>
 		/// Call every frame when movement input happens.
 		/// </summary>
 		/// <param name="blendParam">Normalized movement vector direction local to where character faces.</param>
-		public void SetMovementPerformed(Vector2 blendParam)
+		public void SetMovementPerformed(bool isMoving, Vector2 blendParam)
 		{
 			currentMoveBlend = Vector2.Lerp(currentMoveBlend, blendParam, Time.deltaTime * blendSpeed);
 
-			Animator.SetBool("isMoving", blendParam != Vector2.zero);
+			Animator.SetBool("isMoving", isMoving);
 			Animator.SetFloat("xMove", currentMoveBlend.x);
 			Animator.SetFloat("yMove", currentMoveBlend.y);
 
@@ -125,18 +132,31 @@ namespace Dungeon.Characters
 		/// </summary>
 		public void SetAttackData(Items.Weapon.AttackData attackData)
 		{
+			//Get overrides from overrideController
+			List<KeyValuePair<AnimationClip, AnimationClip>> overrides = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+			attackData.overrides.GetOverrides(overrides);
+	
+			for (int i = 0; i < overrides.Count; i++)
+			{
+				if (overrides[i].Value == null)
+					continue;
 
-			if (attackData.chargeClip) {
-				Animator.SetFloat(CHARGE_NAME, attackData.chargeClip.length / attackData.chargeDuration);
-				AddOverrideClip(attackData.chargeClip.name, attackData.chargeClip);
-			}
-			if (attackData.attackClip){
-				Animator.SetFloat(ATTACK_NAME, attackData.attackClip.length / attackData.attackDuration);
-				AddOverrideClip(attackData.attackClip.name, attackData.attackClip);
-			}
-			if (attackData.recoveryClip){
-				Animator.SetFloat(RECOVERY_NAME, attackData.recoveryClip.length / attackData.recoveryDuration);
-				AddOverrideClip(attackData.recoveryClip.name, attackData.recoveryClip);
+				if (overrides[i].Key.name == defaultChargeAnimName) //If animation names match, add to overrides & calculate animation speed.
+				{
+					Animator.SetFloat(defaultChargeAnimName, overrides[i].Value.length / attackData.chargeDuration);
+					AddOverrideClip(overrides[i].Key.name, overrides[i].Value);
+				}
+				if (overrides[i].Key.name == defaultAttackAnimName) //If animation names match, add to overrides & calculate animation speed.
+				{
+					Animator.SetFloat(defaultAttackAnimName, overrides[i].Value.length / attackData.attackDuration);
+					AddOverrideClip(overrides[i].Key.name, overrides[i].Value);
+				}
+				if (overrides[i].Key.name == defaultRecoveryAnimName) //If animation names match, add to overrides & calculate animation speed.
+				{
+					Animator.SetFloat(defaultRecoveryAnimName, overrides[i].Value.length / attackData.recoveryDuration);
+					AddOverrideClip(overrides[i].Key.name, overrides[i].Value);
+				}
+
 			}
 
 		}

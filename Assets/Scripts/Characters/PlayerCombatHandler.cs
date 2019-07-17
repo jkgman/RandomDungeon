@@ -363,15 +363,7 @@ namespace Dungeon.Characters
 			}
 		}
 
-
-		protected override void CharacterMovementDuringAttack(Vector3 moveDirection, float moveOffset)
-		{
-			base.CharacterMovementDuringAttack(moveDirection, moveOffset);
-
-			if (CurrentWeapon.CanRotate(Target != null))
-				Player.PController.ExternalRotateToInputDirection();
-
-		}
+		
 
 		#endregion
 
@@ -488,8 +480,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(Target != null) ? output : false;
 
 			return output;
 		}
@@ -501,8 +491,6 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = IsBlocking ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(Target != null) ? false : output;
 
 			return output;
 		}
@@ -515,7 +503,7 @@ namespace Dungeon.Characters
 			output = IsStunned ? false : output;
 
 			if (CurrentWeapon)
-				output = CurrentWeapon.CanAttack(Target != null) ? output : false;
+				output = CurrentWeapon.AttackPendingAllowed(currentAttackStateTime) ? output : false;
 			else
 				output = false;
 
@@ -529,7 +517,7 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			if (CurrentWeapon)
-				output = CurrentWeapon.IsAttacking ? false : output;
+				output = CurrentWeapon.AttackCancellable() ? output : false;
 
 			return output;
 		}
@@ -539,8 +527,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking && CurrentWeapon.CanRotate(Target != null))
-				output = false;
 				
 			return output;
 		}

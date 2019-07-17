@@ -34,10 +34,11 @@ namespace Dungeon.Characters
 			public Quaternion storedRotation;
 		}
 
-
+		public float getUpSpeed = 1f;
 		//How long do we blend when transitioning from ragdolled to animated
 		[SerializeField]
 		private float ragdollToMecanimBlendTime = 0.5f;
+		
 		[SerializeField]
 		private Transform mainModel;
 
@@ -47,6 +48,8 @@ namespace Dungeon.Characters
 
 		//A helper variable to store the time when we transitioned from ragdolled to blendToAnim state
 		float ragdollingEndTime = -100;
+
+		float getUpStartTime = 0;
 
 		//Additional vectores for storing the pose the ragdoll ended up in.
 		Vector3 ragdolledHipPosition, ragdolledHeadPosition, ragdolledFeetPosition;
@@ -85,7 +88,13 @@ namespace Dungeon.Characters
 			DisableRagdoll();
 			ragdollState = RagdollState.animated;
 		}
-
+		public Vector3 GetPhysicalPosition()
+		{
+			if (anim && anim.GetBoneTransform(HumanBodyBones.Hips))
+				return anim.GetBoneTransform(HumanBodyBones.Hips).position;
+			else
+				return mainModel.position;
+		}
 		// Use this for initialization
 		void Start () {
 			//Set all RigidBodies to kinematic so that they can be controlled with Mecanim
@@ -134,12 +143,6 @@ namespace Dungeon.Characters
 		{
 			if (ragdollState == RagdollState.ragdolled)
 			{
-				//Transition from ragdolled to animated through the blendToAnim state
-				DisableRagdoll(); //disable gravity etc.
-				ragdollingEndTime = Time.time; //store the state change time
-				anim.enabled = true; //enable animation
-				ragdollState = RagdollState.blendToAnim;
-
 				//Store the ragdolled position for blending
 				foreach (BodyPart b in bodyParts)
 				{
@@ -152,16 +155,27 @@ namespace Dungeon.Characters
 				ragdolledHeadPosition = anim.GetBoneTransform(HumanBodyBones.Head).position;
 				ragdolledHipPosition = anim.GetBoneTransform(HumanBodyBones.Hips).position;
 
+
+				//Transition from ragdolled to animated through the blendToAnim state
+				DisableRagdoll(); //disable gravity etc.
+				ragdollingEndTime = Time.time; //store the state change time
+				anim.enabled = true; //enable animation
+				ragdollState = RagdollState.blendToAnim;
+
+
 				//Initiate the get up animation
 				if (anim.GetBoneTransform(HumanBodyBones.Hips).forward.y > 0) //hip hips forward vector pointing upwards, initiate the get up from back animation
 				{
 					//anim.SetBool("GetUpFromBack", true);
+					
 					anim.CrossFade("Get Up Back", 0, 0, 0, 0);
+					anim.SetFloat("get up speed", getUpSpeed);
 				}
 				else
 				{
 					//anim.SetBool("GetUpFromBelly", true);
 					anim.CrossFade("Get Up Front", 0, 0, 0, 0);
+					anim.SetFloat("get up speed", getUpSpeed);
 				}
 			} //if (state==RagdollState.ragdolled)
 		}
@@ -173,31 +187,38 @@ namespace Dungeon.Characters
 			Vector3 animatedToRagdolled = ragdolledHipPosition - anim.GetBoneTransform(HumanBodyBones.Hips).position;
 			Vector3 newRootPosition = transform.position + animatedToRagdolled;
 
+			UnityEngine.CharacterController unityController = GetComponent<UnityEngine.CharacterController>();
+
 			//Now cast a ray from the computed position downwards and find the highest hit that does not belong to the character 
-			RaycastHit[] hits = Physics.RaycastAll(new Ray(newRootPosition, Vector3.down));
+			RaycastHit[] hits = Physics.RaycastAll(new Ray(anim.GetBoneTransform(HumanBodyBones.Hips).position + Vector3.up, Vector3.down));
 			newRootPosition.y = transform.position.y;
 			foreach (RaycastHit hit in hits)
 			{
 				if (!hit.transform.IsChildOf(transform))
 				{
-					newRootPosition.y = Mathf.Max(newRootPosition.y, hit.point.y);
+					Vector3 startPos = transform.position + unityController.center + Vector3.up * (unityController.height / 2 + 0.1f);
+					Vector3 endPos = transform.position + unityController.center + Vector3.down * (unityController.height / 2 + 0.1f);
+
+					if (unityController && !Physics.CheckCapsule(startPos, endPos, unityController.radius))
+						newRootPosition = hit.point;
 				}
 			}
 			var offset = newRootPosition - transform.position;
-	
 
-			if (GetComponent<CharacterController>())
-				GetComponent<CharacterController>().ExternalMove(offset);
+
+			//unityController.Move(offset);
+			transform.position = newRootPosition;
+
 
 
 		}
 
 		void LateUpdate()
 		{
-			//Clear the get up animation controls so that we don't end up repeating the animations indefinitely
-			anim.SetBool("GetUpFromBelly", false);
-			anim.SetBool("GetUpFromBack", false);
-
+			//if (ragdollState == RagdollState.ragdolled)
+			//{
+			//	ResetPosition();
+			//}
 			//Blending from ragdoll back to animated
 			if (ragdollState == RagdollState.blendToAnim)
 			{
@@ -241,6 +262,7 @@ namespace Dungeon.Characters
 				if (ragdollBlendAmount == 0)
 				{
 					ragdollState = RagdollState.animated;
+					getUpStartTime = Time.time;
 					return;
 				}
 			}

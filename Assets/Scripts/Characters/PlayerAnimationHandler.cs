@@ -24,7 +24,7 @@ namespace Dungeon.Characters
 				if (d > 0)
 					dodgeState.speed = dodgeState.length / d;
 				else
-					dodgeState.speed = ANIM_DEFAULT_SPEED;
+					dodgeState.speed = defaultAnimSpeed;
 			}
 
 			
