@@ -53,7 +53,7 @@ namespace Dungeon
 		//Camera angle limits and default for when inputs are not detected
 		private readonly float minVAngle = -85f;
 		private readonly float maxVAngle = 40f;
-		private readonly float defaultVAngle = -15f;
+		private readonly float defaultVAngle = -25f;
 
 
 		private Vector3 dummyPos = Vector3.zero; // Position that follows player or its target, Camera always follows dummyPos and not player.

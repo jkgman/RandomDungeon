@@ -229,13 +229,13 @@ namespace Dungeon.Items
 			}
 		}
 
-		public float GetRotationSpeedMultiplier(float currentAttackTime)
+		public float GetRotationSpeedMultiplier(float currentAttackStateTime)
 		{
-			return actions.rotationMultiplierCurve.Evaluate(currentAttackTime);
+			return actions.rotationMultiplierCurve.Evaluate(GetRelativeElapsedTime(currentAttackStateTime));
 		}
-		public float GetMoveSpeedMultiplier(float currentAttackTime)
+		public float GetMoveSpeedMultiplier(float currentAttackStateTime)
 		{
-			return actions.moveMultiplierCurve.Evaluate(currentAttackTime);
+			return actions.moveMultiplierCurve.Evaluate(GetRelativeElapsedTime(currentAttackStateTime));
 		}
 
 		
@@ -243,6 +243,9 @@ namespace Dungeon.Items
 
 		public bool AttackPendingAllowed(float currentAttackStateTime)
 		{
+			if (!IsAttacking)
+				return true;
+
 			float t = GetRelativeElapsedTime(currentAttackStateTime);
 			return t > actions.allowComboInputStartTime;
 		}

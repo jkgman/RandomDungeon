@@ -76,7 +76,7 @@ namespace Dungeon.Characters
 
 		}
 
-		void Update()
+		protected virtual void Update()
 		{
 			currentAttackStateTime += Time.deltaTime;
 
@@ -139,6 +139,14 @@ namespace Dungeon.Characters
 			}
 		}
 
+		protected void MoveCharacter(float offsetTotal, float t01)
+		{
+			float moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
+			Character.CharacterController.ExternalMove(transform.forward * moveOffset);
+
+		}
+
+
 		protected IEnumerator LightAttackRoutine()
 		{
 			Debug.Log("attack coroutine started");
@@ -155,7 +163,8 @@ namespace Dungeon.Characters
 
 		}
 
-		protected IEnumerator LightAttackCharge()
+
+		protected virtual IEnumerator LightAttackCharge()
 		{
 			currentWeapon.CurrentAttackState = AttackState.charge;
 			Character.AnimationHandler.SetChargeStarted();
@@ -163,6 +172,7 @@ namespace Dungeon.Characters
 			float t01 = 0;
 			float offsetTotal = 0;
 			currentAttackStateTime = 0;
+
 
 			while (currentWeapon.IsAttacking &&
 					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
@@ -184,14 +194,8 @@ namespace Dungeon.Characters
 
 		}
 
-		protected void MoveCharacter(float offsetTotal, float t01)
-		{
-			float moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
-			Character.CharacterController.ExternalMove(transform.forward * moveOffset);
-			
-		}
 
-		protected IEnumerator LightAttackAttack()
+		protected virtual IEnumerator LightAttackAttack()
 		{
 			currentWeapon.CurrentAttackState = AttackState.attack;
 			Character.AnimationHandler.SetAttackStarted();
@@ -217,7 +221,7 @@ namespace Dungeon.Characters
 			Character.AnimationHandler.SetAttackCancelled();
 
 		}
-		protected IEnumerator LightAttackRecovery()
+		protected virtual IEnumerator LightAttackRecovery()
 		{
 			currentWeapon.CurrentAttackState = AttackState.recovery;
 			Character.AnimationHandler.SetRecoveryStarted();

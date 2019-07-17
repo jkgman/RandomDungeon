@@ -20,6 +20,7 @@ namespace Dungeon.Characters
 		[SerializeField] private bool keepMomentumInAir = true;
 		[SerializeField] private float gravity = 5f;
 		[SerializeField] private float getUpDelay = 1f;
+		[SerializeField] private float getUpDuration = 1f;
 		[SerializeField] private float staggerDuration = 0.25f;
 		[SerializeField] private float rollingDuration = 0.5f;
 		[SerializeField] private float fallSpeedToRoll = 1f;
@@ -37,10 +38,13 @@ namespace Dungeon.Characters
 			get { return _lostBalance; }
 			set
 			{
-				if (value == true)
-					lostBalanceTime = Time.time;
-
 				_lostBalance = value;
+				if (value == true)
+				{
+					lostBalanceTime = Time.time;
+					StartCoroutine(LostBalanceRoutine());
+				}
+
 			}
 		}
 		
@@ -67,10 +71,14 @@ namespace Dungeon.Characters
 			get { return _rolling; }
 			set
 			{
-				if (value == true)
-					rollingTime = Time.time;
-
 				_rolling = value;
+				
+				if (value == true)
+				{
+					rollingTime = Time.time;
+					StartCoroutine(RollingRoutine());
+				}
+
 			}
 		}
 
@@ -187,7 +195,6 @@ namespace Dungeon.Characters
 		{
 			bool g = RaycastGrounded() || ControllerGrounded();
 			isGrounded = g;
-			Debug.Log("Grounded: " + g);
 			return g;
 		}
 
@@ -277,7 +284,6 @@ namespace Dungeon.Characters
 			base.Update();
 			UpdateDebug();
 			IsGrounded();                //Makes ground checks so they do not need to be repeated multiple times
-			UpdateBuffs();
 			CalculateMoveSpeed();           //Assigns acceleration to inputs
 			UpdateVelocity();				//Sets movementOffset (velocity) from input's moveSpeed
 			Rotate();						//Rotates towards movement direction or towards target
@@ -285,29 +291,6 @@ namespace Dungeon.Characters
 			MoveAlongSlope();				//Calculate modified move direction for smooth slope movement
 			ApplyMovementToController();    //Gives movement to Unity Character Controller
 			UpdateAnimationData();			//Send movement data for animation handling
-		}
-
-		private void UpdateBuffs()
-		{	
-			if (LostBalance && isGrounded)
-			{
-				if (Time.time - lostBalanceTime > getUpDelay)
-				{
-					LostBalance = false;
-					if (Player.Ragdoll)
-						Player.Ragdoll.EndRagdoll();
-				}
-				else
-				{
-					if (Player.Ragdoll)
-						Player.Ragdoll.StartRagdoll();
-
-				}
-			}
-			if (Rolling)
-			{
-				StartCoroutine(RollingRoutine());
-			}
 		}
 
 		IEnumerator RollingRoutine()
@@ -318,7 +301,7 @@ namespace Dungeon.Characters
 			{
 				if (!isGrounded)
 				{
-					Rolling = true;
+					rollingTime = Time.time;
 					if (LostBalance)
 						Rolling = false;
 				}
@@ -337,6 +320,54 @@ namespace Dungeon.Characters
 			Rolling = false;
 
 			yield return null;
+		}
+
+		IEnumerator LostBalanceRoutine()
+		{
+			if (!Player.Ragdoll)
+			{
+				LostBalance = false;
+				yield break;
+			}
+
+			bool gettingUp = false;
+			float gettingUpTime = 0;
+
+			while (!gettingUp)
+			{
+				if (isGrounded)
+				{
+					if (!Player.Ragdoll.IsRagdolling)
+						Player.Ragdoll.StartRagdoll();
+
+					if (Time.time - lostBalanceTime > getUpDelay && !gettingUp)
+					{
+						Player.Ragdoll.EndRagdoll();
+						gettingUp = true;
+						gettingUpTime = Time.time;
+					}
+				}
+				else
+				{
+					lostBalanceTime = Time.time;
+				}
+
+				yield return null;
+			}
+			while (LostBalance)
+			{
+				if (Player.Ragdoll.IsRagdolling)
+				{
+					gettingUpTime = Time.time;
+				}
+				else if (Time.time - gettingUpTime > getUpDuration)
+				{
+					moveSpeedMultiplier = 0;
+					LostBalance = false;
+				}
+
+				yield return null;
+			}
 		}
 
 		void LateUpdate()
@@ -529,6 +560,8 @@ namespace Dungeon.Characters
 		{
 			UnityController.Move(offset);
 		}
+		
+
 		#endregion
 
 		#region HandleInputs
@@ -594,10 +627,9 @@ namespace Dungeon.Characters
 		}
 		void InputRunPerformed(InputAction.CallbackContext context) 
 		{
-			Debug.Log("Running input performed");
+
 			if (Time.time - inputRunStartTime > Player.inputSinglePressMaxTime)
 			{
-				Debug.Log("Setting running true");
 				SetRunning(true);
 			}
 		}
@@ -618,7 +650,7 @@ namespace Dungeon.Characters
 			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * GetFlatMoveDirection();
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
 
-			AnimHandler.SetMovementPerformed(moveInputRaw.sqrMagnitude>0, blend);
+			AnimHandler.SetMovementPerformed(moveInputRaw.sqrMagnitude>0 && Player.AllowMove(), blend);
 			AnimHandler.SetGrounded(IsGrounded());
 			AnimHandler.LostBalance(LostBalance);
 			AnimHandler.Rolling(Rolling);
@@ -681,7 +713,11 @@ namespace Dungeon.Characters
 		public bool AllowDodge() 
 		{
 			bool output = true;
+
 			output = LostBalance ? false : output;
+			output = Staggered ? false : output;
+			output = Rolling ? false : output;
+
 			return output;
 		}
 

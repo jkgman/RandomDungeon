@@ -115,14 +115,17 @@ namespace Dungeon.Characters
 				attackTimerReset = false;
 			}
 
-			if (!CurrentWeapon.IsAttacking && canAttack)
+			if (CurrentWeapon)
 			{
-				Debug.Log("attack called");
-				Attack();
-			}
-			else if (CurrentWeapon.IsAttacking)
-			{
-				attackTimerReset = false;
+				if (!CurrentWeapon.IsAttacking && canAttack)
+				{
+					Debug.Log("attack called");
+					Attack();
+				}
+				else if (CurrentWeapon.IsAttacking)
+				{
+					attackTimerReset = false;
+				}
 			}
 		}
 
@@ -162,7 +165,8 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = TargetIsAttackable() ? output : false;
-			output = CurrentWeapon.AttackPendingAllowed(currentAttackStateTime) ? output : false;
+			if (CurrentWeapon)
+				output = CurrentWeapon.AttackPendingAllowed(currentAttackStateTime) ? output : false;
 
 			return output;
 		}

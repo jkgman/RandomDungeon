@@ -121,7 +121,7 @@ namespace Dungeon.Characters
 		public CameraController GetCam {
 			get
 			{
-				if (!_cam)
+				if (!_cam && Camera.main)
 				{
 					_cam = Camera.main.GetComponentInParent<CameraController>();
 				}

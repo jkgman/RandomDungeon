@@ -25,7 +25,8 @@ namespace Dungeon.Characters
 
 
 		[Header("Dodge shit")]
-		[SerializeField] private float dodgeDistance = 3f;
+		[SerializeField]
+		private AnimationCurve dodgeDistance;
 		[SerializeField] private float dodgeDuration = 0.35f;
 		[SerializeField, Range(0f,1f)] private float dodgeInvincibilityPercentage = 0.75f;
 
@@ -142,8 +143,9 @@ namespace Dungeon.Characters
 
 		#endregion
 
-		void Update() 
+		protected override void Update() 
 		{
+			base.Update();
 			UpdateTarget();
 			UpdateDebug();
 		}
@@ -318,38 +320,40 @@ namespace Dungeon.Characters
 		{
 			if (Player.AllowDodge())
 			{
-				Vector3 dodgeDir = Player.PController.GetFlatMoveDirection(false);
-				dodgeDir.y = 0;
-				StartCoroutine(DodgeRoutine(dodgeDir.normalized));
+				Debug.Log("Dodge allowed");
+				StartCoroutine(DodgeRoutine());
 				
 			}
 		}
 
-		IEnumerator DodgeRoutine(Vector3 direction)
+		IEnumerator DodgeRoutine()
 		{
 			IsDodging = true;
 
 			float t = 0;
 			float invincibilityMargin = (1f - dodgeInvincibilityPercentage) / 2;
-			
-			float angle = Vector3.SignedAngle(transform.forward, Vector3.forward, Vector3.up);
-			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * direction;
-			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized;
-			Player.PAnimation.SetDodgeStarted(blend, dodgeDuration);
+
+			Player.PAnimation.SetDodgeStarted();
+
+			float currentOffset = 0;
+			float lastEvaluation = 0;
+			Vector3 dir = Player.PController.GetTransformedInputDirection(false);
+			transform.forward = dir;
 
 			while (IsDodging && t < dodgeDuration)
 			{
 				IsInvincible = (t / dodgeDuration > invincibilityMargin) && (t / dodgeDuration < 1 - invincibilityMargin);
-				float distThisFrame = (dodgeDistance / dodgeDuration) * Time.smoothDeltaTime;
-				Vector3 offset = direction * distThisFrame;
-				Player.PController.ExternalMove(offset);
+
+				currentOffset = dodgeDistance.Evaluate(t / dodgeDuration) - lastEvaluation;
+				lastEvaluation += currentOffset;
+				Player.PController.ExternalMove(dir * currentOffset);
 
 				yield return null;
 				t += Time.smoothDeltaTime;
 			}
 
-			IsDodging = false;
 			Player.PAnimation.SetDodgeCancelled();
+			IsDodging = false;
 
 			yield return null;
 		}
@@ -362,8 +366,40 @@ namespace Dungeon.Characters
 				base.Attack();
 			}
 		}
-
 		
+		protected override IEnumerator LightAttackCharge()
+		{
+			GetCurrentWeapon().CurrentAttackState = AttackState.charge;
+			Player.AnimationHandler.SetChargeStarted();
+
+			float t01 = 0;
+			float offsetTotal = 0;
+			currentAttackStateTime = 0;
+			Vector3 dir = Player.PController.GetTransformedInputDirection(false);
+
+
+			while (GetCurrentWeapon().IsAttacking &&
+					GetCurrentWeapon().CurrentAttackType == AttackType.lightAttack &&
+					currentAttackStateTime < GetCurrentWeapon().GetCurrentActionDuration())
+			{
+				t01 = Mathf.Clamp01(currentAttackStateTime / GetCurrentWeapon().GetCurrentActionDuration());
+				MoveCharacter(offsetTotal, t01);
+
+				Player.CharacterController.SetMoveSpeedMultiplier(GetCurrentWeapon().GetMoveSpeedMultiplier(t01));
+				Player.CharacterController.SetRotationSpeedMultiplier(GetCurrentWeapon().GetRotationSpeedMultiplier(t01));
+
+				dir = Player.PController.GetTransformedInputDirection(false);
+				Player.CharacterController.ExternalRotate(dir);
+
+
+				offsetTotal = GetCurrentWeapon().GetMoveDistanceFromCurve(t01);
+				yield return null;
+			}
+
+			Player.AnimationHandler.SetChargeCancelled();
+
+		}
+	
 
 		#endregion
 
@@ -450,6 +486,7 @@ namespace Dungeon.Characters
 		{
 			if (Time.time - inputDodgeStartTime < Player.inputSinglePressMaxTime)
 			{
+				Debug.Log("Trying to dodge");
 				Dodge();
 			}
 		}
@@ -516,7 +553,7 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon)
+			if (CurrentWeapon && CurrentWeapon.IsAttacking)
 				output = CurrentWeapon.AttackCancellable() ? output : false;
 
 			return output;
