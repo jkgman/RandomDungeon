@@ -2464,6 +2464,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
+      propertyPath: groundLayerMask.m_Bits
+      value: 6145
+      objectReference: {fileID: 0}
+    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
+      propertyPath: pelvisUpAndDownSpeed
+      value: 4.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
+      propertyPath: useProIKFeature
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
+      propertyPath: showSolverDebug
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 374982973307863740, guid: d15be6b0d70a905439d7341bb469164f,
         type: 3}
       propertyPath: m_Materials.Array.data[0]

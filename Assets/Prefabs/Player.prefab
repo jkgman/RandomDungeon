@@ -700,8 +700,8 @@ MonoBehaviour:
   getUpDuration: 1.5
   staggerDuration: 0.25
   rollingDuration: 0.75
-  fallSpeedToRoll: 1
-  fallSpeedToLoseBalance: 2
+  fallSpeedToRoll: 1.5
+  fallSpeedToLoseBalance: 2.25
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 6144

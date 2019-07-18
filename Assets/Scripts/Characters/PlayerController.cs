@@ -207,7 +207,7 @@ namespace Dungeon.Characters
 
 			if (hits.Length > 0)
 			{
-				Debug.Log("Distance check: " + (bottom.y - hits[0].point.y));
+				Debug.DrawLine(bottom, hits[0].point, Color.blue);
 				Debug.DrawRay(hits[0].point, Vector3.down);
 				return bottom.y - hits[0].point.y;
 			}
@@ -418,7 +418,6 @@ namespace Dungeon.Characters
 				if (moveVelocityAtToggle.magnitude < currentMoveSpeed.magnitude)
 					moveVelocityAtToggle = currentMoveSpeed;
 
-				Debug.Log("Move not allowed");
 				currentMoveSpeed = Vector3.Lerp(moveVelocityAtToggle, Vector3.zero, (Time.time - moveInputToggleTime) / deaccelerationDuration);
 			}
 
