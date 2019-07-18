@@ -45,9 +45,11 @@ namespace Dungeon.Characters
 			_isRunning = value;
 		}
 
-		public virtual bool IsGrounded()
+		protected bool isGrounded;
+		public virtual void CheckGrounded()
 		{
-			return true;
+			//Do checks here if necessary
+			isGrounded = true;
 		}
 
 

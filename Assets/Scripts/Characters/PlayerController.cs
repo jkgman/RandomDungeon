@@ -83,7 +83,6 @@ namespace Dungeon.Characters
 		}
 
 
-		private bool isGrounded;
 		private Vector3 slopeNormal;
 		private Vector3 spawnPosition;
 
@@ -191,20 +190,42 @@ namespace Dungeon.Characters
 
 		#region Tests & Checks & Calculations
 
-		public override bool IsGrounded() 
+		public override void CheckGrounded() 
 		{
 			bool g = RaycastGrounded() || ControllerGrounded();
 			isGrounded = g;
-			return g;
 		}
 
+		public float DistanceToGround()
+		{
+			Vector3 bottom = transform.position + UnityController.center + (Vector3.down * (UnityController.height/2 + UnityController.radius));
+
+			Ray ray = new Ray();
+			ray.direction = Vector3.down;
+			ray.origin = transform.position + UnityController.center;
+			RaycastHit[] hits = Physics.SphereCastAll(ray, UnityController.radius, groundLayerMask);
+
+			if (hits.Length > 0)
+			{
+				Debug.Log("Distance check: " + (bottom.y - hits[0].point.y));
+				Debug.DrawRay(hits[0].point, Vector3.down);
+				return bottom.y - hits[0].point.y;
+			}
+			else
+			{ 
+				Debug.Log("Dist to ground: 1000");
+
+				return 1000f;
+			}
+		}
+		
 		bool ControllerGrounded() {
 			return (UnityController.isGrounded || UnityController.collisionFlags.HasFlag(CollisionFlags.Below) || UnityController.collisionFlags.HasFlag(CollisionFlags.CollidedBelow));
 		}
 	
 		bool RaycastGrounded() 
 		{
-			float distance = UnityController.height * 0.5f + UnityController.skinWidth - UnityController.radius * 0.9f;
+			float distance = UnityController.height * 0.5f + UnityController.skinWidth - UnityController.radius * 0.95f;
 			//groundCheckPosition = transform.position + (Vector3.down * distance);
 			bool check = Physics.SphereCastAll(transform.position + UnityController.center, UnityController.radius, Vector3.down, distance, groundLayerMask).Length > 0;
 			return check;
@@ -283,7 +304,7 @@ namespace Dungeon.Characters
 		{
 			base.Update();
 			UpdateDebug();
-			IsGrounded();                //Makes ground checks so they do not need to be repeated multiple times
+			CheckGrounded();                //Makes ground checks so they do not need to be repeated multiple times
 			CalculateMoveSpeed();           //Assigns acceleration to inputs
 			UpdateVelocity();				//Sets movementOffset (velocity) from input's moveSpeed
 			Rotate();						//Rotates towards movement direction or towards target
@@ -651,7 +672,7 @@ namespace Dungeon.Characters
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
 
 			AnimHandler.SetMovementPerformed(moveInputRaw.sqrMagnitude>0 && Player.AllowMove(), blend);
-			AnimHandler.SetGrounded(IsGrounded());
+			AnimHandler.SetGrounded(DistanceToGround() < 0.4f);
 			AnimHandler.LostBalance(LostBalance);
 			AnimHandler.Rolling(Rolling);
 

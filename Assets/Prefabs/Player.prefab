@@ -704,7 +704,7 @@ MonoBehaviour:
   fallSpeedToLoseBalance: 2
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 2049
+    m_Bits: 6144
   rollingDistance:
     serializedVersion: 2
     m_Curve:
@@ -2626,6 +2626,31 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.142
+      objectReference: {fileID: 0}
+    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.09897035
+      objectReference: {fileID: 0}
+    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.09897021
+      objectReference: {fileID: 0}
+    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.09897024
+      objectReference: {fileID: 0}
     - target: {fileID: 5672789537081247733, guid: 1cd3871734393d94c817f31869742a4c,
         type: 3}
       propertyPath: actions.moveMultiplierCurve.m_Curve.Array.size
@@ -2865,31 +2890,6 @@ PrefabInstance:
         type: 3}
       propertyPath: actions.rotationMultiplierCurve.m_Curve.Array.data[3].inWeight
       value: 0.54021436
-      objectReference: {fileID: 0}
-    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.142
-      objectReference: {fileID: 0}
-    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
-        type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.09897035
-      objectReference: {fileID: 0}
-    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.09897021
-      objectReference: {fileID: 0}
-    - target: {fileID: 1494169242856791151, guid: 1cd3871734393d94c817f31869742a4c,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.09897024
       objectReference: {fileID: 0}
     - target: {fileID: 2514982053936492156, guid: 1cd3871734393d94c817f31869742a4c,
         type: 3}

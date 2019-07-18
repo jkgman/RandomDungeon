@@ -52,7 +52,7 @@ MonoBehaviour:
   lookSensitivityGamepad: 200
   collidingLayers:
     serializedVersion: 2
-    m_Bits: 311
+    m_Bits: 6144
   CameraTransformsUpdated:
     m_PersistentCalls:
       m_Calls: []
