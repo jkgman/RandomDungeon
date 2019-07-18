@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -129,6 +129,19 @@ namespace Dungeon.Characters
 			get{ return ragdollState != RagdollState.animated; }
 		}
 
+		public bool IsMoving()
+		{
+			Rigidbody rb = anim.GetBoneTransform(HumanBodyBones.Hips).GetComponent<Rigidbody>();
+			if (rb)
+			{
+				return rb.velocity.magnitude > 0.2f;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
 		/// <summary>
 		/// Gets the direction player should be facing when getting up from ragdoll.
 		/// </summary>
@@ -178,6 +191,7 @@ namespace Dungeon.Characters
 				DisableRagdoll(); //disable gravity etc.
 				ragdollingEndTime = Time.time; //store the state change time
 				anim.enabled = true; //enable animation
+				anim.SetBool("gettingUp", true);
 				ragdollState = RagdollState.blendToAnim;
 
 
@@ -228,10 +242,6 @@ namespace Dungeon.Characters
 
 		void LateUpdate()
 		{
-			//if (ragdollState == RagdollState.ragdolled)
-			//{
-			//	ResetPosition();
-			//}
 			//Blending from ragdoll back to animated
 			if (ragdollState == RagdollState.blendToAnim)
 			{
@@ -275,6 +285,8 @@ namespace Dungeon.Characters
 				if (ragdollBlendAmount == 0)
 				{
 					ragdollState = RagdollState.animated;
+					anim.SetBool("gettingUp", false);
+
 					getUpStartTime = Time.time;
 					return;
 				}

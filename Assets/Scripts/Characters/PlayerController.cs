@@ -403,24 +403,27 @@ namespace Dungeon.Characters
 
 			while (!gettingUp)
 			{
-				if (isGrounded)
+				if (!Player.Ragdoll.IsRagdolling)
 				{
-
-					if (!Player.Ragdoll.IsRagdolling)
+					if (isGrounded)
 					{
 						Player.PCombat.InterruptCombat(true);
 						Player.Ragdoll.StartRagdoll();
 					}
-					if (Time.time - lostBalanceTime > getUpDelay && !gettingUp)
+					else
 					{
-						SetRotationFromDirection(Player.Ragdoll.GetDirection());
-						Player.Ragdoll.EndRagdoll();
-						gettingUp = true;
+						lostBalanceTime = Time.time;
 					}
 				}
-				else
+				else if (Player.Ragdoll.IsMoving())
 				{
 					lostBalanceTime = Time.time;
+				}
+				if (Time.time - lostBalanceTime > getUpDelay && !gettingUp)
+				{
+					SetRotationFromDirection(Player.Ragdoll.GetDirection());
+					Player.Ragdoll.EndRagdoll();
+					gettingUp = true;
 				}
 
 				yield return null;

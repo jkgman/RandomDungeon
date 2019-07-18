@@ -128,7 +128,6 @@ namespace Dungeon.Characters
 				if (anim.GetCurrentAnimatorStateInfo(i).IsTag("FootIK"))
 				{
 					offsetPelvis = true;
-					Debug.Log("Found IK Tag");
 				}
 
 			}

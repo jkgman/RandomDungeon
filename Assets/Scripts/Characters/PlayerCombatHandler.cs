@@ -349,6 +349,7 @@ namespace Dungeon.Characters
 				Player.PController.ExternalMove(dir * currentOffset);
 
 				yield return null;
+				transform.forward = dir;
 				t += Time.smoothDeltaTime;
 			}
 
