@@ -366,39 +366,6 @@ namespace Dungeon.Characters
 				base.Attack();
 			}
 		}
-		
-		protected override IEnumerator LightAttackCharge()
-		{
-			GetCurrentWeapon().CurrentAttackState = AttackState.charge;
-			Player.AnimationHandler.SetChargeStarted();
-
-			float t01 = 0;
-			float offsetTotal = 0;
-			currentAttackStateTime = 0;
-			Vector3 dir = Player.PController.GetTransformedInputDirection(false);
-
-
-			while (GetCurrentWeapon().IsAttacking &&
-					GetCurrentWeapon().CurrentAttackType == AttackType.lightAttack &&
-					currentAttackStateTime < GetCurrentWeapon().GetCurrentActionDuration())
-			{
-				t01 = Mathf.Clamp01(currentAttackStateTime / GetCurrentWeapon().GetCurrentActionDuration());
-				MoveCharacter(offsetTotal, t01);
-
-				Player.CharacterController.SetMoveSpeedMultiplier(GetCurrentWeapon().GetMoveSpeedMultiplier(t01));
-				Player.CharacterController.SetRotationSpeedMultiplier(GetCurrentWeapon().GetRotationSpeedMultiplier(t01));
-
-				dir = Player.PController.GetTransformedInputDirection(false);
-				Player.CharacterController.ExternalRotate(dir);
-
-
-				offsetTotal = GetCurrentWeapon().GetMoveDistanceFromCurve(t01);
-				yield return null;
-			}
-
-			Player.AnimationHandler.SetChargeCancelled();
-
-		}
 	
 
 		#endregion
@@ -486,7 +453,6 @@ namespace Dungeon.Characters
 		{
 			if (Time.time - inputDodgeStartTime < Player.inputSinglePressMaxTime)
 			{
-				Debug.Log("Trying to dodge");
 				Dodge();
 			}
 		}
@@ -540,7 +506,7 @@ namespace Dungeon.Characters
 			output = IsStunned ? false : output;
 
 			if (CurrentWeapon)
-				output = CurrentWeapon.AttackPendingAllowed(currentAttackStateTime) ? output : false;
+				output = CurrentWeapon.AttackPendingAllowed(elapsedAttackTime) ? output : false;
 			else
 				output = false;
 

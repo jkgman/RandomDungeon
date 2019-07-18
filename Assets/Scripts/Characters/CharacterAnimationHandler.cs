@@ -187,7 +187,6 @@ namespace Dungeon.Characters
 			Animator.SetBool("isCharging", false);
 			Animator.SetBool("isRecovering", false);
 			Animator.SetBool("isAttacking", true);
-
 		}
 
 		/// <summary>

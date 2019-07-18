@@ -33,6 +33,8 @@ namespace Dungeon.Characters
 		private float vSpeed = 0;
 		private float lostBalanceTime;
 		private bool _lostBalance;
+		IEnumerator lostBalanceIEnumerator;
+
 		private bool LostBalance
 		{
 			get { return _lostBalance; }
@@ -42,7 +44,12 @@ namespace Dungeon.Characters
 				if (value == true)
 				{
 					lostBalanceTime = Time.time;
-					StartCoroutine(LostBalanceRoutine());
+
+					//Start new coroutine
+					if (lostBalanceIEnumerator != null)
+						StopCoroutine(lostBalanceIEnumerator);
+					lostBalanceIEnumerator = LostBalanceRoutine();
+					StartCoroutine(lostBalanceIEnumerator);
 				}
 
 			}
@@ -65,6 +72,7 @@ namespace Dungeon.Characters
 		[SerializeField]
 		private AnimationCurve rollingDistance;
 		private float rollingTime;
+		IEnumerator rollingIEnumerator;
 		private bool _rolling;
 		private bool Rolling
 		{
@@ -76,7 +84,12 @@ namespace Dungeon.Characters
 				if (value == true)
 				{
 					rollingTime = Time.time;
-					StartCoroutine(RollingRoutine());
+
+					//Start new coroutine
+					if (rollingIEnumerator != null)
+						StopCoroutine(rollingIEnumerator);
+					rollingIEnumerator = RollingRoutine();
+					StartCoroutine(rollingIEnumerator);
 				}
 
 			}
@@ -177,12 +190,11 @@ namespace Dungeon.Characters
 			if (Player.AllowRun())
 			{
 				base.SetRunning(value);
-				Debug.Log("running:" + GetRunning());
+
 			}
 			else
 			{
 				base.SetRunning(false);
-				Debug.Log("not running");
 			}
 		}
 
@@ -196,6 +208,10 @@ namespace Dungeon.Characters
 			isGrounded = g;
 		}
 
+		/// <summary>
+		/// Calculates the difference in y-position of playerController bottom-point and closest ground-point from it.
+		/// </summary>
+		/// <returns>Returns distance to ground. If point is above bottom, returns negative value.</returns>
 		public float DistanceToGround()
 		{
 			Vector3 bottom = transform.position + UnityController.center + (Vector3.down * (UnityController.height/2 + UnityController.radius));
@@ -203,13 +219,26 @@ namespace Dungeon.Characters
 			Ray ray = new Ray();
 			ray.direction = Vector3.down;
 			ray.origin = transform.position + UnityController.center;
-			RaycastHit[] hits = Physics.SphereCastAll(ray, UnityController.radius, groundLayerMask);
+			RaycastHit[] hits = Physics.SphereCastAll(ray, UnityController.radius, 50f, groundLayerMask);
 
 			if (hits.Length > 0)
 			{
-				Debug.DrawLine(bottom, hits[0].point, Color.blue);
-				Debug.DrawRay(hits[0].point, Vector3.down);
-				return bottom.y - hits[0].point.y;
+				Vector3 closestPoint = hits[0].point;
+				float distance = bottom.y - closestPoint.y;
+
+				//Find closest point
+				for (int i = 0; i < hits.Length; i++)
+				{
+					if (closestPoint.y - hits[i].point.y < distance)
+					{
+						closestPoint = hits[i].point;
+						distance = bottom.y - closestPoint.y;
+
+					}
+				}
+				Debug.DrawLine(bottom, closestPoint, Color.blue);
+				Debug.DrawRay(closestPoint, Vector3.down, Color.black);
+				return distance;
 			}
 			else
 			{ 
@@ -218,11 +247,18 @@ namespace Dungeon.Characters
 				return 1000f;
 			}
 		}
-		
+		/// <summary>
+		/// Check if CharacterController thinks it is grounded.
+		/// </summary>
+		/// <returns></returns>
 		bool ControllerGrounded() {
 			return (UnityController.isGrounded || UnityController.collisionFlags.HasFlag(CollisionFlags.Below) || UnityController.collisionFlags.HasFlag(CollisionFlags.CollidedBelow));
 		}
-	
+		
+		/// <summary>
+		/// Additional physics check to see if ground is near enough.
+		/// </summary>
+		/// <returns></returns>
 		bool RaycastGrounded() 
 		{
 			float distance = UnityController.height * 0.5f + UnityController.skinWidth - UnityController.radius * 0.95f;
@@ -231,11 +267,15 @@ namespace Dungeon.Characters
 			return check;
 		}
 
+		/// <summary>
+		/// Returns the normal of current ground.
+		/// </summary>
+		/// <returns></returns>
 		Vector3 CheckSlopeNormal() 
 		{
 			Vector3 output = Vector3.up;
 
-			if (!isGrounded)
+			if (DistanceToGround() > 0.25f)
 				return output;
 
 			//First spherecast finds the first point that has collided with player
@@ -264,8 +304,6 @@ namespace Dungeon.Characters
 			slopeNormal = output;
 			return output;
 		}
-
-
 
 		Vector2 MovePointAlongCircle(float currentAngle, Vector2 currentPoint, Vector2 centerPoint, float distance) 
 		{
@@ -318,16 +356,25 @@ namespace Dungeon.Characters
 		{
 			float currentOffset = 0;
 			float lastEvaluation = 0;
+			bool rollStarted = false;
 			while (Time.time - rollingTime < rollingDuration && Rolling)
 			{
-				if (!isGrounded)
+				if (LostBalance)
 				{
-					rollingTime = Time.time;
-					if (LostBalance)
+					Rolling = false;
+				}
+				else if (DistanceToGround() > 0.1f)
+				{
+					if (!rollStarted)
+						rollingTime = Time.time;
+					else
 						Rolling = false;
 				}
-				else
+
+				if (Rolling && DistanceToGround() < 0.1f)
 				{
+					Player.PCombat.InterruptCombat(true);
+					rollStarted = true;
 					currentOffset = rollingDistance.Evaluate((Time.time - rollingTime)/rollingDuration) - lastEvaluation;
 					lastEvaluation += currentOffset;
 					ExternalMove(transform.forward * currentOffset);
@@ -338,8 +385,8 @@ namespace Dungeon.Characters
 
 				yield return null;
 			}
-			Rolling = false;
 
+			Rolling = false;
 			yield return null;
 		}
 
@@ -358,14 +405,17 @@ namespace Dungeon.Characters
 			{
 				if (isGrounded)
 				{
-					if (!Player.Ragdoll.IsRagdolling)
-						Player.Ragdoll.StartRagdoll();
 
+					if (!Player.Ragdoll.IsRagdolling)
+					{
+						Player.PCombat.InterruptCombat(true);
+						Player.Ragdoll.StartRagdoll();
+					}
 					if (Time.time - lostBalanceTime > getUpDelay && !gettingUp)
 					{
+						SetRotationFromDirection(Player.Ragdoll.GetDirection());
 						Player.Ragdoll.EndRagdoll();
 						gettingUp = true;
-						gettingUpTime = Time.time;
 					}
 				}
 				else
@@ -389,6 +439,11 @@ namespace Dungeon.Characters
 
 				yield return null;
 			}
+		}
+
+		private void SetRotationFromDirection(Vector3 direction)
+		{
+			lookRotRaw = Quaternion.LookRotation(direction);
 		}
 
 		void LateUpdate()
@@ -427,9 +482,14 @@ namespace Dungeon.Characters
 		{
 
 			if (vSpeed < -fallSpeedToLoseBalance)
+			{
+				Rolling = false;
 				LostBalance = true;
+			}
 			else if (vSpeed < -fallSpeedToRoll)
+			{
 				Rolling = true;
+			}
 
 
 			if (isGrounded)
@@ -550,10 +610,14 @@ namespace Dungeon.Characters
 
 		void LateSetMovementVariables()
 		{
-			if (currentMoveOffset.sqrMagnitude > 0)
-				lastNonZeroMoveDirection = currentMoveOffset.normalized;
-			else if (moveInputRaw.sqrMagnitude > 0 && Player.AllowMove())
-				lastNonZeroMoveDirection = GetTransformedInputDirection();
+			if (Player.AllowMove())
+			{
+				if (currentMoveOffset.sqrMagnitude > 0)
+					lastNonZeroMoveDirection = currentMoveOffset.normalized;
+				else if (moveInputRaw.sqrMagnitude > 0)
+					lastNonZeroMoveDirection = GetTransformedInputDirection();
+
+			}
 		}
 
 
@@ -628,7 +692,7 @@ namespace Dungeon.Characters
 		void InputMovePerformed(InputAction.CallbackContext context) 
 		{
 			moveInputRaw = context.ReadValue<Vector2>();
-			Debug.Log("MOVE INPUT:" + moveInputRaw);
+
 		}
 
 		void InputMoveCancelled(InputAction.CallbackContext context) 

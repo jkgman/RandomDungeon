@@ -35,6 +35,7 @@ namespace Dungeon
 		private const float LERP_CAM_DISTANCE_TO_DEFAULT = 10f; //Speed of going back to default distance after hitting walls etc
 
 
+		[SerializeField] private Vector3 lookAtOffset = new Vector3();
 		[SerializeField] private float distDefault = 4f;
 		[SerializeField] private float distTargeting = 4f;
 
@@ -261,12 +262,12 @@ namespace Dungeon
 				//Weight towards player the further away target is
 				Vector3 goalPos = Vector3.Lerp(midPos, PlayerPos, Player.PCombat.GetMaxDistToTarget / vectorBetween.magnitude);
 				//Lerp determines how much camera lags behind player
-				dummyPos = Vector3.Lerp(dummyPos, goalPos, Time.smoothDeltaTime * LERP_DUMMY_TARGETING);
+				dummyPos = Vector3.Lerp(dummyPos, goalPos + lookAtOffset, Time.smoothDeltaTime * LERP_DUMMY_TARGETING);
 			}
 			else
 			{
 				//Lerp determines how much camera lags behind player
-				dummyPos = Vector3.Lerp(dummyPos, PlayerPos, Time.smoothDeltaTime * LERP_DUMMY_DEFAULT);
+				dummyPos = Vector3.Lerp(dummyPos, PlayerPos + lookAtOffset, Time.smoothDeltaTime * LERP_DUMMY_DEFAULT);
 			}
 		}
 

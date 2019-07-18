@@ -29,6 +29,8 @@ namespace Dungeon.Characters
 		private LayerMask groundLayerMask;
 		[SerializeField]
 		private float pelvisOffset = 0;
+		[SerializeField]
+		private float pelvisOffsetFromFeet = 0;
 		[SerializeField, Range(0, 1f)]
 		private float feetToIKPositionSpeed = 0.25f;
 		[SerializeField, Range(0, 10f)]
@@ -36,7 +38,7 @@ namespace Dungeon.Characters
 
 
 		[SerializeField]
-		private bool useProIKFeature = false;
+		private bool rotateFeet = false;
 		[SerializeField]
 		private bool showSolverDebug = false;
 
@@ -44,7 +46,7 @@ namespace Dungeon.Characters
 
 		void OnEnable()
 		{
-			anim = GetComponentInChildren<Animator>(true);
+			anim = GetComponent<Animator>();
 		}
 
 		#region FootGrounding
@@ -73,10 +75,10 @@ namespace Dungeon.Characters
 			anim.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1f);
 			anim.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1f);
 
-			if (useProIKFeature)
+			if (rotateFeet)
 				anim.SetIKRotationWeight(AvatarIKGoal.RightFoot, anim.GetFloat(rightFootAnimVariableName));
 
-			if (useProIKFeature)
+			if (rotateFeet)
 				anim.SetIKRotationWeight(AvatarIKGoal.LeftFoot, anim.GetFloat(leftFootAnimVariableName));
 
 			MoveFeetToIKPoint(AvatarIKGoal.RightFoot, rightFootIKPosition, rightFootIKRotation, ref lastRightFootPositionY);
@@ -118,12 +120,35 @@ namespace Dungeon.Characters
 				return;
 			}
 
-			float leftOffsetPosition = leftFootIKPosition.y - transform.position.y;
-			float rightOffsetPosition = rightFootIKPosition.y - transform.position.y;
-			float totalOffset = Mathf.Min(leftOffsetPosition,rightOffsetPosition);
-			Vector3 newPelvisPosition = anim.bodyPosition + Vector3.up * totalOffset;
-			newPelvisPosition.y = Mathf.Lerp(lastPelvisPositionY, newPelvisPosition.y, pelvisUpAndDownSpeed);
+			//If current state on any layer has footIK enabled, update ik accordingly
+			//Otherwise reset pelvis.
+			bool offsetPelvis = false;
+			for (int i = 0; i < anim.layerCount; i++)
+			{
+				if (anim.GetCurrentAnimatorStateInfo(i).IsTag("FootIK"))
+				{
+					offsetPelvis = true;
+					Debug.Log("Found IK Tag");
+				}
 
+			}
+
+
+			Vector3 newPelvisPosition = anim.bodyPosition;
+			if (offsetPelvis)
+			{
+				float leftOffsetPosition = leftFootIKPosition.y - transform.position.y;
+				float rightOffsetPosition = rightFootIKPosition.y - transform.position.y;
+				float totalOffset = Mathf.Min(leftOffsetPosition,rightOffsetPosition);
+				newPelvisPosition = anim.bodyPosition + Vector3.up * totalOffset;
+
+				float currentFootAverageY = (anim.GetBoneTransform(HumanBodyBones.LeftFoot).position.y + anim.GetBoneTransform(HumanBodyBones.RightFoot).position.y) / 2;
+				if (newPelvisPosition.y - currentFootAverageY < pelvisOffsetFromFeet)
+					newPelvisPosition.y = currentFootAverageY + pelvisOffsetFromFeet;
+
+			}
+
+			newPelvisPosition.y = Mathf.Lerp(lastPelvisPositionY, newPelvisPosition.y, pelvisUpAndDownSpeed);
 			anim.bodyPosition = newPelvisPosition;
 			lastPelvisPositionY = newPelvisPosition.y;
 		}

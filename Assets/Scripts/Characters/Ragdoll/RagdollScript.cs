@@ -129,6 +129,24 @@ namespace Dungeon.Characters
 			get{ return ragdollState != RagdollState.animated; }
 		}
 
+		/// <summary>
+		/// Gets the direction player should be facing when getting up from ragdoll.
+		/// </summary>
+		public Vector3 GetDirection()
+		{
+			ragdolledHeadPosition = anim.GetBoneTransform(HumanBodyBones.Head).position;
+			ragdolledHipPosition = anim.GetBoneTransform(HumanBodyBones.Hips).position;
+
+			Vector3 ragdolledDirection = ragdolledHeadPosition - ragdolledFeetPosition;
+			ragdolledDirection.y = 0;
+
+			if (anim.GetBoneTransform(HumanBodyBones.Hips).forward.y > 0)
+				return -ragdolledDirection; //Lying on back, forward direction is towards feet
+			else
+				return ragdolledDirection; //Lying on stomach, forward direction is towards head
+
+		}
+
 		public void StartRagdoll()
 		{
 			if (ragdollState == RagdollState.animated)
@@ -166,16 +184,11 @@ namespace Dungeon.Characters
 				//Initiate the get up animation
 				if (anim.GetBoneTransform(HumanBodyBones.Hips).forward.y > 0) //hip hips forward vector pointing upwards, initiate the get up from back animation
 				{
-					//anim.SetBool("GetUpFromBack", true);
-					
 					anim.CrossFade("Get Up Back", 0, 0, 0, 0);
-					anim.SetFloat("get up speed", getUpSpeed);
 				}
 				else
 				{
-					//anim.SetBool("GetUpFromBelly", true);
 					anim.CrossFade("Get Up Front", 0, 0, 0, 0);
-					anim.SetFloat("get up speed", getUpSpeed);
 				}
 			} //if (state==RagdollState.ragdolled)
 		}

@@ -241,19 +241,20 @@ namespace Dungeon.Items
 		
 
 
-		public bool AttackPendingAllowed(float currentAttackStateTime)
+		public bool AttackPendingAllowed(float elapsedAttackTime)
 		{
 			if (!IsAttacking)
 				return true;
 
-			float t = GetRelativeElapsedTime(currentAttackStateTime);
+			float t = elapsedAttackTime / GetAttackCompleteDuration();
 			return t > actions.allowComboInputStartTime;
 		}
-		public bool AttackAllowed(float currentAttackStateTime)
+
+		public bool AttackAllowed(float elapsedAttackTime)
 		{
 			if (IsAttacking)
 			{
-				float t = GetRelativeElapsedTime(currentAttackStateTime);
+				float t = elapsedAttackTime / GetAttackCompleteDuration();
 				if (actions.allowComboStartTime < t)
 					return true;
 				else

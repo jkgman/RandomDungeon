@@ -166,7 +166,7 @@ namespace Dungeon.Characters
 			output = IsStunned ? false : output;
 			output = TargetIsAttackable() ? output : false;
 			if (CurrentWeapon)
-				output = CurrentWeapon.AttackPendingAllowed(currentAttackStateTime) ? output : false;
+				output = CurrentWeapon.AttackPendingAllowed(elapsedAttackTime) ? output : false;
 
 			return output;
 		}

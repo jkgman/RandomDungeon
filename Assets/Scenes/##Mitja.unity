@@ -1956,7 +1956,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 40
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!65 &1977836683
 BoxCollider:
@@ -2464,25 +2464,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
-      propertyPath: groundLayerMask.m_Bits
-      value: 6145
-      objectReference: {fileID: 0}
-    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
-      propertyPath: pelvisUpAndDownSpeed
-      value: 4.36
-      objectReference: {fileID: 0}
-    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
-      propertyPath: useProIKFeature
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
-      propertyPath: showSolverDebug
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 767680939, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
-      propertyPath: m_Enabled
-      value: 0
+    - target: {fileID: 3680647838422055351, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: fallSpeedToLoseBalance
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 374982973307863740, guid: d15be6b0d70a905439d7341bb469164f,
         type: 3}
@@ -2493,6 +2478,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: actions.allowComboStartTime
+      value: 0.357
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: actions.allowComboInputStartTime
+      value: 0.244
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: actions.allowComboInputEndTime
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
