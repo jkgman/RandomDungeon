@@ -10,108 +10,116 @@ namespace Dungeon.Characters
 /// <summary>
 /// Handles player movement and rotation.
 /// </summary>
-	public class PlayerController : CharacterController, IAllowedPlayerActions
+	public class PlayerMovement : CharacterMovement, IAllowedPlayerActions
 	{
 
+		#region Variables
+
+		//_______ Start of Exposed variables
+
+		[Header("Debug")]
 		[SerializeField] private bool debugVisuals = false;
 
 		[Header("Movement Controlling")]
-
 		[SerializeField] private bool keepMomentumInAir = true;
 		[SerializeField] private float gravity = 5f;
-		[SerializeField] private float getUpDelay = 1f;
-		[SerializeField] private float getUpDuration = 1f;
-		[SerializeField] private float staggerDuration = 0.25f;
-		[SerializeField] private float rollingDuration = 0.5f;
-		[SerializeField] private float fallSpeedToRoll = 1f;
-		[SerializeField] private float fallSpeedToLoseBalance = 2f;
-
 		[SerializeField] private LayerMask groundLayerMask;
 
+		[Header("Rolling")]
+		[SerializeField] private float fallSpeedToRoll = 1f;
+		[SerializeField] private float rollingDuration = 0.5f;
+		[SerializeField] private AnimationCurve rollingDistance = new AnimationCurve();
+
+		[Header("Losing Balance")]
+		[SerializeField] private float fallSpeedToLoseBalance = 2f;
+		[SerializeField] private float getUpDelay = 1f;
+		[SerializeField] private float getUpDuration = 1f;
+
+		//_______ End of Exposed variables
 
 
-		private float vSpeed = 0;
-		private float lostBalanceTime;
-		private bool _lostBalance;
-		IEnumerator lostBalanceIEnumerator;
+		//_______ Start of Hidden variables
 
-		private bool LostBalance
+		private float vSpeed = 0;           //Current vertical speed (gravity)
+		private bool setGizmos = false;		//Runtime Gizmo updates
+
+		private float lostBalanceTime;		//Time.time from when lostBalance
+		IEnumerator lostBalanceIEnumerator;	//Coroutine for handling lostBalance
+		private bool _lostBalance;			
+		private bool LostBalance			//Get&Set for _lostBalance. Starts & stops coroutines on Set.
 		{
 			get { return _lostBalance; }
 			set
 			{
-				_lostBalance = value;
 				if (value == true)
 				{
 					lostBalanceTime = Time.time;
 
-					//Start new coroutine
-					if (lostBalanceIEnumerator != null)
-						StopCoroutine(lostBalanceIEnumerator);
-					lostBalanceIEnumerator = LostBalanceRoutine();
-					StartCoroutine(lostBalanceIEnumerator);
+					if (!_lostBalance)
+					{
+						_lostBalance = value;
+
+						//Start new coroutine
+						if (lostBalanceIEnumerator != null)
+							StopCoroutine(lostBalanceIEnumerator);
+						lostBalanceIEnumerator = LostBalanceRoutine();
+						StartCoroutine(lostBalanceIEnumerator);
+					}
+					else
+						_lostBalance = value;
+
 				}
+				else
+					_lostBalance = value;
+
 
 			}
 		}
-		
-		private float staggeredTime;
-		private bool _staggered;
-		private bool Staggered
-		{
-			get { return _staggered; }
-			set
-			{
-				if (value == true)
-					staggeredTime = Time.time;
 
-				_staggered = value;
-			}
-		}
-
-		[SerializeField]
-		private AnimationCurve rollingDistance;
-		private float rollingTime;
-		IEnumerator rollingIEnumerator;
+		private float rollingTime;			//Time.time from when rolled
+		IEnumerator rollingIEnumerator;		//Coroutine for handling rolling
 		private bool _rolling;
-		private bool Rolling
+		private bool Rolling				//Get&Set for _lostBalance. Starts & stops coroutines on Set.
 		{
 			get { return _rolling; }
 			set
 			{
-				_rolling = value;
 				
-				if (value == true)
+				if (value)
 				{
 					rollingTime = Time.time;
 
-					//Start new coroutine
-					if (rollingIEnumerator != null)
-						StopCoroutine(rollingIEnumerator);
-					rollingIEnumerator = RollingRoutine();
-					StartCoroutine(rollingIEnumerator);
+					if (!_rolling)
+					{
+						_rolling = value;
+						//Start new coroutine
+						if (rollingIEnumerator != null)
+							StopCoroutine(rollingIEnumerator);
+						rollingIEnumerator = RollingRoutine();
+						StartCoroutine(rollingIEnumerator);
+					}
+					else
+						_rolling = value;
+
 				}
+				else
+					_rolling = value;
+
 
 			}
-		}
+		}				
 
-
-		private Vector3 slopeNormal;
+		private Vector3 slopeNormal;		//Current ground normal
 		private Vector3 spawnPosition;
+		
+		private float inputRunStartTime = 0;				//Time.time when run input started
+		private Vector3 moveVelocityAtToggle;				//Used for accelerations when input happens/doesnt happen
+		private float moveInputToggleTime;                  //Time.time when move input started or ended
 
+		private Vector2 moveInputRaw;   //Value of current move input.
+		//_______ End of Hidden variables
 
-		[Header("Inputs")]
-
-
-		private float inputTargetSwitchTime = 0;
-		private float inputTargetSwitchInterval = 0.1f;
-		private float inputRunStartTime = 0;
-		private Vector3 moveVelocityAtToggle; //Used for accelerations when input happens/doesnt happen
-		private float moveInputToggleTime;
-
-
-		private Vector2 moveInputRaw;
-
+		#endregion Variables
 
 
 		#region References
@@ -125,23 +133,79 @@ namespace Dungeon.Characters
 			}
 		}
 
-		private Inputs PlayerInputs
+		private PlayerCombatHandler _pCombat;
+		private PlayerCombatHandler PCombat
 		{
-			get { return Player.Inputs; }
+			get
+			{
+				if (!_pCombat)
+					_pCombat = GetComponent<PlayerCombatHandler>();
+				return _pCombat;
+			}
 		}
 
-		private UnityEngine.CharacterController _unityController;
-		public UnityEngine.CharacterController UnityController
+		private PlayerAnimationHandler _pAnimation;
+		private PlayerAnimationHandler PAnimation
+		{
+			get
+			{
+				if (!_pAnimation)
+					_pAnimation = GetComponent<PlayerAnimationHandler>();
+
+				return _pAnimation;
+			}
+		}
+
+		private RagdollScript _ragdoll;
+		protected RagdollScript Ragdoll
+		{
+			get
+			{
+				if (!_ragdoll)
+					_ragdoll = GetComponent<RagdollScript>();
+
+				return _ragdoll;
+			}
+		}
+
+		private Inputs _inputs;
+		private Inputs Inputs
+		{
+			get 
+			{ 
+				if (_inputs == null)
+					_inputs = new Inputs();
+				return _inputs;
+
+			}
+		}
+
+		private CharacterController _unityController;
+		public CharacterController UnityController
 		{
 			get
 			{
 				if (!_unityController)
-					_unityController = GetComponent<UnityEngine.CharacterController>();
+					_unityController = GetComponent<CharacterController>();
 
 				return _unityController;
 			}
 		}
 
+		private CameraController _cam;
+		private CameraController Cam
+		{
+			get
+			{
+				if (!_cam)
+				{
+					var temp = Camera.main;
+					if (temp)
+						_cam = temp.transform.root.GetComponent<CameraController>();
+				}
+				return _cam;
+			}
+		}
 
 		#endregion
 
@@ -180,7 +244,7 @@ namespace Dungeon.Characters
 			else
 			{
 				var moveDir = new Vector3(moveInputRaw.x, 0, moveInputRaw.y);
-				var dir = Quaternion.LookRotation(moveDir) * -Player.GetCam.GetCurrentFlatDirection();
+				var dir = Quaternion.LookRotation(moveDir) * -Cam.GetCurrentFlatDirection();
 				return dir.normalized;
 			}
 		}
@@ -202,10 +266,10 @@ namespace Dungeon.Characters
 
 		#region Tests & Checks & Calculations
 
-		public override void CheckGrounded() 
+		protected override void CheckGrounded() 
 		{
 			bool g = RaycastGrounded() || ControllerGrounded();
-			isGrounded = g;
+			IsGrounded = g;
 		}
 
 		/// <summary>
@@ -373,7 +437,7 @@ namespace Dungeon.Characters
 
 				if (Rolling && DistanceToGround() < 0.1f)
 				{
-					Player.PCombat.InterruptCombat(true);
+					PCombat.InterruptCombat(true);
 					rollStarted = true;
 					currentOffset = rollingDistance.Evaluate((Time.time - rollingTime)/rollingDuration) - lastEvaluation;
 					lastEvaluation += currentOffset;
@@ -392,7 +456,7 @@ namespace Dungeon.Characters
 
 		IEnumerator LostBalanceRoutine()
 		{
-			if (!Player.Ragdoll)
+			if (!Ragdoll)
 			{
 				LostBalance = false;
 				yield break;
@@ -403,34 +467,34 @@ namespace Dungeon.Characters
 
 			while (!gettingUp)
 			{
-				if (!Player.Ragdoll.IsRagdolling)
+				if (!Ragdoll.IsRagdolling)
 				{
-					if (isGrounded)
+					if (IsGrounded)
 					{
-						Player.PCombat.InterruptCombat(true);
-						Player.Ragdoll.StartRagdoll();
+						PCombat.InterruptCombat(true);
+						Ragdoll.StartRagdoll();
 					}
 					else
 					{
 						lostBalanceTime = Time.time;
 					}
 				}
-				else if (Player.Ragdoll.IsMoving())
+				else if (Ragdoll.IsMoving())
 				{
 					lostBalanceTime = Time.time;
 				}
 				if (Time.time - lostBalanceTime > getUpDelay && !gettingUp)
 				{
-					SetRotationFromDirection(Player.Ragdoll.GetDirection());
-					Player.Ragdoll.EndRagdoll();
 					gettingUp = true;
+					Ragdoll.EndRagdoll();
+					SetRotationFromDirection(Ragdoll.GetDirection());
 				}
 
 				yield return null;
 			}
 			while (LostBalance)
 			{
-				if (Player.Ragdoll.IsRagdolling)
+				if (Ragdoll.IsRagdolling)
 				{
 					gettingUpTime = Time.time;
 				}
@@ -495,7 +559,7 @@ namespace Dungeon.Characters
 			}
 
 
-			if (isGrounded)
+			if (IsGrounded)
 			{
 				vSpeed = -gravity * Time.deltaTime;
 			}
@@ -509,17 +573,17 @@ namespace Dungeon.Characters
 
 		void UpdateVelocity()
 		{
-			if (isGrounded || !keepMomentumInAir)
+			if (IsGrounded || !keepMomentumInAir)
 			{
 				Vector3 newMoveOffset = Vector3.zero;
 
-				if (Player.PCombat.Target != null)
+				if (PCombat.CurrentTarget != null)
 				{
 					//This calculation moves along circular path around target according to sideways input (moveInputRaw.x)
 					Vector2 pos = new Vector2(transform.position.x, transform.position.z);
-					Vector2 targetPos = new Vector2(Player.PCombat.Target.GetPosition().x, Player.PCombat.Target.GetPosition().z);
+					Vector2 targetPos = new Vector2(PCombat.CurrentTarget.GetPosition().x, PCombat.CurrentTarget.GetPosition().z);
 
-					float currentAngle = Vector3.SignedAngle(Vector3.forward, -Player.PCombat.GetFlatDirectionToTarget(), Vector3.up);
+					float currentAngle = Vector3.SignedAngle(Vector3.forward, -PCombat.GetFlatDirectionToTarget(), Vector3.up);
 					Vector2 newPosWithSidewaysOffset = MovePointAlongCircle(currentAngle, pos,targetPos, -currentMoveSpeed.x * Time.deltaTime);
 
 					//Apply sideways inputs to transform position
@@ -527,22 +591,22 @@ namespace Dungeon.Characters
 						newMoveOffset += new Vector3(newPosWithSidewaysOffset.x, transform.position.y, newPosWithSidewaysOffset.y) - transform.position;
 
 					//Add forward input and apply to transform position as well
-					Quaternion rot = Quaternion.LookRotation(Player.PCombat.GetFlatDirectionToTarget());
+					Quaternion rot = Quaternion.LookRotation(PCombat.GetFlatDirectionToTarget());
 					Vector3 forwardMoveDir = rot * new Vector3(0, 0, currentMoveSpeed.z);
 					newMoveOffset += forwardMoveDir * Time.deltaTime;
 
 					//Prevent from going too close. This might become problematic for combat but we'll see.
-					float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(Player.PCombat.Target.GetPosition().x, 0, Player.PCombat.Target.GetPosition().z));
+					float flatDistanceToTarget = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(PCombat.CurrentTarget.GetPosition().x, 0, PCombat.CurrentTarget.GetPosition().z));
 					if (flatDistanceToTarget < 0.5f)
 					{
-						Vector3 newPos = new Vector3(Player.PCombat.Target.GetPosition().x, transform.position.y, Player.PCombat.Target.GetPosition().z) - Player.PCombat.GetFlatDirectionToTarget().normalized*0.5f;
+						Vector3 newPos = new Vector3(PCombat.CurrentTarget.GetPosition().x, transform.position.y, PCombat.CurrentTarget.GetPosition().z) - PCombat.GetFlatDirectionToTarget().normalized*0.5f;
 						newMoveOffset += newPos - transform.position;
 					}
 				}
 				else
 				{
 
-					Quaternion rot = Quaternion.LookRotation(-Player.GetCam.GetCurrentFlatDirection());
+					Quaternion rot = Quaternion.LookRotation(-Cam.GetCurrentFlatDirection());
 					Vector3 realMoveDirection = rot * new Vector3(currentMoveSpeed.x, 0, currentMoveSpeed.z);
 					newMoveOffset += realMoveDirection * Time.deltaTime;
 				}
@@ -566,17 +630,18 @@ namespace Dungeon.Characters
 
 			if (Player.AllowRotate())
 			{
-				if (Player.PCombat.Target != null)
+				if (PCombat.CurrentTarget != null)
 				{
-					var lookdir = Player.PCombat.Target.GetPosition() - transform.position;
+					var lookdir = PCombat.CurrentTarget.GetPosition() - transform.position;
 					lookdir.y = 0;
 					lookRotRaw = Quaternion.LookRotation(lookdir);
 				}
 				else/* if (GetTransformedInputDirection().sqrMagnitude > 0)*/
 				{
-					var lookdir = GetFlatMoveDirection(allowZero: false);
+					var lookdir = GetTransformedInputDirection();
 					lookdir.y = 0;
-					lookRotRaw = Quaternion.LookRotation(lookdir);
+					if (lookdir != Vector3.zero)
+						lookRotRaw = Quaternion.LookRotation(lookdir);
 				}
 			}
 
@@ -584,7 +649,7 @@ namespace Dungeon.Characters
 
 		void MoveAlongSlope()
 		{
-			if (UnityController && isGrounded && currentMoveOffset.magnitude > 0)
+			if (UnityController && IsGrounded && currentMoveOffset.magnitude > 0)
 			{
 				CheckSlopeNormal();
 				
@@ -657,29 +722,29 @@ namespace Dungeon.Characters
 
 		void ControlsSubscribe()
 		{
-			PlayerInputs.Player.Move.started += InputMoveStarted;
-			PlayerInputs.Player.Move.performed += InputMovePerformed;
-			PlayerInputs.Player.Move.canceled += InputMoveCancelled;
-			PlayerInputs.Player.Move.Enable();
+			Inputs.Player.Move.started += InputMoveStarted;
+			Inputs.Player.Move.performed += InputMovePerformed;
+			Inputs.Player.Move.canceled += InputMoveCancelled;
+			Inputs.Player.Move.Enable();
 
-			PlayerInputs.Player.RunAndDodge.started += InputRunStarted;
-			PlayerInputs.Player.RunAndDodge.performed += InputRunPerformed;
-			PlayerInputs.Player.RunAndDodge.canceled += InputRunCancelled;
-			PlayerInputs.Player.RunAndDodge.Enable();
+			Inputs.Player.RunAndDodge.started += InputRunStarted;
+			Inputs.Player.RunAndDodge.performed += InputRunPerformed;
+			Inputs.Player.RunAndDodge.canceled += InputRunCancelled;
+			Inputs.Player.RunAndDodge.Enable();
 		}
 
 		void ControlsUnsubscribe()
 		{
-			PlayerInputs.Player.Move.started += InputMoveStarted;
-			PlayerInputs.Player.Move.performed -= InputMovePerformed;
-			PlayerInputs.Player.Move.canceled -= InputMoveCancelled;
-			PlayerInputs.Player.Move.Disable();
+			Inputs.Player.Move.started += InputMoveStarted;
+			Inputs.Player.Move.performed -= InputMovePerformed;
+			Inputs.Player.Move.canceled -= InputMoveCancelled;
+			Inputs.Player.Move.Disable();
 
 
-			PlayerInputs.Player.RunAndDodge.started -= InputRunStarted;
-			PlayerInputs.Player.RunAndDodge.performed -= InputRunPerformed;
-			PlayerInputs.Player.RunAndDodge.canceled -= InputRunCancelled;
-			PlayerInputs.Player.RunAndDodge.Disable();
+			Inputs.Player.RunAndDodge.started -= InputRunStarted;
+			Inputs.Player.RunAndDodge.performed -= InputRunPerformed;
+			Inputs.Player.RunAndDodge.canceled -= InputRunCancelled;
+			Inputs.Player.RunAndDodge.Disable();
 		}
 
 
@@ -737,10 +802,10 @@ namespace Dungeon.Characters
 			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * GetFlatMoveDirection();
 			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized * movePercentage;
 
-			AnimHandler.SetMovementPerformed(moveInputRaw.sqrMagnitude>0 && Player.AllowMove(), blend);
-			AnimHandler.SetGrounded(DistanceToGround() < 0.4f);
-			AnimHandler.LostBalance(LostBalance);
-			AnimHandler.Rolling(Rolling);
+			PAnimation.SetMovementPerformed(moveInputRaw.sqrMagnitude>0 && Player.AllowMove(), blend);
+			PAnimation.SetGrounded(DistanceToGround() < 0.4f);
+			PAnimation.LostBalance(LostBalance);
+			PAnimation.Rolling(Rolling);
 
 		}
 
@@ -748,7 +813,6 @@ namespace Dungeon.Characters
 
 		#region Debug
 
-		bool setGizmos = false;
 
 		void OnDrawGizmos()
 		{
@@ -802,7 +866,6 @@ namespace Dungeon.Characters
 			bool output = true;
 
 			output = LostBalance ? false : output;
-			output = Staggered ? false : output;
 			output = Rolling ? false : output;
 
 			return output;

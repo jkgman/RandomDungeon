@@ -10,10 +10,83 @@ namespace Dungeon.Characters
 	/// </summary>
 	public class Player : Character, IAllowedPlayerActions
 	{
-		
+
+		#region Variables & References
 		//If same key uses multiple bindings depending on the length of input, this is used.
 		//Example: Running=Press&Hold - Dodge=Press&Release
-		public readonly float inputSinglePressMaxTime = 0.3f;
+		public static readonly float inputSinglePressMaxTime = 0.3f;
+
+
+
+		//_______ Start of Class References
+		private PlayerCombatHandler _pCombat;
+		private PlayerCombatHandler PCombat
+		{
+			get
+			{
+				if (!_pCombat)
+					_pCombat = GetComponent<PlayerCombatHandler>();
+				return _pCombat;
+			}
+		}
+		private PlayerMovement _pMovement;
+		private PlayerMovement PMovement
+		{
+			get
+			{
+				if (!_pMovement)
+					_pMovement = GetComponent<PlayerMovement>();
+				return _pMovement;
+			}
+		}
+		private PlayerAnimationHandler _pAnimation;
+		private PlayerAnimationHandler PAnimation
+		{
+			get
+			{
+				if (!_pAnimation)
+					_pAnimation = GetComponent<PlayerAnimationHandler>();
+				return _pAnimation;
+			}
+		}
+		//_______ End of Class References
+
+		#endregion Variables & References
+
+
+
+		#region Routines
+
+		protected override IEnumerator DieRoutine()
+		{
+			dieRoutineStarted = true;
+
+			Effects.PlayDeathParticles();
+			DisableColliders();
+			Ragdoll.StartRagdoll();
+	
+			isActive = false;
+
+			yield return new WaitForSeconds(2f);
+			Respawn();
+		}
+
+		#endregion
+
+		#region Hidden Functions
+
+		void Respawn()
+		{
+			Ragdoll.Reset();
+			Stats.health.AddHealth(100000f);
+			transform.position = PMovement.GetSpawnPosition();
+			Effects.SetVisible();
+
+			EnableColliders();
+			isActive = true;
+			dieRoutineStarted = false;
+		}
+		#endregion Hidden Functions
 
 		#region IAllowedActions
 
@@ -21,7 +94,7 @@ namespace Dungeon.Characters
 		{
 			bool output = true;
 			
-			output = PController.AllowMove() ? output : false;
+			output = PMovement.AllowMove() ? output : false;
 			output = PCombat.AllowMove() ? output : false;
 			output = !Ragdoll.IsRagdolling ? output : false;
 
@@ -32,7 +105,7 @@ namespace Dungeon.Characters
 		{
 			bool output = true;
 			
-			output = PController.AllowRun() ? output : false;
+			output = PMovement.AllowRun() ? output : false;
 			output = PCombat.AllowRun() ? output : false;
 			output = !Ragdoll.IsRagdolling ? output : false;
 
@@ -42,7 +115,7 @@ namespace Dungeon.Characters
 		{
 			bool output = true;
 
-			output = PController.AllowAttack() ? output : false;
+			output = PMovement.AllowAttack() ? output : false;
 			output = PCombat.AllowAttack() ? output : false;
 			output = !Ragdoll.IsRagdolling ? output : false;
 
@@ -52,7 +125,7 @@ namespace Dungeon.Characters
 		{
 			bool output = true;
 
-			output = PController.AllowDodge() ? output : false;
+			output = PMovement.AllowDodge() ? output : false;
 			output = PCombat.AllowDodge() ? output : false;
 			output = !Ragdoll.IsRagdolling ? output : false;
 
@@ -62,7 +135,7 @@ namespace Dungeon.Characters
 		{
 			bool output = true;
 
-			output = PController.AllowRotate() ? output : false;
+			output = PMovement.AllowRotate() ? output : false;
 			output = PCombat.AllowRotate() ? output : false;
 			output = !Ragdoll.IsRagdolling ? output : false;
 
@@ -70,96 +143,6 @@ namespace Dungeon.Characters
 		}
 
 		#endregion
-
-		#region Getters & Setters
-
-		private Inputs _inputs;
-		public Inputs Inputs
-		{
-			get{
-				if (_inputs == null)
-					_inputs = new Inputs();
-
-				return _inputs;
-			}
-		}
-		private PlayerController _pController;
-		public PlayerController PController
-		{
-			get {
-				if (!_pController)
-					_pController = GetComponent<PlayerController>();
-
-				return _pController;
-			}
-		}
-
-		private PlayerAnimationHandler _pAnimation;
-		public PlayerAnimationHandler PAnimation
-		{
-			get {
-				if (!_pAnimation)
-					_pAnimation = GetComponent<PlayerAnimationHandler>();
-
-				return _pAnimation;
-			}
-		}
-
-		private PlayerCombatHandler _pCombat;
-		public PlayerCombatHandler PCombat
-		{
-			get
-			{
-				if (!_pCombat)
-					_pCombat = GetComponent<PlayerCombatHandler>();
-
-				return _pCombat;
-			}
-		}
-
-		private CameraController _cam;
-		public CameraController GetCam {
-			get
-			{
-				if (!_cam && Camera.main)
-				{
-					_cam = Camera.main.GetComponentInParent<CameraController>();
-				}
-
-				return _cam;
-			}
-		}
-
-		#endregion
-
-
-
-		protected override IEnumerator DieRoutine()
-		{
-			//Death animation or whatever.
-			//For now it is just a particle effect and disappear.
-			dieRoutineStarted = true;
-			Effects.PlayDeathParticles();
-			//Effects.SetInvisible();
-			DisableColliders();
-			Ragdoll.StartRagdoll();
-			isActive = false;
-
-			yield return new WaitForSeconds(2f);
-			Respawn();
-		}
-
-		void Respawn()
-		{
-			Ragdoll.Reset();
-			transform.position = PController.GetSpawnPosition();
-			Stats.health.AddHealth(100000f);
-			Effects.SetVisible();
-			EnableColliders();
-			isActive = true;
-			dieRoutineStarted = false;
-		}
-
 
 	}
 }

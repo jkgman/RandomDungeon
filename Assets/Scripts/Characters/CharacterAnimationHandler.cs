@@ -6,20 +6,27 @@ namespace Dungeon.Characters
 {
 	public class CharacterAnimationHandler : MonoBehaviour
 	{
+		#region Variables & References
 
+		//_______ Start of Constant variables
 		protected readonly string defaultChargeAnimName = "default charge";		//Name should match animator's default clip name
 		protected readonly string defaultAttackAnimName = "default attack";		//Name should match animator's default clip name
 		protected readonly string defaultRecoveryAnimName = "default recovery"; //Name should match animator's default clip name
 		protected readonly float defaultAnimSpeed = 1f;
+		//_______ End of Constant variables
 
-
-		//How fast blendTree values change.
-		[SerializeField] protected float blendSpeed = 5f;
-		protected Vector2 currentMoveBlend = Vector2.zero;
+		//_______ Start of Exposed variables
+		[SerializeField, Tooltip("Determine how fast animation blendTree values should change.")]
+		protected float blendSpeed = 5f;
+		//_______ End of Exposed variables
 		
+		//_______ Start of Hidden variables
+		protected Vector2 currentMoveBlend = Vector2.zero;
 		private List<KeyValuePair<AnimationClip, AnimationClip>> currentOverrides = new List<KeyValuePair<AnimationClip, AnimationClip>>();
 		private RuntimeAnimatorController mainController;
+		//_______ End of Hidden variables
 
+		#endregion Variables & References
 
 		#region Getters & Setters
 
@@ -35,21 +42,25 @@ namespace Dungeon.Characters
 			}
 		}
 
-		#endregion
+		#endregion Getters & Setters
 
+		#region Initialization
 
 		protected virtual void Awake()
 		{
 			mainController = Animator.runtimeAnimatorController;
 		}
 
+		#endregion Initialization
+
+		#region Helper functions
 
 		/// <summary>
 		/// Replaces a clip inside animator. Original animation is found with string name and replaced with inserted AnimationClip.
 		/// </summary>
 		/// <param name="animName">The currently existing animation in animator.</param>
 		/// <param name="in_clip">Clip to replace the current animation with.</param>
-		public void AddOverrideClip(string animName, AnimationClip in_clip)
+		protected void AddOverrideClip(string animName, AnimationClip in_clip)
 		{
 			AnimatorOverrideController aoc = new AnimatorOverrideController();
 			aoc.runtimeAnimatorController = mainController;
@@ -98,6 +109,10 @@ namespace Dungeon.Characters
 			aoc.ApplyOverrides(currentOverrides);
 			Animator.runtimeAnimatorController = aoc;
 		}
+
+		#endregion
+
+		#region Animation variable setters
 
 		public void LostBalance(bool value)
 		{
@@ -214,5 +229,7 @@ namespace Dungeon.Characters
 		{
 			Animator.SetBool("isRecovering", false);
 		}
+
+		#endregion Animation variable setters
 	}
 }

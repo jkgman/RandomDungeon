@@ -60,7 +60,11 @@ namespace Dungeon.Characters
 		private Animator anim;
 		Rigidbody[] bodies;
 
-
+		void OnEnable()
+		{
+			if (!mainModel)
+				mainModel = transform;
+		}
 	
 		void DisableRagdoll()
 		{

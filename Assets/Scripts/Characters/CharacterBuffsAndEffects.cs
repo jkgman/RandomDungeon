@@ -3,18 +3,36 @@ using UnityEngine.Experimental.VFX;
 
 public class CharacterBuffsAndEffects : MonoBehaviour
 {
+	#region Variables & References
 	[Header("Take damage")]
 	
-	[SerializeField] private VisualEffect damageVFX;
-	[SerializeField] private VisualEffect deathVFX;
+	[SerializeField] private VisualEffect damageVFX = null;
+	[SerializeField] private VisualEffect deathVFX = null;
 
 	[Header("Mesh References etc")]
-	[SerializeField] private Transform meshVisualsParent;
+	[SerializeField] private Transform meshVisualsParent = null;
 
-	//Possibly for the future....
-	//[Header("Buffs")]
-	//List<Renderer> allRenderers;
-	//Color iceBuffColor;
+	#endregion Variables & References
+
+	#region Exposed Functions
+
+	public void SetInvisible()
+	{
+		if (meshVisualsParent)
+			meshVisualsParent.gameObject.SetActive(false);
+			
+	}
+
+	public void SetVisible()
+	{
+		if (meshVisualsParent)
+			meshVisualsParent.gameObject.SetActive(true);
+
+	}
+
+	#endregion Exposed Functions
+
+	#region Exposed Functions - Particles
 
 	public void PlayDeathParticles()
 	{
@@ -66,21 +84,6 @@ public class CharacterBuffsAndEffects : MonoBehaviour
 		}
 	}
 
-
-
-	public void SetInvisible()
-	{
-		if (meshVisualsParent)
-			meshVisualsParent.gameObject.SetActive(false);
-			
-	}
-
-	public void SetVisible()
-	{
-		if (meshVisualsParent)
-			meshVisualsParent.gameObject.SetActive(true);
-
-	}
-
+	#endregion Exposed Functions - Particles
 
 }

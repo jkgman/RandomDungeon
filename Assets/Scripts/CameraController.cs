@@ -74,26 +74,44 @@ namespace Dungeon
 
 
 		#region Getters & Setters
-		private Characters.Player _playerManager;
+
+		private Characters.PlayerCombatHandler _playerCombat;
+		private Characters.PlayerCombatHandler PlayerCombat
+		{
+			get
+			{
+				if (!_playerCombat)
+				{
+					var go = GameObject.FindGameObjectWithTag("Player");
+					if (go)
+						_playerCombat = go.GetComponent<Characters.PlayerCombatHandler>();
+				}
+				return _playerCombat;
+			}
+		}
+		private Characters.Player _player;
 		private Characters.Player Player
 		{
 			get
 			{
-				if (!_playerManager)
+				if (!_player)
 				{
 					var go = GameObject.FindGameObjectWithTag("Player");
-					_playerManager = go.GetComponent<Characters.Player>();
+					if (go)
+						_player = go.GetComponent<Characters.Player>();
 				}
-				return _playerManager;
+				return _player;
 			}
 		}
+
+
 		private Vector3 PlayerPos
 		{
 			get { return Player.GetPhysicalPosition(); }
 		}
 		private ITargetable PlayerTarget
 		{
-			get { return Player.PCombat.Target; }
+			get { return PlayerCombat.CurrentTarget; }
 
 		}
 
@@ -156,7 +174,7 @@ namespace Dungeon
 
 		void Awake() 
 		{
-			if (Player)
+			if (PlayerCombat && Player)
 			{
 				AddEvents();
 				ControlsSubscribe();
@@ -170,16 +188,16 @@ namespace Dungeon
 
 		void AddEvents()
 		{
-			if (_playerManager && _playerManager.PCombat.targetChangedEvent != null)
-				_playerManager.PCombat.targetChangedEvent.AddListener(TargetChanged);
+			if (PlayerCombat && PlayerCombat.targetChangedEvent != null)
+				PlayerCombat.targetChangedEvent.AddListener(TargetChanged);
 			if (CameraTransformsUpdated == null)
 				CameraTransformsUpdated = new UnityEvent();
 
 		}
 		void RemoveEvents()
 		{
-			if (_playerManager && _playerManager.PCombat.targetChangedEvent != null)
-				_playerManager.PCombat.targetChangedEvent.RemoveListener(TargetChanged);
+			if (PlayerCombat && PlayerCombat.targetChangedEvent != null)
+				PlayerCombat.targetChangedEvent.RemoveListener(TargetChanged);
 
 			if (CameraTransformsUpdated != null)
 				CameraTransformsUpdated.RemoveAllListeners();
@@ -234,7 +252,7 @@ namespace Dungeon
 
 		void LateUpdate()
 		{
-			if (!_playerManager) //This script relies on player.
+			if (!PlayerCombat || !Player) //This script relies on player.
 				return;
 
 			SetDummyPosition(); // Dummy is position target for camera.
@@ -260,7 +278,7 @@ namespace Dungeon
 				Vector3 midPos = (PlayerTarget.GetPosition() + PlayerPos) / 2f;
 				Vector3 vectorBetween = PlayerTarget.GetPosition() - PlayerPos;
 				//Weight towards player the further away target is
-				Vector3 goalPos = Vector3.Lerp(midPos, PlayerPos, Player.PCombat.GetMaxDistToTarget / vectorBetween.magnitude);
+				Vector3 goalPos = Vector3.Lerp(midPos, PlayerPos, PlayerCombat.GetMaxDistToTarget / vectorBetween.magnitude);
 				//Lerp determines how much camera lags behind player
 				dummyPos = Vector3.Lerp(dummyPos, goalPos + lookAtOffset, Time.smoothDeltaTime * LERP_DUMMY_TARGETING);
 			}
@@ -346,14 +364,12 @@ namespace Dungeon
 			}
 		}
 
-
 		void PhysicsCheck()
 		{
 			Physics.SphereCast(dummyPos, 0.5f, GetCurrentDirection(), out RaycastHit hit, distDefault, collidingLayers.value);
-			float magnitude = (dummyPos - hit.point).magnitude;
 			if (hit.collider)
 			{
-				currentDistance = magnitude;
+				currentDistance = (dummyPos - hit.point).magnitude;
 			}
 			else
 			{
@@ -376,7 +392,7 @@ namespace Dungeon
 			if (PlayerTarget == null)
 			{
 				var x = defaultVAngle;
-				var y = Vector3.SignedAngle(Vector3.forward , -_playerManager.transform.forward, Vector3.up);
+				var y = Vector3.SignedAngle(Vector3.forward , -PlayerCombat.transform.forward, Vector3.up);
 				RawAngle = new Vector2(x, y);
 			}
 		}
@@ -413,9 +429,6 @@ namespace Dungeon
 			transform.rotation = newRot;
 		}
 	
-
-
-
 		#region Debug
 
 		[SerializeField] private bool debugVisuals = false;

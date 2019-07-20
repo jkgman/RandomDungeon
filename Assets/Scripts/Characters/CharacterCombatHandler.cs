@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 
 
@@ -11,23 +9,58 @@ namespace Dungeon.Characters
 
 	public class CharacterCombatHandler : MonoBehaviour
 	{
+		#region Variables & References
 
-		[Header("Attack shit")]
+		//_______ Start of Exposed Variables
+		[Header("Attack stuff")]
 		[SerializeField] protected Transform rightHand;
 		[SerializeField] protected Transform leftHand;
+		//_______ End of Exposed Variables
 
+		//_______ Start of Hidden Variables
 		protected IEnumerator currentAttackCo;
 		protected IEnumerator pendingAttackCo;
 
 		protected float elapsedAttackTime;
 		protected bool attackPending;
 		protected bool interrupt;
+		//_______ End of Hidden Variables
 
-		private Weapon currentWeapon;
-		protected Weapon GetCurrentWeapon()
+
+		//_______ Start of Class References
+		private CharacterAnimationHandler _cAnimHandler;
+		private CharacterAnimationHandler CAnimHandler
 		{
-			return currentWeapon;
+			get
+			{
+				if (!_cAnimHandler) _cAnimHandler = GetComponentInChildren<CharacterAnimationHandler>();
+				return _cAnimHandler;
+			}
 		}
+		private CharacterMovement _cMovement;
+		private CharacterMovement CMovement
+		{
+			get
+			{
+				if (!_cMovement) _cMovement = GetComponentInChildren<CharacterMovement>();
+				return _cMovement;
+			}
+		}
+		private Weapon _cWeapon;
+		private Weapon CWeapon
+		{
+			get
+			{
+				if (!_cWeapon) _cWeapon = GetComponentInChildren<Weapon>();
+				if (_cWeapon) _cWeapon.CurrentEquipper = transform;
+				return _cWeapon;
+			}
+		}
+		//_______ End of Class References
+
+		#endregion Variables & References
+
+		#region Getters & Setters
 
 		public bool IsBlocking
 		{
@@ -50,43 +83,11 @@ namespace Dungeon.Characters
 			protected set;
 		}
 
-		/// <summary>
-		/// Interrupts ongoing actions, such as attack.
-		/// </summary>
-		/// <param name="force">Forces the interruption to happen, even when action is not set to be cancellable.</param>
-		public virtual void InterruptCombat(bool force = false)
-		{
-			CancelAttack(force);
-		}
+		#endregion Getters & Setters
 
-		private Character _character;
-		private Character Character
-		{
-			get
-			{
-				if (!_character)
-					_character = GetComponent<Character>();
 
-				return _character;
-			}
-		}
 
-		#region Initialization
-
-		protected virtual void OnEnable()
-		{
-			currentWeapon = GetComponentInChildren<Weapon>();
-			if (currentWeapon)
-				currentWeapon.CurrentEquipper = transform;
-		}
-		protected virtual void Start()
-		{
-
-		}
-		protected virtual void OnDisable()
-		{
-
-		}
+		#region Initialization & Updates
 
 		protected virtual void Update()
 		{
@@ -95,20 +96,36 @@ namespace Dungeon.Characters
 
 		#endregion
 
+		#region Exposed Functions
+		/// <summary>
+		/// Interrupts ongoing actions, such as attack.
+		/// </summary>
+		/// <param name="force">Forces the interruption to happen, even when action is not set to be cancellable.</param>
+		public virtual void InterruptCombat(bool force = false)
+		{
+			CancelAttack(force);
+		}
+		#endregion Exposed Functions
 
-		#region Attack stuff
+		#region Attack Functions
 
-		void SetAttackData()
+		private void SetAttackData()
 		{
 			elapsedAttackTime = 0;
-			Character.AnimationHandler.SetAttackData(currentWeapon.GetCurrentAttackData());
+			if (CAnimHandler)
+				CAnimHandler.SetAttackData(CWeapon.GetCurrentAttackData());
 		}
 
 		protected virtual void Attack()
 		{
-			if (currentWeapon.IsAttacking && !currentWeapon.AttackAllowed(elapsedAttackTime) && currentWeapon.AttackPendingAllowed(elapsedAttackTime))
+			if (!CWeapon) return;
+
+			bool pending = CWeapon.IsAttacking;
+			pending &= !CWeapon.AttackAllowed(elapsedAttackTime);
+			pending &= CWeapon.AttackPendingAllowed(elapsedAttackTime);
+
+			if (pending) //Start waiting until attack is available.
 			{
-				//Start waiting until attack is available.
 				attackPending = true;
 
 				if (pendingAttackCo != null)
@@ -134,7 +151,11 @@ namespace Dungeon.Characters
 		{
 			while(attackPending)
 			{
-				if (!currentWeapon.IsAttacking || currentWeapon.AttackAllowed(elapsedAttackTime))
+				if (!CWeapon)
+				{
+					attackPending = false;
+				}
+				else if (!CWeapon.IsAttacking || CWeapon.AttackAllowed(elapsedAttackTime))
 				{
 					attackPending = false;
 					CancelAttack(true);
@@ -146,31 +167,42 @@ namespace Dungeon.Characters
 
 		protected virtual void CancelAttack(bool force = false)
 		{
-			if (currentWeapon.IsAttacking && (currentWeapon.AttackCancellable() || force))
+			if (CWeapon && (CWeapon.AttackCancellable() || force))
 			{
+				CWeapon.EndAttacking();
+
 				if (currentAttackCo != null)
-				{
 					StopCoroutine(currentAttackCo);
-					Debug.Log("Stopped attack coroutine");
-					currentWeapon.EndAttacking();
-				}
+
+			}
+			else if (!CWeapon && currentAttackCo != null)
+			{
+				StopCoroutine(currentAttackCo);
 			}
 		}
 
-		protected void MoveCharacter(float offsetTotal, float t01)
+		protected void MoveCharacterByWeapon(float offsetTotal, float t01)
 		{
-			float moveOffset = currentWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
+			if (!CWeapon) return;
+			if (!CMovement) return;
+
+			float moveOffset = CWeapon.GetMoveDistanceFromCurve(t01) - offsetTotal;
+
 			if (moveOffset < -0.2f)
-				Debug.Log("move offset negative" + currentWeapon.CurrentAttackState.ToString());
-			Character.CharacterController.ExternalMove(transform.forward * moveOffset);
+				CMovement.ExternalMove(transform.forward * moveOffset);
 
 		}
 
+		#endregion Attack Functions
 
+		#region Attack Coroutines
+
+		/// <summary>
+		/// The main routine of attacking, goes through phases charge, attack and recovery.
+		/// </summary>
 		protected IEnumerator LightAttackRoutine()
 		{
-			Debug.Log("attack coroutine started");
-			currentWeapon.StartAttacking(AttackType.lightAttack);
+			CWeapon.StartAttacking(AttackType.lightAttack);
 			SetAttackData();
 
 			yield return null; //Wait for one frame because animator sucks ass (ignores booleans if setting durations in same frame)
@@ -179,98 +211,124 @@ namespace Dungeon.Characters
 			yield return StartCoroutine(LightAttackAttack());
 			yield return StartCoroutine(LightAttackRecovery());
 
-			currentWeapon.EndAttacking();
+			CWeapon.EndAttacking();
 
 		}
 
-
+		/// <summary>
+		/// First phase of attack, drawing weapon to charge position.
+		/// Applies movement curves and tells weapon what is going on.
+		/// </summary>
 		protected virtual IEnumerator LightAttackCharge()
 		{
-			currentWeapon.CurrentAttackState = AttackState.charge;
-			Character.AnimationHandler.SetChargeStarted();
+			CWeapon.CurrentAttackState = AttackState.charge;
+			CAnimHandler.SetChargeStarted(); //Tells animator to start charge animation.
 
 			float t01 = 0;
 			float offsetTotal = 0;
 			float t = 0;
 
+			bool loop = CWeapon != null;
 
-			while (currentWeapon.IsAttacking &&
-					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
+			while (loop)
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				t01 = Mathf.Clamp01(t / CWeapon.GetCurrentActionDuration());
 
-				MoveCharacter(offsetTotal, t01); // Offset total needs to be from previous update.
-				offsetTotal = currentWeapon.GetMoveDistanceFromCurve(t01);
+				MoveCharacterByWeapon(offsetTotal, t01); // Offset total needs to be from previous update.
+				offsetTotal = CWeapon.GetMoveDistanceFromCurve(t01);
 
-				Character.CharacterController.SetMoveSpeedMultiplier(currentWeapon.GetMoveSpeedMultiplier(t));
-				Character.CharacterController.SetRotationSpeedMultiplier(currentWeapon.GetRotationSpeedMultiplier(t));
+				CMovement.SetMoveSpeedMultiplier(CWeapon.GetMoveSpeedMultiplier(t));
+				CMovement.SetRotationSpeedMultiplier(CWeapon.GetRotationSpeedMultiplier(t));
 
 				t += Time.smoothDeltaTime;
+
+
 				yield return null;
+				//Check if while loop can continue. For readability reasons this way
+				loop &= CWeapon != null;
+				loop &= CWeapon.IsAttacking;
+				loop &= t < CWeapon.GetCurrentActionDuration();
+
 			}
 
-			Character.AnimationHandler.SetChargeCancelled();
+			CAnimHandler.SetChargeCancelled(); //Tells animator to stop animation.
 
 		}
 
-
+		/// <summary>
+		/// Second phase of attack, the actual damaging action.
+		/// Applies movement curves and tells weapon what is going on.
+		/// </summary>
 		protected virtual IEnumerator LightAttackAttack()
 		{
-			currentWeapon.CurrentAttackState = AttackState.attack;
-			Character.AnimationHandler.SetAttackStarted();
+			CWeapon.CurrentAttackState = AttackState.attack;
+			CAnimHandler.SetAttackStarted(); //Tells animator to start attack animation.
 
 			float t01 = 0;
 			float offsetTotal = 0;
 			float t = 0;
+			bool loop = CWeapon != null;
 
-			while ( currentWeapon.IsAttacking &&
-					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
+			while (loop)
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				t01 = Mathf.Clamp01(t / CWeapon.GetCurrentActionDuration());
 
-				MoveCharacter(offsetTotal, t01);
-				offsetTotal = currentWeapon.GetMoveDistanceFromCurve(t01);
+				MoveCharacterByWeapon(offsetTotal, t01);
+				offsetTotal = CWeapon.GetMoveDistanceFromCurve(t01);
 
-				Character.CharacterController.SetMoveSpeedMultiplier(currentWeapon.GetMoveSpeedMultiplier(t));
-				Character.CharacterController.SetRotationSpeedMultiplier(currentWeapon.GetRotationSpeedMultiplier(t));
+				CMovement.SetMoveSpeedMultiplier(CWeapon.GetMoveSpeedMultiplier(t));
+				CMovement.SetRotationSpeedMultiplier(CWeapon.GetRotationSpeedMultiplier(t));
 
 				t += Time.smoothDeltaTime;
+
 				yield return null;
+				//Check if while loop can continue. For readability reasons this way
+				loop &= CWeapon != null;
+				loop &= CWeapon.IsAttacking;
+				loop &= t < CWeapon.GetCurrentActionDuration();
 			}
 
-			Character.AnimationHandler.SetAttackCancelled();
+			CAnimHandler.SetAttackCancelled(); //Tells animator to stop animation.
 
 		}
+
+
+		/// <summary>
+		/// Last phase of attack, recovering back to original pose.
+		/// Applies movement curves and tells weapon what is going on.
+		/// </summary>
 		protected virtual IEnumerator LightAttackRecovery()
 		{
-			currentWeapon.CurrentAttackState = AttackState.recovery;
-			Character.AnimationHandler.SetRecoveryStarted();
+			CWeapon.CurrentAttackState = AttackState.recovery;
+			CAnimHandler.SetRecoveryStarted(); //Tells animator to start recovery animation.
 
 			float t01 = 0;
 			float offsetTotal = 0;
 			float t = 0;
+			bool loop = CWeapon != null;
 
-			while ( currentWeapon.IsAttacking &&
-					currentWeapon.CurrentAttackType == AttackType.lightAttack &&
-					t < currentWeapon.GetCurrentActionDuration())
+			while (loop)
 			{
-				t01 = Mathf.Clamp01(t / currentWeapon.GetCurrentActionDuration());
+				t01 = Mathf.Clamp01(t / CWeapon.GetCurrentActionDuration());
 
-				MoveCharacter(offsetTotal, t01);
-				offsetTotal = currentWeapon.GetMoveDistanceFromCurve(t01);
+				MoveCharacterByWeapon(offsetTotal, t01);
+				offsetTotal = CWeapon.GetMoveDistanceFromCurve(t01);
 
-				Character.CharacterController.SetMoveSpeedMultiplier(currentWeapon.GetMoveSpeedMultiplier(t));
-				Character.CharacterController.SetRotationSpeedMultiplier(currentWeapon.GetRotationSpeedMultiplier(t));
+				CMovement.SetMoveSpeedMultiplier(CWeapon.GetMoveSpeedMultiplier(t));
+				CMovement.SetRotationSpeedMultiplier(CWeapon.GetRotationSpeedMultiplier(t));
 
 				t += Time.smoothDeltaTime;
+
 				yield return null;
+				//Check if while loop can continue. For readability reasons this way
+				loop &= CWeapon != null;
+				loop &= CWeapon.IsAttacking;
+				loop &= t < CWeapon.GetCurrentActionDuration();
 			}
 
-			Character.AnimationHandler.SetRecoveryCancelled();
+			CAnimHandler.SetRecoveryCancelled(); //Tells animator to stop animation.
 		}
 		
-	#endregion
+		#endregion
 	}
 }

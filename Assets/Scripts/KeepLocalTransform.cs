@@ -5,9 +5,9 @@ using UnityEngine;
 public class KeepLocalTransform : MonoBehaviour
 {
 	[SerializeField]
-	bool position;
+	bool position = true;
 	[SerializeField]
-	bool rotation;
+	bool rotation = true;
 
 	Vector3 originalPos;
 	Vector3 originalEuler;

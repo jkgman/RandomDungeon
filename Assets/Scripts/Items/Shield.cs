@@ -6,21 +6,21 @@ using UnityEngine;
 namespace Dungeon.Items
 {
 /// <summary>
-/// Item that has blocking properties and can absorb damage
+/// Item that has blocking properties and can absorb damage. WORK IN PROGRESS
 /// </summary>
 	public class Shield : MonoBehaviour
 	{
-		[SerializeField] private Collider blockCollider;
-		[SerializeField] private bool canParry = true;
-		[SerializeField] private float blockStrength;
+		[SerializeField] private Collider blockCollider = null;
+		//[SerializeField] private bool canParry = true;
+		//[SerializeField] private float blockStrength = 1f;
 
-		Characters.PlayerCombatHandler pCombat;
-		bool isEquipped;
+		private Characters.CharacterCombatHandler cCombat;
+		private bool isEquipped = false;
 
 
 		public void Equip(Characters.PlayerCombatHandler in_pCombat)
 		{
-			pCombat = in_pCombat;
+			cCombat = in_pCombat;
 			isEquipped = true;
 			blockCollider.isTrigger = true;
 		}
@@ -28,7 +28,7 @@ namespace Dungeon.Items
 		public void UnEquip()
 		{
 			isEquipped = false;
-			pCombat = null;
+			cCombat = null;
 			blockCollider.isTrigger = false;
 		}
 

@@ -8,8 +8,16 @@ namespace Dungeon.Characters
 { 
 	[RequireComponent(typeof(CharacterBuffsAndEffects))]
 	[RequireComponent(typeof(Stats))]
-	public class Character : MonoBehaviour, ITakeDamage
+	public class Character : MonoBehaviour
 	{
+		#region Structs enums classes
+		
+		[System.Serializable]
+		protected struct CharacterCollider
+		{
+			public Collider col;
+			public CharacterColliderType colType;
+		}
 		protected enum CharacterColliderType
 		{
 			torso,
@@ -17,89 +25,67 @@ namespace Dungeon.Characters
 			leg,
 			head
 		}
+		
+		#endregion Structs enums classes
 
-		[System.Serializable]
-		protected struct CharacterCollider
-		{
-			public Collider col;
-			public CharacterColliderType colType;
-		}
+		#region Variables & References
+
+		//_______ Start of Exposed variables
+		[SerializeField, Tooltip("All Characted colliders and their body positions.")]
+		protected List<CharacterCollider> colliders;
+		//_______ End of Exposed variables
 
 
+		//_______ Start of Hidden variables
 		protected bool isActive = true;
 		protected bool dieRoutineStarted = false;
+		//_______ End of Hidden variables
 
 
-		[SerializeField]
-		protected List<CharacterCollider> colliders;
 
+		//_______ Start of Class References
 		private Stats _stats;
-		public Stats Stats
+		protected Stats Stats
 		{
 			get
 			{
-				if (!_stats)
-					_stats = GetComponent<Stats>();
-
+				if (!_stats) _stats = GetComponent<Stats>();
 				return _stats;
 			}
 		}
-
 		private CharacterBuffsAndEffects _effects;
-		public CharacterBuffsAndEffects Effects
+		protected CharacterBuffsAndEffects Effects
 		{
-			get
-			{
-				if (!_effects)
+			get{
+				if (_effects)
 					_effects = GetComponent<CharacterBuffsAndEffects>();
 
 				return _effects;
 			}
 		}
-		private CharacterAnimationHandler _animationHandler;
-		public CharacterAnimationHandler AnimationHandler
+		private RagdollScript _ragdoll;
+		protected RagdollScript Ragdoll
 		{
-			get
-			{
-				if (!_animationHandler)
-					_animationHandler = GetComponent<CharacterAnimationHandler>();
+			get{
+				if (!_ragdoll)
+					_ragdoll = GetComponent<RagdollScript>();
 
-				return _animationHandler;
+				return _ragdoll;
 			}
 		}
+		//_______ End of Class References
 
-		private CharacterController _characterController;
-		public CharacterController CharacterController
-		{
-			get
-			{
-				if (!_characterController)
-					_characterController = GetComponent<CharacterController>();
 
-				return _characterController;
-			}
-		}
+		#endregion Variables & References
 
-		private CharacterCombatHandler _characterCombatHandler;
-		public CharacterCombatHandler CharacterCombatHandler
-		{
-			get
-			{
-				if (!_characterController)
-					_characterCombatHandler = GetComponent<CharacterCombatHandler>();
+		#region Getters & Setters
 
-				return _characterCombatHandler;
-			}
-		}
-
-		public RagdollScript Ragdoll
-		{
-			get{ return GetComponent<RagdollScript>(); }
-		}
-
+		/// <summary>
+		/// Gets current player position. If ragdolled, gets position from hip location.
+		/// </summary>
 		public Vector3 GetPhysicalPosition()
 		{
-			if (Ragdoll.IsRagdolling)
+			if (Ragdoll && Ragdoll.IsRagdolling)
 			{
 				return Ragdoll.GetPhysicalPosition();
 			}
@@ -109,73 +95,46 @@ namespace Dungeon.Characters
 			}
 		}
 
+		#endregion Getters & Setters
+
+		#region Initialization & Updates
 
 		protected virtual void Update()
 		{
+			CheckDeath();
+		}
+
+		private void CheckDeath()
+		{
+			//IF not dying but should be, start dying.
 			if (!Stats.health.IsAlive() && !dieRoutineStarted)
 				StartCoroutine(DieRoutine());
 
-			if (transform.position.y < -200f)
-				Stats.health.SubstractHealth(10000f);
-
 		}
 
+		#endregion Initialization & Updates
 
+		#region Coroutines
+		/// <summary>
+		/// Plays effects, disables colliders etc in this routine. Destroys the gameObject if needed.
+		/// </summary>
+		/// <returns></returns>
 		protected virtual IEnumerator DieRoutine()
 		{
-			yield return null;
-		}
-
-
-
-		public void TakeDamage(float amount)
-		{
-			if (!Stats.health.IsAlive())
-				return;
-
-			Stats.health.SubstractHealth(amount);
-		
-		}
-
-		public void TakeDamageAtPosition(float amount, Vector3 position)
-		{
-			if (!Stats.health.IsAlive())
-				return;
-
-			Stats.health.SubstractHealth(amount);
-
 			if (Effects)
 			{
-				Effects.PlayDamageParticles(position);
+				Effects.PlayDeathParticles();
 			}
+			DisableColliders();
+
+			yield return new WaitForSeconds(2f);
+
+			Destroy(gameObject);
 		}
 
-		public void TakeDamageWithForce(float amount,Vector3 hitForce)
-		{
-			if (!Stats.health.IsAlive())
-				return;
+		#endregion Coroutines
 
-			Stats.health.SubstractHealth(amount);
-
-			if (Effects)
-			{
-				Effects.PlayDamageParticles(hitForce);
-			}
-		}
-
-		public void TakeDamageAtPositionWithForce(float amount, Vector3 position, Vector3 hitForce)
-		{
-			if (!Stats.health.IsAlive())
-				return;
-
-			Stats.health.SubstractHealth(amount);
-
-			if (Effects)
-			{
-				Effects.PlayDamageParticles(position, hitForce);
-			}
-		}
-
+		#region Helper Functions
 
 		protected void EnableColliders()
 		{
@@ -192,13 +151,6 @@ namespace Dungeon.Characters
 			}
 		}
 
-		public Transform GetTransform()
-		{
-			return transform;
-		}
-
-
-
-
+		#endregion Helper Functions
 	}
 }
