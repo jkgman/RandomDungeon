@@ -14,20 +14,51 @@ namespace Dungeon.Characters.Enemies
 
 	public class Enemy : Character, ITargetable, IAllowedEnemyActions
 	{
+		#region Variables & References
 
-		[SerializeField] private float minIdleTime;
-		[SerializeField] private float maxIdleTime;
-		[SerializeField] private float minStrollTime;
-		[SerializeField] private float maxStrollTime;
+		//_______ Start of Exposed Variables
+		[SerializeField] private float minIdleTime = 0;
+		[SerializeField] private float maxIdleTime = 10;
+		[SerializeField] private float minStrollTime = 0;
+		[SerializeField] private float maxStrollTime = 10;
+		//_______ End of Exposed Variables
 
+		//_______ Start of Hidden Variables
 		private float idleDuration;
 		private float currentIdleTime;
 		private float strollDuration;
 		private float currentStrollTime;
+		//_______ End of Hidden Variables
 
-        //Todo: this can be handled different down the line, for now one enemy will have key as a variable and drop it on death
-        #region Drop
-        private GameObject drop;
+		//_______ Start of Class References
+		private EnemyCombatHandler _eCombat;
+		private EnemyCombatHandler ECombat
+		{
+			get
+			{
+				if (!_eCombat)
+					_eCombat = GetComponent<EnemyCombatHandler>();
+				return _eCombat;
+			}
+		}
+		private EnemyMovement _eMovement;
+		private EnemyMovement EMovement
+		{
+			get
+			{
+				if (!_eMovement)
+					_eMovement = GetComponent<EnemyMovement>();
+				return _eMovement;
+			}
+		}
+		//_______ End of Class References
+
+		#endregion Variables & References
+
+		#region Drop
+		//Todo: this can be handled different down the line, for now one enemy will have key as a variable and drop it on death
+
+		private GameObject drop;
         public void SetDrop(GameObject obj) {
             Debug.Log("drop");
             if (drop != null)
@@ -39,9 +70,11 @@ namespace Dungeon.Characters.Enemies
 			if (drop)
 	            Instantiate(drop, transform.position, transform.rotation);
         }
-        #endregion
+		#endregion
 
-        private EnemyState _currentState = EnemyState.idle;
+		#region Getters & Setters
+
+		private EnemyState _currentState = EnemyState.idle;
 		public EnemyState GetCurrentState()
 		{
 			return _currentState;
@@ -53,40 +86,13 @@ namespace Dungeon.Characters.Enemies
 
 
 
-		public bool IsTargetable()
-		{
-			return Stats.health.IsAlive() && isActive;
-		}
+		#endregion Getters & Setters
 
-		public Vector3 GetPosition()
-		{
-			return transform.position;
-		}
-		
+		#region Initialization & Updates
 
-		private EnemyCombatHandler _eCombat;
-		private EnemyCombatHandler ECombat
-		{
-			get{
-				if (!_eCombat)
-					_eCombat = GetComponent<EnemyCombatHandler>();
-				return _eCombat;
-			}
-		}
-		private EnemyController _eController;
-		private EnemyController EController
-		{
-			get
-			{
-				if (!_eController)
-					_eController = GetComponent<EnemyController>();
-				return _eController;
-			}
-		}
-
-
-
-
+		/// <summary>
+		/// Checks what current state is and calls state-specific Update function.
+		/// </summary>
 		protected override void Update()
 		{
 			base.Update();
@@ -116,7 +122,45 @@ namespace Dungeon.Characters.Enemies
 
 		}
 
+		/// <summary>
+		/// Called from update when state is Idle
+		/// </summary>
+		private void IdleUpdate()
+		{
+			EMovement.Idle();
+			currentIdleTime += Time.deltaTime;
+		}
 
+		/// <summary>
+		/// Called from update when state is Stroll
+		/// </summary>
+		private void StrollingUpdate()
+		{
+			EMovement.Stroll();
+			currentStrollTime += Time.deltaTime;
+		}
+
+		/// <summary>
+		/// Called from update when state is Follow
+		/// </summary>
+		private void FollowingUpdate()
+		{
+			EMovement.Following(ECombat.GetTargetPosition(), ECombat.CanSeeTarget());
+
+		}
+
+		/// <summary>
+		/// Called from update when state is Attack
+		/// </summary>
+		private void AttackingUpdate()
+		{
+			EMovement.RotateTowardsPosition(ECombat.GetTargetPosition());
+			ECombat.AttackUpdate();
+		}
+
+		/// <summary>
+		/// Finds appropriate AI state from several bool checks.
+		/// </summary>
 		public void UpdateEnemyState()
 		{
 			if (ECombat.AllowAttack())
@@ -150,15 +194,24 @@ namespace Dungeon.Characters.Enemies
 			}
 		}
 
+		/// <summary>
+		/// Check if current idle time is more than idle duration.
+		/// </summary>
 		private bool IdleDone()
 		{
 			return currentIdleTime > idleDuration;
 		}
+		/// <summary>
+		/// Check if current stroll time is more than stroll duration.
+		/// </summary>
 		private bool StrollDone()
 		{
 			return currentStrollTime > strollDuration;
 		}
 
+		/// <summary>
+		/// Reset all timers. called when state changes.
+		/// </summary>
 		private void ResetTimers()
 		{
 			currentIdleTime = 0;
@@ -167,28 +220,9 @@ namespace Dungeon.Characters.Enemies
 			strollDuration = Random.Range(minStrollTime, maxStrollTime);
 		}
 
-		private void IdleUpdate()
-		{
-			EController.Idle();
-			currentIdleTime += Time.deltaTime;
-		}
-		private void StrollingUpdate()
-		{
-			EController.Stroll();
-			currentStrollTime += Time.deltaTime;
-		}
-		private void FollowingUpdate()
-		{
-			EController.Following(ECombat.GetTargetPosition(), ECombat.CanSeeTarget());
+		#endregion Initialization & Updates
 
-		}
-		private void AttackingUpdate()
-		{
-			EController.RotateTowardsPosition(ECombat.GetTargetPosition());
-			ECombat.AttackUpdate();
-		}
-
-
+		#region Routines
 
 		protected override IEnumerator DieRoutine()
 		{
@@ -209,11 +243,15 @@ namespace Dungeon.Characters.Enemies
 			Destroy(this.gameObject);
 		}
 
+		#endregion Routines
+
+		#region IAllowedActions
+
 		public bool AllowMove()
 		{
 			bool output = true;
 
-			output = EController.AllowMove() ? output : false;
+			output = EMovement.AllowMove() ? output : false;
 			output = ECombat.AllowMove() ? output : false;
 
 			return output;
@@ -222,7 +260,7 @@ namespace Dungeon.Characters.Enemies
 		{
 			bool output = true;
 
-			output = EController.AllowRun() ? output : false;
+			output = EMovement.AllowRun() ? output : false;
 			output = ECombat.AllowRun() ? output : false;
 
 			return output;
@@ -231,7 +269,7 @@ namespace Dungeon.Characters.Enemies
 		{
 			bool output = true;
 
-			output = EController.AllowAttack() ? output : false;
+			output = EMovement.AllowAttack() ? output : false;
 			output = ECombat.AllowAttack() ? output : false;
 
 			return output;
@@ -240,10 +278,29 @@ namespace Dungeon.Characters.Enemies
 		{
 			bool output = true;
 
-			output = EController.AllowRotate() ? output : false;
+			output = EMovement.AllowRotate() ? output : false;
 			output = ECombat.AllowRotate() ? output : false;
 
 			return output;
 		}
+
+		#endregion IAllowedActions
+
+		#region ITargetable
+		public Transform GetTransform()
+		{
+			return transform;
+		}
+		public bool IsTargetable()
+		{
+			return Stats.health.IsAlive() && isActive;
+		}
+
+		public Vector3 GetPosition()
+		{
+			return transform.position;
+		}
+		#endregion ITargetable
+
 	}
 }

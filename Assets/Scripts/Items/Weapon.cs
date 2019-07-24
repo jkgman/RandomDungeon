@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,51 +42,48 @@ namespace Dungeon.Items
 			public AnimationCurve chargeMoveCurve;
 			public AnimationCurve attackMoveCurve;
 			public AnimationCurve recoveryMoveCurve;
-			public AnimationClip chargeClip;
-			public AnimationClip attackClip;
-			public AnimationClip recoveryClip;
-			
+			public AnimatorOverrideController overrides;
 		}
 
 		[System.Serializable]
-		protected struct AllowedActionsGeneral
+		protected struct AllowedActions
 		{
-			public bool allowAttackDuringCharge;
-			public bool allowAttackDuringAttack;
-			public bool allowAttackDuringRecovery;
-			public bool allowComboDuringCharge;
-			public bool allowComboDuringAttack;
-			public bool allowComboDuringRecovery;
-			public bool allowCancelDuringRecovery;
+			[Range(0,1f)]
+			public float allowComboInputStartTime;
+			[Range(0,1f)]
+			public float allowComboInputEndTime;
+			[Range(0,1f)]
+			public float allowComboStartTime;
+			public AnimationCurve moveMultiplierCurve;
+			public AnimationCurve rotationMultiplierCurve;
 
 		}
 
-		[System.Serializable]
-		protected struct AllowedActionsSpecific
-		{
-			public bool rotatableDuringCharge;
-			public bool rotatableDuringAttack;
-			public bool rotatableDuringRecovery;
-			public bool movableDuringCharge;
-			public bool movableDuringAttack;
-			public bool movableDuringRecovery;
-		}
 
-
-
-
-
-		[SerializeField] protected AllowedActionsSpecific actionsDuringTargeting;
-		[SerializeField] protected AllowedActionsSpecific actionsDuringFree;
-		[SerializeField] protected AllowedActionsGeneral actionsGeneral;
 
 		[Header("General data")]
-		[SerializeField] protected bool isEquipped;
 		[SerializeField] protected bool staggerableDuringAction;
+		[SerializeField] protected AllowedActions actions;
 		[SerializeField] protected List<AttackData> lightAttacks = new List<AttackData>();
 		[SerializeField] protected List<AttackData> heavyAttacks = new List<AttackData>();
 
 
+		public AttackState CurrentAttackState
+		{
+			get;
+			set;
+		}
+		public AttackType CurrentAttackType
+		{
+			get;
+			set;
+		}
+
+		public bool IsAttacking
+		{
+			get;
+			protected set;
+		}
 		public Transform CurrentEquipper
 		{
 			get;
@@ -135,40 +133,34 @@ namespace Dungeon.Items
 					return 0;
 			}
 		}
+		private float GetRelativeElapsedTime(float currentAttackStateTime)
+		{
+			float t = currentAttackStateTime;
 
+			switch (CurrentAttackState)
+			{
+				case AttackState.attack:
+					t += GetCurrentAttackData().chargeDuration;
+				break;
+				case AttackState.recovery:
+					t += GetCurrentAttackData().chargeDuration + GetCurrentAttackData().attackDuration;	
+				break;
 
-		public AttackType CurrentAttackType
-		{
-			get;
-			set;
-		}
-		public AttackState CurrentAttackState
-		{
-			get;
-			set;
-		}
-		public int CurrentAttackIndex
-		{
-			get;
-			set;
-		}
+				default:
+				break;
+			}
 
-		public bool IsAttacking
-		{
-			get;
-			private set;
+			return t / GetAttackCompleteDuration();
 		}
 
-		public virtual void StartAttacking(AttackType type)
+		private float GetAttackCompleteDuration()
 		{
-			CurrentAttackType = type;
-			CurrentAttackState = AttackState.charge;
-			IsAttacking = true;
-		}
+			float t = 0;
+			t += GetCurrentAttackData().chargeDuration;
+			t += GetCurrentAttackData().attackDuration;
+			t += GetCurrentAttackData().recoveryDuration;
 
-		public void EndAttacking()
-		{
-			IsAttacking = false;
+			return t;
 		}
 
 		public float GetCurrentDamage()
@@ -185,7 +177,6 @@ namespace Dungeon.Items
 					return 0;
 			}
 		}
-
 		public float GetCurrentActionDuration()
 		{
 			switch (CurrentAttackType)
@@ -225,7 +216,6 @@ namespace Dungeon.Items
 					return 0;
 			}
 		}
-
 		public AttackData GetCurrentAttackData()
 		{
 			switch (CurrentAttackType)
@@ -239,112 +229,62 @@ namespace Dungeon.Items
 			}
 		}
 
-		public bool CanRotate(bool hasTarget)
+		public float GetRotationSpeedMultiplier(float currentAttackStateTime)
 		{
-			switch (CurrentAttackState)
-			{
-				case AttackState.charge:
-					if (hasTarget)
-						return actionsDuringTargeting.rotatableDuringCharge;
-					else
-						return actionsDuringFree.rotatableDuringCharge;
-
-				case AttackState.attack:
-					if (hasTarget)
-						return actionsDuringTargeting.rotatableDuringAttack;
-					else
-						return actionsDuringFree.rotatableDuringAttack;
-
-				case AttackState.recovery:
-					if (hasTarget)
-						return actionsDuringTargeting.rotatableDuringRecovery;
-					else
-						return actionsDuringFree.rotatableDuringRecovery;
-
-				default:
-					return true;
-			}
-
+			return actions.rotationMultiplierCurve.Evaluate(GetRelativeElapsedTime(currentAttackStateTime));
+		}
+		public float GetMoveSpeedMultiplier(float currentAttackStateTime)
+		{
+			return actions.moveMultiplierCurve.Evaluate(GetRelativeElapsedTime(currentAttackStateTime));
 		}
 
-		public bool CanMove(bool hasTarget)
+		
+
+
+		public bool AttackPendingAllowed(float elapsedAttackTime)
 		{
-			switch (CurrentAttackState)
-			{
-				case AttackState.charge:
-					if (hasTarget)
-						return actionsDuringTargeting.movableDuringCharge;
-					else
-						return actionsDuringFree.movableDuringCharge;
+			if (!IsAttacking)
+				return true;
 
-				case AttackState.attack:
-					if (hasTarget)
-						return actionsDuringTargeting.movableDuringAttack;
-					else
-						return actionsDuringFree.movableDuringAttack;
-
-				case AttackState.recovery:
-					if (hasTarget)
-						return actionsDuringTargeting.movableDuringRecovery;
-					else
-						return actionsDuringFree.movableDuringRecovery;
-				default:
-					return true;
-			}
+			float t = elapsedAttackTime / GetAttackCompleteDuration();
+			return t > actions.allowComboInputStartTime;
 		}
 
-		public bool CanAttack(bool hasTarget)
+		public bool AttackAllowed(float elapsedAttackTime)
 		{
 			if (IsAttacking)
 			{
-				switch (CurrentAttackState)
-				{
-					case AttackState.charge:
-						return hasTarget ? actionsGeneral.allowAttackDuringCharge : actionsGeneral.allowAttackDuringCharge;
-
-					case AttackState.attack:
-						return hasTarget ? actionsGeneral.allowAttackDuringAttack : actionsGeneral.allowAttackDuringAttack;
-
-					case AttackState.recovery:
-						return hasTarget ? actionsGeneral.allowAttackDuringRecovery : actionsGeneral.allowAttackDuringRecovery;
-
-					default:
-						return true;
-				}
+				float t = elapsedAttackTime / GetAttackCompleteDuration();
+				if (actions.allowComboStartTime < t)
+					return true;
+				else
+					return false;
 			}
 			else
 			{
 				return true;
 			}
+			
 		}
 
-		protected bool CanCombo()
+		protected int CurrentAttackIndex
 		{
-			bool rightTiming = false; //check against current allowed actions.
-			bool hasCombo = false; // check if attacktype has more attacks on list.
-
-			if (CurrentAttackType == AttackType.lightAttack)
-				hasCombo = CurrentAttackIndex < lightAttacks.Count - 1;
-			if (CurrentAttackType == AttackType.heavyAttack)
-				hasCombo = CurrentAttackIndex < heavyAttacks.Count - 1;
-
-			switch (CurrentAttackState)
-			{
-				case AttackState.charge:
-					rightTiming = actionsGeneral.allowComboDuringCharge;
-					break;
-				case AttackState.attack:
-					rightTiming = actionsGeneral.allowComboDuringAttack;
-					break;
-				case AttackState.recovery:
-					rightTiming = actionsGeneral.allowComboDuringRecovery;
-					break;
-				default:
-					break;
-			}
-
-			return rightTiming && hasCombo;
+			get;
+			set;
 		}
+
+		public virtual void StartAttacking(AttackType type)
+		{
+			CurrentAttackType = type;
+			CurrentAttackState = AttackState.charge;
+			IsAttacking = true;
+		}
+		public virtual void EndAttacking()
+		{
+			IsAttacking = false;
+		}
+
+
 
 
 		private void OnTriggerEnter(Collider other)

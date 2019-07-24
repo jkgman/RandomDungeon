@@ -13,78 +13,103 @@ namespace Dungeon.Characters
 	/// </summary>
 	public class PlayerCombatHandler : CharacterCombatHandler, IAllowedPlayerActions
 	{
-		[Header("Target crap")]
+		#region Variables & References
 
-		[SerializeField] private GameObject targetIndicatorPrefab;
-		[SerializeField] private float maxDistToTarget = 10f;
-		[SerializeField] private LayerMask targetLayerMask;
-		[SerializeField] private LayerMask blockTargetLayerMask;
-
-		private GameObject targetIndicator;
+		//_______ Start of Events
 		public UnityEvent targetChangedEvent;
+		//_______ End of Events
 
+		//_______ Start of Exposed variables
+		[Header("Targeting")]
+		[Tooltip("Create target graphic from this")]
+		[SerializeField] private GameObject targetIndicatorPrefab = null;
+		[Tooltip("Get targets from this radius. Disconnects with active target outside the radius.")]
+		[SerializeField] private float maxDistToTarget = 10f;
+		[Tooltip("Which layers are checked for possible targets.")]
+		[SerializeField] private LayerMask targetLayerMask = new LayerMask();
+		[Tooltip("If target is behind obstacles on these layers, target disconnects.")]
+		[SerializeField] private LayerMask blockTargetLayerMask = new LayerMask();
+		[Tooltip("Automatically look for new target when previous disconnects.")]
+		[SerializeField] private bool autoNewTarget = true; //________________________________________________________________________TO DO
 
-		[Header("Dodge shit")]
-		[SerializeField] private float dodgeDistance = 3f;
+		[Header("Dodging")]
+		[Tooltip("Determines how player moves during dodge.")]
+		[SerializeField] private AnimationCurve dodgeDistance = new AnimationCurve();
+		[Tooltip("How long dodge should last.")]
 		[SerializeField] private float dodgeDuration = 0.35f;
-		[SerializeField, Range(0f,1f)] private float dodgeInvincibilityPercentage = 0.75f;
+		[Tooltip("Amount of time during dodge when damage wont be taken. Invincibility is placed in the middle of dodge.")]
+		[SerializeField, Range(0f, 1f)] private float dodgeInvincibilityPercentage = 0.75f;
+		//_______ End of Exposed variables
 
-		//[Header("Block shit")]
+		//_______ Start of Hidden variables
+		private GameObject targetIndicator; //Current indicator created from targetIndicatorPrefab
+		private float inputDodgeStartTime = 0; //Used for timers
+		private float inputTargetSwitchTime = 0; //Used for timers
+		private float inputTargetSwitchInterval = 0.1f; //Minimum amount between changing the target.
+		//_______ End of Hidden variables
 
-		//[Header("Other shit")]
-
-
-		protected PlayerWeapon CurrentWeapon
+		//_______ Start of Class References
+		private PlayerWeapon _pWeapon;
+		private PlayerWeapon PWeapon
 		{
-			get{ return (PlayerWeapon)GetCurrentWeapon(); }
+			get
+			{
+				if (!_pWeapon)
+					_pWeapon = GetComponentInChildren<PlayerWeapon>();
+
+				return _pWeapon;
+			}
 		}
 
-		float inputDodgeStartTime = 0;
-		float inputTargetSwitchTime = 0;
-		readonly float inputTargetSwitchInterval = 0.1f;
-
-		private Inputs inputs;
-
-
-
-
-		#region Initialization
-
-		protected override void OnEnable()
+		private Inputs _inputs;
+		private Inputs Inputs
 		{
-			base.OnEnable();
-			ControlsSubscribe();
-			
+			get
+			{
+				if (_inputs == null)
+					_inputs = new Inputs();
+
+				return _inputs;
+			}
 		}
 
-		protected override void Start()
+		private CameraController _cam;
+		private CameraController Cam
 		{
-			base.Start();
-
-			if (targetChangedEvent == null)
-				targetChangedEvent = new UnityEvent();
-
-			if (Player.GetCam && Player.GetCam.CameraTransformsUpdated != null)
-				Player.GetCam.CameraTransformsUpdated.AddListener(CameraReadyEvent);
-
-		}
-		protected override void OnDisable() 
-		{
-			base.OnDisable();
-
-			targetChangedEvent = null;
-
-			if (Player.GetCam && Player.GetCam.CameraTransformsUpdated != null)
-				Player.GetCam.CameraTransformsUpdated.RemoveListener(CameraReadyEvent);
-
-			ControlsUnsubscribe();
+			get
+			{
+				if (!_cam)
+				{
+					var temp = Camera.main;
+					if (temp)
+						_cam = temp.transform.root.GetComponent<CameraController>();
+				}
+				return _cam;
+			}
 		}
 
-		#endregion
+		private PlayerMovement _pMovement;
+		private PlayerMovement PMovement
+		{
+			get
+			{
+				if (!_pMovement)
+					_pMovement = GetComponent<PlayerMovement>();
 
-		#region Getters & Setters
+				return _pMovement;
+			}
+		}
+		private PlayerAnimationHandler _pAnimation;
+		private PlayerAnimationHandler PAnimation
+		{
+			get
+			{
+				if (!_pAnimation)
+					_pAnimation = GetComponent<PlayerAnimationHandler>();
 
-
+				return _pAnimation;
+			}
+		}
 		private Player _player;
 		private Player Player
 		{
@@ -96,15 +121,20 @@ namespace Dungeon.Characters
 				return _player;
 			}
 		}
+		//_______ End of Class References
 
-		private ITargetable _target;
-		public ITargetable Target {
-			get { return _target; }
+		#endregion Variables & References
+
+		#region Getters & Setters
+
+		private ITargetable _currentTarget;
+		public ITargetable CurrentTarget {
+			get { return _currentTarget; }
 			set {
-				if (value != _target)
+				if (value != _currentTarget)
 					targetChangedEvent.Invoke();
 
-				_target = value;
+				_currentTarget = value;
 			}
 		}
 
@@ -115,47 +145,66 @@ namespace Dungeon.Characters
 
 		public Vector3 GetFlatDirectionToTarget() 
 		{
-			if (Target != null)
+			if (CurrentTarget != null)
 			{
-				var dirToTarget = Target.GetPosition() - transform.position;
+				var dirToTarget = CurrentTarget.GetPosition() - transform.position;
 				dirToTarget.y = 0;
 				return dirToTarget.normalized;
 			} 
 			else
 			{
-				return -Player.PController.GetFlatMoveDirection();
+				return -PMovement.GetFlatMoveDirection();
 			}
 		}
 
-		#endregion
+		#endregion Getters & Setters
 
-		#region Events
+		#region Initialization & Updates
 
-		//Is called after camera has updated its transform.
-		void CameraReadyEvent() {
-			// Target indicator needs the latest camera position, otherwise looks bad at low fps.
-			SetTargetIndicator();
+		private void OnEnable()
+		{
+			ControlsSubscribe();
 		}
 
-		#endregion
-
-		void Update() 
+		private void Start()
 		{
+			if (targetChangedEvent == null)
+				targetChangedEvent = new UnityEvent();
+
+			if (Cam && Cam.CameraTransformsUpdated != null)
+				Cam.CameraTransformsUpdated.AddListener(CameraReadyEvent);
+
+		}
+		
+		private void OnDisable() 
+		{
+			targetChangedEvent.RemoveAllListeners();
+			targetChangedEvent = null;
+
+			if (Cam && Cam.CameraTransformsUpdated != null)
+				Cam.CameraTransformsUpdated.RemoveListener(CameraReadyEvent);
+
+			ControlsUnsubscribe();
+		}
+
+		protected override void Update() 
+		{
+			base.Update();
 			UpdateTarget();
 			UpdateDebug();
 		}
 
 		void UpdateDebug()
 		{
-			if (GetCurrentWeapon() && PlayerDebugCanvas.Instance)
+			if (PWeapon && PlayerDebugCanvas.Instance)
 			{
-				if (GetCurrentWeapon().IsAttacking)
+				if (PWeapon.IsAttacking)
 				{
-					if (GetCurrentWeapon().CurrentAttackState == AttackState.charge)
+					if (PWeapon.CurrentAttackState == AttackState.charge)
 						PlayerDebugCanvas.Instance.SetDebugText("Charge");
-					if (GetCurrentWeapon().CurrentAttackState == AttackState.attack)
+					if (PWeapon.CurrentAttackState == AttackState.attack)
 						PlayerDebugCanvas.Instance.SetDebugText("Attack");
-					if (GetCurrentWeapon().CurrentAttackState == AttackState.recovery)
+					if (PWeapon.CurrentAttackState == AttackState.recovery)
 						PlayerDebugCanvas.Instance.SetDebugText("Recovery");
 				}
 				else
@@ -166,52 +215,89 @@ namespace Dungeon.Characters
 			}
 		}
 
-		#region Targeting
-
-		void UpdateTarget() {
-			if (Target != null && ((Target.GetPosition() - transform.position).magnitude > maxDistToTarget || !Target.IsTargetable()))
+		/// <summary>
+		/// Check if target is still valid. If not, disconnect and check if new target should be found.
+		/// </summary>
+		void UpdateTarget()
+		{
+			if (CurrentTarget != null && ((CurrentTarget.GetPosition() - transform.position).magnitude > maxDistToTarget || !CurrentTarget.IsTargetable()))
 			{
-				Target = null;
+				CurrentTarget = null;
+
+				if (autoNewTarget)
+				{
+					bool success = SetTarget(Cam.GetTargetingData());
+					Debug.Log("InputTargetLock: " + success);
+					if (!success)
+						Cam.ResetCamera();
+				}
 			}
 		}
 
-		void SetTargetIndicator() {
-			if (Target == null || !Player.GetCam) // Indicator relies on camera
+		/// <summary>
+		/// Updates target indicator graphic's position rotation and existence. Is called after cameraController has updated position.
+		/// </summary>
+		void UpdateTargetIndicator()
+		{
+			if (CurrentTarget == null || !Cam) // Indicator relies on camera
 			{
 				if (targetIndicator)
 					Destroy(targetIndicator);
-			} else
+			}
+			else
 			{
 				if (!targetIndicator)
 				{
 					if (targetIndicatorPrefab)
-						targetIndicator = Instantiate(targetIndicatorPrefab, Target.GetPosition(), Quaternion.LookRotation(Player.GetCam.transform.position - Target.GetPosition()));
-				} else
+						targetIndicator = Instantiate(targetIndicatorPrefab, CurrentTarget.GetPosition(), Quaternion.LookRotation(Cam.transform.position - CurrentTarget.GetPosition()));
+				}
+				else
 				{
-					targetIndicator.transform.position = Target.GetPosition();
-					targetIndicator.transform.rotation = Quaternion.LookRotation(Player.GetCam.GetCurrentDirection());
+					targetIndicator.transform.position = CurrentTarget.GetPosition();
+					targetIndicator.transform.rotation = Quaternion.LookRotation(Cam.transform.position - targetIndicator.transform.position);
 				}
 			}
 
 		}
 
-		public bool SetTarget(CameraTargetingData data) {
-			ITargetable oldTarget = Target;
+		#endregion
 
-			if (Target != null)
+		#region Events
+
+		//Is called after camera has updated its transform.
+		void CameraReadyEvent() {
+			// Target indicator needs the latest camera position, otherwise looks bad at low fps.
+			UpdateTargetIndicator();
+		}
+
+		#endregion
+
+		#region Targeting
+
+		/// <summary>
+		/// Looks for targets and sets CurrentTarget if one is found.
+		/// </summary>
+		/// <param name="data">Camera's position, rotation and field of view</param>
+		private bool SetTarget(CameraTargetingData data) {
+			ITargetable oldTarget = CurrentTarget;
+
+			if (CurrentTarget != null)
 			{
-				Target = null;
+				CurrentTarget = null;
 				return true;
 			}
 
 			ITargetable[] nearbyTargets = FindTargets();
 			if (nearbyTargets != null && nearbyTargets.Length > 0)
-				Target = FindBestTarget(data, nearbyTargets);
+				CurrentTarget = FindBestTarget(data, nearbyTargets);
 
-			return Target != oldTarget; //Return true if target changed in any way
+			return CurrentTarget != oldTarget; //Return true if target changed in any way
 		}
 
-		ITargetable[] FindTargets() {
+		/// <summary>
+		/// Gets an array of available targets in maxDistToTarget radius.
+		/// </summary>
+		private ITargetable[] FindTargets() {
 			//Sphere check on all nearby enemies.
 			//Adds objects with ITargetable in temp list
 			//Converts list into output array.
@@ -238,6 +324,11 @@ namespace Dungeon.Characters
 			return output;
 		}
 
+		/// <summary>
+		/// Looks through an array of available targets and chooses the one that is most suitable in terms of direction, distance and visibility.
+		/// </summary>
+		/// <param name="camData">Camera's position, rotation and field of view.</param>
+		/// <param name="allTheBoisToBeTargeted">Array of available targets</param>
 		ITargetable FindBestTarget(CameraTargetingData camData, ITargetable[] allTheBoisToBeTargeted) {
 			ITargetable output = null;
 			float currentBestAngle = -1;
@@ -267,9 +358,14 @@ namespace Dungeon.Characters
 			return output;
 		}
 
+
+		/// <summary>
+		/// Tries to look for new targets if there are more than current target available, and switches.
+		/// </summary>
+		/// <param name="direction">Should targets be looked from left or right (-1 or +1)</param>
 		void SwitchTarget(int direction) {
 			ITargetable[] allTheBoisToBeTargeted = FindTargets();
-			CameraTargetingData camData = Player.GetCam.GetTargetingData();
+			CameraTargetingData camData = Cam.GetTargetingData();
 
 			ITargetable newTarget = null;
 			float currentBestAngle = -1;
@@ -303,7 +399,7 @@ namespace Dungeon.Characters
 			}
 
 			if (newTarget != null)
-				Target = newTarget;
+				CurrentTarget = newTarget;
 
 		}
 
@@ -311,46 +407,58 @@ namespace Dungeon.Characters
 
 		#region Combat
 
+		/// <summary>
+		/// Start dodge if allowed.
+		/// </summary>
 		void Dodge()
 		{
 			if (Player.AllowDodge())
 			{
-				Vector3 dodgeDir = Player.PController.GetFlatMoveDirection(false);
-				dodgeDir.y = 0;
-				StartCoroutine(DodgeRoutine(dodgeDir.normalized));
+				Debug.Log("Dodge allowed");
+				StartCoroutine(DodgeRoutine());
 				
 			}
 		}
 
-		IEnumerator DodgeRoutine(Vector3 direction)
+		/// <summary>
+		/// Updates position and invincibility throughtout the dodge duration
+		/// </summary>
+		IEnumerator DodgeRoutine()
 		{
 			IsDodging = true;
 
 			float t = 0;
 			float invincibilityMargin = (1f - dodgeInvincibilityPercentage) / 2;
-			
-			float angle = Vector3.SignedAngle(transform.forward, Vector3.forward, Vector3.up);
-			Vector3 relativeMoveDirection = Quaternion.Euler(0, angle, 0) * direction;
-			Vector2 blend = new Vector2(relativeMoveDirection.x, relativeMoveDirection.z).normalized;
-			Player.PAnimation.SetDodgeStarted(blend, dodgeDuration);
+
+			PAnimation.SetDodgeStarted();
+
+			float currentOffset = 0;
+			float lastEvaluation = 0;
+			Vector3 dir = PMovement.GetTransformedInputDirection(false);
+			transform.forward = dir;
 
 			while (IsDodging && t < dodgeDuration)
 			{
 				IsInvincible = (t / dodgeDuration > invincibilityMargin) && (t / dodgeDuration < 1 - invincibilityMargin);
-				float distThisFrame = (dodgeDistance / dodgeDuration) * Time.smoothDeltaTime;
-				Vector3 offset = direction * distThisFrame;
-				Player.PController.ExternalMove(offset);
+
+				currentOffset = dodgeDistance.Evaluate(t / dodgeDuration) - lastEvaluation;
+				lastEvaluation += currentOffset;
+				PMovement.ExternalMove(dir * currentOffset);
 
 				yield return null;
+				transform.forward = dir;
 				t += Time.smoothDeltaTime;
 			}
 
+			PAnimation.SetDodgeCancelled();
 			IsDodging = false;
-			Player.PAnimation.SetDodgeCancelled();
 
 			yield return null;
 		}
 
+		/// <summary>
+		/// Start attack if allowed.
+		/// </summary>
 		protected override void Attack()
 		{
 			Debug.Log("Tried attack. Allowed:" + Player.AllowAttack());
@@ -359,68 +467,51 @@ namespace Dungeon.Characters
 				base.Attack();
 			}
 		}
-
-
-		protected override void CharacterMovementDuringAttack(Vector3 moveDirection, float moveOffset)
-		{
-			base.CharacterMovementDuringAttack(moveDirection, moveOffset);
-
-			if (CurrentWeapon.CanRotate(Target != null))
-				Player.PController.ExternalRotateToInputDirection();
-
-		}
-
+	
 		#endregion
-
 
 		#region HandleInputs
 
-
-
-
 		void ControlsSubscribe() 
 		{
-			if (inputs == null)
-				inputs = new Inputs();
 
-
-			inputs.Player.TargetLock.performed += InputTargetLock;
-			inputs.Player.TargetLock.Enable();
-			inputs.Player.SwitchTarget.started += InputTargetSwitch;
-			inputs.Player.SwitchTarget.Enable();
-			inputs.Player.RunAndDodge.started += InputDodgeStarted;
-			inputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
-			inputs.Player.RunAndDodge.Enable();
-			inputs.Player.Attack.started += InputAttackStarted;
-			inputs.Player.Attack.canceled += InputAttackCancelled;
-			inputs.Player.Attack.Enable();
-			inputs.Player.Move.performed += InputAttackCancellationPerformed;
-			inputs.Player.Move.Enable();
+			Inputs.Player.TargetLock.performed += InputTargetLock;
+			Inputs.Player.TargetLock.Enable();
+			Inputs.Player.SwitchTarget.started += InputTargetSwitch;
+			Inputs.Player.SwitchTarget.Enable();
+			Inputs.Player.RunAndDodge.started += InputDodgeStarted;
+			Inputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
+			Inputs.Player.RunAndDodge.Enable();
+			Inputs.Player.Attack.started += InputAttackStarted;
+			Inputs.Player.Attack.canceled += InputAttackCancelled;
+			Inputs.Player.Attack.Enable();
+			//inputs.Player.Move.performed += InputAttackCancellationPerformed;
+			//inputs.Player.Move.Enable();
 		}
 
 		void ControlsUnsubscribe() 
 		{
-			inputs.Player.TargetLock.performed -= InputTargetLock;
-			inputs.Player.SwitchTarget.started -= InputTargetSwitch;
-			inputs.Player.RunAndDodge.started -= InputDodgeStarted;
-			inputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
-			inputs.Player.Move.performed -= InputAttackCancellationPerformed;
+			Inputs.Player.TargetLock.performed -= InputTargetLock;
+			Inputs.Player.SwitchTarget.started -= InputTargetSwitch;
+			Inputs.Player.RunAndDodge.started -= InputDodgeStarted;
+			Inputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
+			//inputs.Player.Move.performed -= InputAttackCancellationPerformed;
 
 		}
 
 		void InputTargetLock(InputAction.CallbackContext context) 
 		{
 
-			bool success = SetTarget(Player.GetCam.GetTargetingData());
+			bool success = SetTarget(Cam.GetTargetingData());
 			Debug.Log("InputTargetLock: " + success);
 			if (!success)
-				Player.GetCam.ResetCamera();
+				Cam.ResetCamera();
 
 		}
 
 		void InputTargetSwitch(InputAction.CallbackContext context) 
 		{
-			if (Target == null)
+			if (CurrentTarget == null)
 				return;
 
 			if (Time.time - inputTargetSwitchTime < inputTargetSwitchInterval)
@@ -449,14 +540,14 @@ namespace Dungeon.Characters
 
 		}
 
-
 		void InputDodgeStarted(InputAction.CallbackContext context) 
 		{
 			inputDodgeStartTime = Time.time;
 		}
+		
 		void InputDodgeCancelled(InputAction.CallbackContext context) 
 		{
-			if (Time.time - inputDodgeStartTime < Player.inputMaxPressTime)
+			if (Time.time - inputDodgeStartTime < Player.inputSinglePressMaxTime)
 			{
 				Dodge();
 			}
@@ -470,10 +561,11 @@ namespace Dungeon.Characters
 		{
 
 		}
+		
 		void InputAttackCancellationPerformed(InputAction.CallbackContext context)
 		{
 			//Gets called by all inputs that have ability to cancel attack, such as movement
-			if (CurrentWeapon.IsAttacking)
+			if (PWeapon.IsAttacking)
 				CancelAttack();
 		}
 
@@ -488,8 +580,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(Target != null) ? output : false;
 
 			return output;
 		}
@@ -501,8 +591,6 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = IsBlocking ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(Target != null) ? false : output;
 
 			return output;
 		}
@@ -513,7 +601,11 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			output = CurrentWeapon.CanAttack(Target != null) ? output : false;
+
+			if (PWeapon)
+				output = PWeapon.AttackPendingAllowed(elapsedAttackTime) ? output : false;
+			else
+				output = false;
 
 			return output;
 		}
@@ -524,8 +616,8 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon)
-				output = CurrentWeapon.IsAttacking ? false : output;
+			if (PWeapon && PWeapon.IsAttacking)
+				output = PWeapon.AttackCancellable() ? output : false;
 
 			return output;
 		}
@@ -535,8 +627,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking && CurrentWeapon.CanRotate(Target != null))
-				output = false;
 				
 			return output;
 		}

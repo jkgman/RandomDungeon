@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Weapon_Sword1_Player_LightAttack1
+  m_Controller: {fileID: 9100000, guid: 6209de1fa1978954bb6a30f480f7fb7d, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: e6e02f2f4e78447439cb3401dd084e54, type: 2}
+    m_OverrideClip: {fileID: -1835262771022962993, guid: 86df6f70a519abf49bb6aa5b40046cec,
+      type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 22b87721f46b3834c88a0c7c68b13e59, type: 2}
+    m_OverrideClip: {fileID: -203655887218126122, guid: 86df6f70a519abf49bb6aa5b40046cec,
+      type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 893c5a16454e009499216c074d9105b8, type: 2}
+    m_OverrideClip: {fileID: -375746082173295270, guid: 86df6f70a519abf49bb6aa5b40046cec,
+      type: 3}

@@ -4,33 +4,74 @@ using UnityEngine;
 using UnityEngine.AI;
 
 
-namespace Dungeon.Characters
+namespace Dungeon.Characters.Enemies
 {
 	using Dungeon.Items;
 
 	public class EnemyCombatHandler : CharacterCombatHandler , IAllowedEnemyActions
 	{
-		[SerializeField] private float targetFindDistance;
-		[SerializeField] private float maxAttackDistance;
-		[SerializeField] private float attackDelay;
-		[SerializeField] private LayerMask obstacleMask;
+		#region Variables & References
+
+		//_______ Start of Exposed Variables
+		[Tooltip("Max distance to see and remember target position.")]
+		[SerializeField] private float targetFindDistance = 10f; 
+		[Tooltip("Max distance from target where attack will be carried.")]
+		[SerializeField] private float maxAttackDistance = 1f; 
+		[Tooltip("Delay before starting to attack and between attacks.")]
+		[SerializeField] private float attackDelay = 0.5f;
+		[Tooltip("Time until target can not be found anymore after seeing target last time.")]
+		[SerializeField] private float forgetTargetDelay = 5f;
+		[Tooltip("Obstacles that can block visibility to target.")]
+		[SerializeField] private LayerMask obstacleMask = new LayerMask();
+		//_______ End of Exposed Variables
+
+		//_______ Start of Hidden Variables
 		private float attackDelayTimer;
 		private bool attackTimerReset;
 		private Transform target;
-		private NavMeshAgent navMeshAgent;
 		private float targetSeenLastTime;
-		protected EnemyWeapon CurrentWeapon
+		//_______ End of Hidden Variables
+
+		//_______ Start of Class References
+		private EnemyWeapon _eWeapon;
+		private EnemyWeapon EWeapon
 		{
-			get { return (EnemyWeapon)GetCurrentWeapon(); }
+			get
+			{
+				if (!_eWeapon) _eWeapon = GetComponentInChildren<EnemyWeapon>();
+				if (_eWeapon) _eWeapon.CurrentEquipper = transform;
+				return _eWeapon;
+			}
 		}
-
-
-		protected override void OnEnable()
+		private NavMeshAgent _agent;
+		private NavMeshAgent Agent
 		{
-			base.OnEnable();
-			navMeshAgent = GetComponent<NavMeshAgent>();
-		}
+			get{
+				if (!_agent)
+					_agent = GetComponent<NavMeshAgent>();
 
+				return _agent;
+			}
+		}
+		private Enemy _enemy;
+		private Enemy Enemy
+		{
+			get
+			{
+				if (!_enemy) _enemy = GetComponentInChildren<Enemy>();
+				return _enemy;
+			}
+		}
+		//_______ End of Class References
+
+		#endregion Variables & References
+
+		#region Getters & Setters
+
+		/// <summary>
+		/// Finds player in scene and gets its transform position.
+		/// </summary>
+		/// <returns></returns>
 		public Vector3 GetTargetPosition()
 		{
 			if (!target)
@@ -43,11 +84,19 @@ namespace Dungeon.Characters
 			return target.position;
 		}
 
+		/// <summary>
+		/// Direction from current position to player (target)
+		/// </summary>
+		/// <returns></returns>
 		public Vector3 GetTargetDirection()
 		{
 			return GetTargetPosition() - transform.position;
 		}
 
+		/// <summary>
+		/// Check if target visibility is blocked by any obstacles
+		/// </summary>
+		/// <returns></returns>
 		public bool CanSeeTarget()
 		{
 
@@ -62,13 +111,17 @@ namespace Dungeon.Characters
 				return true;
 			}
 		}
-
+	
+		/// <summary>
+		/// Check if target is close enough to traverse there. Uses a timer from last time target was seen and forgets target position if enough time has passed after last time seen.
+		/// </summary>
+		/// <returns></returns>
 		public bool CanFindTarget()
 		{
-			if (targetSeenLastTime + 5f > Time.time)
+			if (targetSeenLastTime + forgetTargetDelay > Time.time)
 			{
 				//For 5 seconds after having seen target, it can see players position within its range.
-				float sqrDist = (navMeshAgent.stoppingDistance + targetFindDistance) * (navMeshAgent.stoppingDistance + targetFindDistance);
+				float sqrDist = (Agent.stoppingDistance + targetFindDistance) * (Agent.stoppingDistance + targetFindDistance);
 				if (GetTargetDirection().sqrMagnitude < sqrDist)
 					return true;
 			}
@@ -76,6 +129,10 @@ namespace Dungeon.Characters
 			return false;
 		}
 
+		/// <summary>
+		/// Checks if target is visible and close enough.
+		/// </summary>
+		/// <returns></returns>
 		private bool TargetIsAttackable()
 		{
 			//Check that target is close enough and delayTimer has run
@@ -95,11 +152,18 @@ namespace Dungeon.Characters
 			return canAttack;
 		}
 
+		#endregion Getters & Setters
+
+		#region Initialization & Updates
+
+		/// <summary>
+		/// Called from Enemy when state is Attack.
+		/// </summary>
 		public void AttackUpdate()
 		{
 			bool canAttack = true;
 			float sqrLen = GetTargetDirection().sqrMagnitude;
-			if (sqrLen < navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance)
+			if (sqrLen < Agent.stoppingDistance * Agent.stoppingDistance)
 			{
 				//Reset timer once
 				if (!attackTimerReset)
@@ -108,6 +172,10 @@ namespace Dungeon.Characters
 					attackDelayTimer = Time.time;
 					attackTimerReset = true;
 				}
+				else if (Time.time - attackDelayTimer < attackDelay)
+				{
+					canAttack = false;
+				}
 			}
 			else
 			{
@@ -115,19 +183,21 @@ namespace Dungeon.Characters
 				attackTimerReset = false;
 			}
 
-			if (!CurrentWeapon.IsAttacking && canAttack)
+			if (EWeapon)
 			{
-				Debug.Log("attack called");
-				Attack();
-			}
-			else if (CurrentWeapon.IsAttacking)
-			{
-				attackTimerReset = false;
+				if (!EWeapon.IsAttacking && canAttack)
+				{
+					Debug.Log("attack called");
+					Attack();
+				}
+				else if (EWeapon.IsAttacking)
+				{
+					attackTimerReset = false;
+				}
 			}
 		}
 
-
-
+		#endregion Initialization & Updates
 
 		#region IAllowedActions
 
@@ -137,8 +207,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(true) ? output : false;
 
 			return output;
 		}
@@ -150,8 +218,9 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = IsBlocking ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanMove(true) ? false : output;
+
+			if (EWeapon && EWeapon.IsAttacking)
+				output =  false;
 
 			return output;
 		}
@@ -163,7 +232,8 @@ namespace Dungeon.Characters
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
 			output = TargetIsAttackable() ? output : false;
-			output = CurrentWeapon.CanAttack(true) ? output : false;
+			if (EWeapon && EWeapon.IsAttacking)
+				output = EWeapon.AttackPendingAllowed(elapsedAttackTime) ? output : false;
 
 			return output;
 		}
@@ -174,8 +244,6 @@ namespace Dungeon.Characters
 
 			output = IsDodging ? false : output;
 			output = IsStunned ? false : output;
-			if (CurrentWeapon && CurrentWeapon.IsAttacking)
-				output = CurrentWeapon.CanRotate(true) ? output : false;
 
 			return output;
 		}
