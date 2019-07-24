@@ -1729,6 +1729,7 @@ MonoBehaviour:
   maxIdleTime: 1
   minStrollTime: 5
   maxStrollTime: 20
+  drop: {fileID: 7929793527708657321, guid: 3818a87eaf103c14390966e2e63131f7, type: 3}
 --- !u!114 &6212252257882444864
 MonoBehaviour:
   m_ObjectHideFlags: 0
