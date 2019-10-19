@@ -43,10 +43,11 @@ namespace Dungeon.Items
 			public AnimationCurve attackMoveCurve;
 			public AnimationCurve recoveryMoveCurve;
 			public AnimatorOverrideController overrides;
+			public AllowedActions allowedActions;
 		}
 
 		[System.Serializable]
-		protected struct AllowedActions
+		public class AllowedActions
 		{
 			[Range(0,1f)]
 			public float allowComboInputStartTime;
@@ -63,7 +64,7 @@ namespace Dungeon.Items
 
 		[Header("General data")]
 		[SerializeField] protected bool staggerableDuringAction;
-		[SerializeField] protected AllowedActions actions;
+		//[SerializeField] protected AllowedActions actions;
 		[SerializeField] protected List<AttackData> lightAttacks = new List<AttackData>();
 		[SerializeField] protected List<AttackData> heavyAttacks = new List<AttackData>();
 
@@ -179,42 +180,18 @@ namespace Dungeon.Items
 		}
 		public float GetCurrentActionDuration()
 		{
-			switch (CurrentAttackType)
+			switch (CurrentAttackState)
 			{
-				case AttackType.lightAttack:
-				{
-					switch (CurrentAttackState)
-					{
-						case AttackState.charge:
-							return lightAttacks[CurrentAttackIndex].chargeDuration;
-						case AttackState.attack:
-							return lightAttacks[CurrentAttackIndex].attackDuration;
-						case AttackState.recovery:
-							return lightAttacks[CurrentAttackIndex].recoveryDuration;
-						default:
-							return 0;
-					}
-
-				}
-
-				case AttackType.heavyAttack:
-				{
-					switch (CurrentAttackState)
-					{
-						case AttackState.charge:
-							return heavyAttacks[CurrentAttackIndex].chargeDuration;
-						case AttackState.attack:
-							return heavyAttacks[CurrentAttackIndex].attackDuration;
-						case AttackState.recovery:
-							return heavyAttacks[CurrentAttackIndex].recoveryDuration;
-						default:
-							return 0;
-					}
-				}
+				case AttackState.charge:
+					return GetCurrentAttackData().chargeDuration;
+				case AttackState.attack:
+					return GetCurrentAttackData().attackDuration;
+				case AttackState.recovery:
+					return GetCurrentAttackData().recoveryDuration;
 				default:
-					Debug.LogWarning("Action duration not known, set to 0");
 					return 0;
 			}
+			
 		}
 		public AttackData GetCurrentAttackData()
 		{
@@ -229,13 +206,59 @@ namespace Dungeon.Items
 			}
 		}
 
+		private AllowedActions GetCurrentAllowedActions()
+		{
+			switch (CurrentAttackType)
+			{
+				case AttackType.lightAttack:
+				{
+					switch (CurrentAttackState)
+					{
+						case AttackState.charge:
+							return lightAttacks[CurrentAttackIndex].allowedActions;
+						case AttackState.attack:
+							return lightAttacks[CurrentAttackIndex].allowedActions;
+						case AttackState.recovery:
+							return lightAttacks[CurrentAttackIndex].allowedActions;
+						default:
+							return null;
+					}
+
+				}
+
+				case AttackType.heavyAttack:
+				{
+					switch (CurrentAttackState)
+					{
+						case AttackState.charge:
+							return heavyAttacks[CurrentAttackIndex].allowedActions;
+						case AttackState.attack:
+							return heavyAttacks[CurrentAttackIndex].allowedActions;
+						case AttackState.recovery:
+							return heavyAttacks[CurrentAttackIndex].allowedActions;
+						default:
+							return null;
+					}
+				}
+				default:
+					return null;
+			}
+		}
+		
 		public float GetRotationSpeedMultiplier(float currentAttackStateTime)
 		{
-			return actions.rotationMultiplierCurve.Evaluate(GetRelativeElapsedTime(currentAttackStateTime));
+			if (GetCurrentAllowedActions() != null)
+				return GetCurrentAllowedActions().rotationMultiplierCurve.Evaluate(currentAttackStateTime);
+			else
+				return 0;
+
 		}
 		public float GetMoveSpeedMultiplier(float currentAttackStateTime)
 		{
-			return actions.moveMultiplierCurve.Evaluate(GetRelativeElapsedTime(currentAttackStateTime));
+			if (GetCurrentAllowedActions() != null)
+				return GetCurrentAllowedActions().moveMultiplierCurve.Evaluate(currentAttackStateTime);
+			else
+				return 0;
 		}
 
 		
@@ -247,7 +270,7 @@ namespace Dungeon.Items
 				return true;
 
 			float t = elapsedAttackTime / GetAttackCompleteDuration();
-			return t > actions.allowComboInputStartTime;
+			return t > GetCurrentAllowedActions().allowComboInputStartTime;
 		}
 
 		public bool AttackAllowed(float elapsedAttackTime)
@@ -255,7 +278,7 @@ namespace Dungeon.Items
 			if (IsAttacking)
 			{
 				float t = elapsedAttackTime / GetAttackCompleteDuration();
-				if (actions.allowComboStartTime < t)
+				if (GetCurrentAllowedActions().allowComboStartTime < t)
 					return true;
 				else
 					return false;

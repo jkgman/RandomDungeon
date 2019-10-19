@@ -734,7 +734,11 @@ AnimatorController:
     m_Name: LegIK
     m_StateMachine: {fileID: -6410306169202046950}
     m_Mask: {fileID: 31900000, guid: fc0889ccaed81cd4ba97eef1c13b5edc, type: 2}
-    m_Motions: []
+    m_Motions:
+    - serializedVersion: 2
+      m_State: {fileID: 0}
+      m_Motion: {fileID: -203655887218126122, guid: a301530acbc74a04da5d8429d1e4a0f6,
+        type: 3}
     m_Behaviours: []
     m_BlendingMode: 0
     m_SyncedLayerIndex: 0

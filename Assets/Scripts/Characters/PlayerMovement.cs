@@ -369,6 +369,9 @@ namespace Dungeon.Characters
 			return output;
 		}
 
+		/// <summary>
+		/// Can be used to calculate sideways movement path when targeting an enemy.
+		/// </summary>
 		Vector2 MovePointAlongCircle(float currentAngle, Vector2 currentPoint, Vector2 centerPoint, float distance) 
 		{
 			var r = Vector2.Distance(currentPoint, centerPoint);
