@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dungeon.Characters
+namespace Dungeon
 {
 	public class Stamina
 	{
@@ -40,6 +40,11 @@ namespace Dungeon.Characters
 		public bool HasEnoughStamina(float amountNeeded)
 		{
 			return (currentStamina - amountNeeded) > 0;
+		}
+
+		public void Reset()
+		{
+			AddStamina(maxStamina);
 		}
 	}
 

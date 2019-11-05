@@ -19,6 +19,16 @@ namespace Dungeon
 		attack,
 		recovery
 	}
+
+	[System.Serializable]
+	public struct HitData
+	{
+		public Collider col;
+		public Vector3 position;
+		public float damage;
+		public Vector3 force;
+	}
+
 }
 
 namespace Dungeon.Items
@@ -31,6 +41,7 @@ namespace Dungeon.Items
 	/// </summary>
 	public class Weapon : MonoBehaviour
 	{
+
 
 		[System.Serializable]
 		public struct AttackData
@@ -319,10 +330,15 @@ namespace Dungeon.Items
 
 			if (dmg != null && other.transform != CurrentEquipper)
 			{
-				//Position and force are placeholder tests.
-				Vector3 position = other.ClosestPointOnBounds(transform.position);
-				Vector3 force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage()*0.5f;
-				dmg.TakeDamageAtPositionWithForce(GetCurrentDamage(), position, force);
+				HitData hit = new HitData()
+				{
+					col = other,
+					position = other.ClosestPointOnBounds(transform.position),
+					damage = GetCurrentDamage(),
+					force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage() * 0.5f
+				};
+			
+				dmg.TakeDamage(hit);
 			}
 		}
 
@@ -333,13 +349,17 @@ namespace Dungeon.Items
 
 			ITakeDamage dmg = other.GetComponentInParent<ITakeDamage>();
 
-			if (dmg != null && dmg.GetTransform() != CurrentEquipper)
+			if (dmg != null && other.transform != CurrentEquipper)
 			{
-				Debug.Log("Attack trigger, dmg: " + dmg + "CurrentEquipper: " + CurrentEquipper.name);
-				//Position and force are placeholder tests.
-				Vector3 position = other.ClosestPointOnBounds(transform.position);
-				Vector3 force = (other.transform.position - transform.parent.position).normalized * GetCurrentDamage() *0.5f;
-				dmg.TakeDamageAtPositionWithForce(GetCurrentDamage(), position, force);
+				HitData hit = new HitData()
+				{
+					col = other,
+					position = other.ClosestPointOnBounds(transform.position),
+					damage = GetCurrentDamage(),
+					force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage() * 0.5f
+				};
+
+				dmg.TakeDamage(hit);
 			}
 		}
 

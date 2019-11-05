@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dungeon.Characters
+namespace Dungeon
 {
 	public class Stats : MonoBehaviour
 	{
@@ -13,21 +13,18 @@ namespace Dungeon.Characters
 
 		public float maxStamina;
 		public Stamina stamina;
-
-		private Character Character
-		{
-			get{ return GetComponent<Character>(); }
-		}
-
-		private CharacterBuffsAndEffects Effects
-		{
-			get{ return GetComponent<CharacterBuffsAndEffects>(); }
-		}
+		
 
 		private void Awake()
 		{
 			health = new Health(maxHealth, damageStackInterval);
 			stamina = new Stamina(maxStamina);
+		}
+
+		public void Reset()
+		{
+			health.Reset();
+			stamina.Reset();
 		}
 	}
 }

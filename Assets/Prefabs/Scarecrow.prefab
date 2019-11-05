@@ -43,6 +43,8 @@ GameObject:
   - component: {fileID: 2407985155898916529}
   - component: {fileID: 1509093735644033479}
   - component: {fileID: 4088125857030464951}
+  - component: {fileID: 1135344561}
+  - component: {fileID: 1135344557}
   m_Layer: 10
   m_Name: Scarecrow
   m_TagString: Untagged
@@ -112,6 +114,36 @@ MonoBehaviour:
   damageVFX: {fileID: 8226561492565438587}
   deathVFX: {fileID: 5193526517354176531}
   meshVisualsParent: {fileID: 3239096111142511397}
+--- !u!114 &1135344561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509093735644033472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce5d2982001e96341a994405bbae7409, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageableDataList:
+  - collider: {fileID: 2407985155898916529}
+    armor: 0
+--- !u!114 &1135344557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509093735644033472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 905ab8123b95ac642b991a6efbaf82df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageStackInterval: 0.1
+  maxHealth: 50
+  maxStamina: 0
 --- !u!1 &3893613868379724995
 GameObject:
   m_ObjectHideFlags: 0
@@ -372,11 +404,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: 19359_Scarecrow_v1_NEW
       objectReference: {fileID: 0}
-    - target: {fileID: -5351099225543909490, guid: 139e9e2bc08ee884f981c75d41c74d6e,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 139e9e2bc08ee884f981c75d41c74d6e,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -446,6 +473,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalScale.z
       value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -5351099225543909490, guid: 139e9e2bc08ee884f981c75d41c74d6e,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1505051603359683685, guid: 139e9e2bc08ee884f981c75d41c74d6e,
         type: 3}

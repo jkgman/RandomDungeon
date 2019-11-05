@@ -112,9 +112,9 @@ namespace Dungeon.Characters
 		private Vector3 slopeNormal;		//Current ground normal
 		private Vector3 spawnPosition;
 		
-		private float inputRunStartTime = 0;				//Time.time when run input started
-		private Vector3 moveVelocityAtToggle;				//Used for accelerations when input happens/doesnt happen
-		private float moveInputToggleTime;                  //Time.time when move input started or ended
+		private float inputRunStartTime = 0;	//Time.time when run input started
+		private Vector3 moveVelocityAtToggle;	//Used for accelerations when input happens/doesnt happen
+		private float moveInputToggleTime;      //Time.time when move input started or ended
 
 		private Vector2 moveInputRaw;   //Value of current move input.
 		//_______ End of Hidden variables
@@ -782,11 +782,7 @@ namespace Dungeon.Characters
 		}
 		void InputRunPerformed(InputAction.CallbackContext context) 
 		{
-
-			if (Time.time - inputRunStartTime > Player.inputSinglePressMaxTime)
-			{
-				SetRunning(true);
-			}
+			SetRunning(true);
 		}
 		void InputRunCancelled(InputAction.CallbackContext context) 
 		{

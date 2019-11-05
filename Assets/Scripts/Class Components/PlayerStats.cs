@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Dungeon.Characters
 {
-
+	
 	public class PlayerStats : Stats
 	{
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dungeon.Characters
+namespace Dungeon
 {
 	public class Health
 	{
@@ -52,6 +52,11 @@ namespace Dungeon.Characters
 				lastTimeDamaged = Time.time;
 			}
 
+		}
+
+		public void Reset()
+		{
+			AddHealth(maxHealth);
 		}
 	}
 }

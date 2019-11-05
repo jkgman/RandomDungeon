@@ -47,9 +47,9 @@ namespace Dungeon
 
 		[SerializeField] private LayerMask collidingLayers;
 
-
 		//Waits until camera starts going back to default angle.
-		private readonly float autoCameraDelayAfterLookInput = 0.5f;
+		[SerializeField] private float autoCameraDelayAfterLookInput = 10f;
+
 
 		//Camera angle limits and default for when inputs are not detected
 		private readonly float minVAngle = -85f;

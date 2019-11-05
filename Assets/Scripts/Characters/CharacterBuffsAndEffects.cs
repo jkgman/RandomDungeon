@@ -1,89 +1,93 @@
 ﻿using UnityEngine;
 using UnityEngine.Experimental.VFX;
 
-public class CharacterBuffsAndEffects : MonoBehaviour
+namespace Dungeon.Characters
 {
-	#region Variables & References
-	[Header("Take damage")]
+
+	public class CharacterBuffsAndEffects : MonoBehaviour
+	{
+		#region Variables & References
+		[Header("Take damage")]
 	
-	[SerializeField] private VisualEffect damageVFX = null;
-	[SerializeField] private VisualEffect deathVFX = null;
+		[SerializeField] private VisualEffect damageVFX = null;
+		[SerializeField] private VisualEffect deathVFX = null;
 
-	[Header("Mesh References etc")]
-	[SerializeField] private Transform meshVisualsParent = null;
+		[Header("Mesh References etc")]
+		[SerializeField] private Transform meshVisualsParent = null;
 
-	#endregion Variables & References
+		#endregion Variables & References
 
-	#region Exposed Functions
+		#region Exposed Functions
 
-	public void SetInvisible()
-	{
-		if (meshVisualsParent)
-			meshVisualsParent.gameObject.SetActive(false);
+		public void SetInvisible()
+		{
+			if (meshVisualsParent)
+				meshVisualsParent.gameObject.SetActive(false);
 			
-	}
-
-	public void SetVisible()
-	{
-		if (meshVisualsParent)
-			meshVisualsParent.gameObject.SetActive(true);
-
-	}
-
-	#endregion Exposed Functions
-
-	#region Exposed Functions - Particles
-
-	public void PlayDeathParticles()
-	{
-		if (deathVFX != null)
-		{
-			if (deathVFX.GetVector3("Directional Force") != null)
-				deathVFX.SetVector3("Directional Force", Vector3.zero);
-			damageVFX.transform.position = transform.position;
-			deathVFX.enabled = true;
-			deathVFX.Play();
 		}
-	}
 
-	public void PlayDamageParticles()
-	{
-		if (damageVFX != null)
+		public void SetVisible()
 		{
-			deathVFX.enabled = true;
-			if (damageVFX.GetVector3("Directional Force") != null)
-				damageVFX.SetVector3("Directional Force", Vector3.zero);
+			if (meshVisualsParent)
+				meshVisualsParent.gameObject.SetActive(true);
 
-			damageVFX.transform.position = transform.position;
-			deathVFX.Play();
 		}
-	}
-	public void PlayDamageParticles(Vector3 position)
-	{
-		if (damageVFX != null)
+
+		#endregion Exposed Functions
+
+		#region Exposed Functions - Particles
+
+		public void PlayDeathParticles()
 		{
-			deathVFX.enabled = true;
-			if (damageVFX.GetVector3("Directional Force") != null)
-				damageVFX.SetVector3("Directional Force", Vector3.zero);
-
-			damageVFX.transform.position = position;
-			damageVFX.Play();
+			if (deathVFX != null)
+			{
+				if (deathVFX.GetVector3("Directional Force") != null)
+					deathVFX.SetVector3("Directional Force", Vector3.zero);
+				damageVFX.transform.position = transform.position;
+				deathVFX.enabled = true;
+				deathVFX.Play();
+			}
 		}
-	}
-	public void PlayDamageParticles(Vector3 position, Vector3 force)
-	{
 
-		if (damageVFX != null)
+		public void PlayDamageParticles()
 		{
-			deathVFX.enabled = true;
-			if (damageVFX.GetVector3("Directional Force") != null)
-				damageVFX.SetVector3("Directional Force", force);
+			if (damageVFX != null)
+			{
+				deathVFX.enabled = true;
+				if (damageVFX.GetVector3("Directional Force") != null)
+					damageVFX.SetVector3("Directional Force", Vector3.zero);
 
-			damageVFX.transform.position = position;
-			damageVFX.Play();
+				damageVFX.transform.position = transform.position;
+				deathVFX.Play();
+			}
 		}
+		public void PlayDamageParticles(Vector3 position)
+		{
+			if (damageVFX != null)
+			{
+				deathVFX.enabled = true;
+				if (damageVFX.GetVector3("Directional Force") != null)
+					damageVFX.SetVector3("Directional Force", Vector3.zero);
+
+				damageVFX.transform.position = position;
+				damageVFX.Play();
+			}
+		}
+		public void PlayDamageParticles(Vector3 position, Vector3 force)
+		{
+
+			if (damageVFX != null)
+			{
+				deathVFX.enabled = true;
+				if (damageVFX.GetVector3("Directional Force") != null)
+					damageVFX.SetVector3("Directional Force", force);
+
+				damageVFX.transform.position = position;
+				damageVFX.Play();
+			}
+		}
+
+		#endregion Exposed Functions - Particles
+
 	}
-
-	#endregion Exposed Functions - Particles
-
 }
