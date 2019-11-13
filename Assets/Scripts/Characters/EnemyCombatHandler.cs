@@ -159,7 +159,7 @@ namespace Dungeon.Characters.Enemies
 		/// <summary>
 		/// Called from Enemy when state is Attack.
 		/// </summary>
-		public void AttackUpdate()
+		public void AttackUpdate(AttackType type)
 		{
 			bool canAttack = true;
 			float sqrLen = GetTargetDirection().sqrMagnitude;
@@ -188,7 +188,7 @@ namespace Dungeon.Characters.Enemies
 				if (!EWeapon.IsAttacking && canAttack)
 				{
 					Debug.Log("attack called");
-					Attack();
+					Attack(type);
 				}
 				else if (EWeapon.IsAttacking)
 				{

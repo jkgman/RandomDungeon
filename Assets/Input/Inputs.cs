@@ -332,8 +332,19 @@ public class Inputs : IInputActionCollection
                     ""bindings"": []
                 },
                 {
-                    ""name"": ""Attack"",
+                    ""name"": ""AttackLight"",
                     ""id"": ""a775e4fd-e153-4bd2-b010-4c35c28c90b3"",
+                    ""expectedControlLayout"": ""Button"",
+                    ""continuous"": false,
+                    ""passThrough"": false,
+                    ""initialStateCheck"": false,
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""bindings"": []
+                },
+                {
+                    ""name"": ""AttackHeavy"",
+                    ""id"": ""82be19f6-9f36-402f-b941-6b57f6d06b14"",
                     ""expectedControlLayout"": ""Button"",
                     ""continuous"": false,
                     ""passThrough"": false,
@@ -529,7 +540,7 @@ public class Inputs : IInputActionCollection
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
-                    ""action"": ""Attack"",
+                    ""action"": ""AttackLight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
@@ -540,8 +551,8 @@ public class Inputs : IInputActionCollection
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Attack"",
+                    ""groups"": "";KBM"",
+                    ""action"": ""AttackLight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
@@ -629,6 +640,30 @@ public class Inputs : IInputActionCollection
                     ""isComposite"": false,
                     ""isPartOfComposite"": false,
                     ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6b09ad8c-ec56-49d5-8d0e-3575d9093604"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""AttackHeavy"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""eaa58129-5504-40a6-99c2-5a53705308c0"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";KBM"",
+                    ""action"": ""AttackHeavy"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false,
+                    ""modifiers"": """"
                 }
             ]
         }
@@ -677,7 +712,8 @@ public class Inputs : IInputActionCollection
         m_Player_Move = m_Player.GetAction("Move");
         m_Player_RunAndDodge = m_Player.GetAction("RunAndDodge");
         m_Player_Look = m_Player.GetAction("Look");
-        m_Player_Attack = m_Player.GetAction("Attack");
+        m_Player_AttackLight = m_Player.GetAction("AttackLight");
+        m_Player_AttackHeavy = m_Player.GetAction("AttackHeavy");
         m_Player_TargetLock = m_Player.GetAction("TargetLock");
         m_Player_SwitchTarget = m_Player.GetAction("SwitchTarget");
     }
@@ -807,7 +843,8 @@ public class Inputs : IInputActionCollection
     private InputAction m_Player_Move;
     private InputAction m_Player_RunAndDodge;
     private InputAction m_Player_Look;
-    private InputAction m_Player_Attack;
+    private InputAction m_Player_AttackLight;
+    private InputAction m_Player_AttackHeavy;
     private InputAction m_Player_TargetLock;
     private InputAction m_Player_SwitchTarget;
     public struct PlayerActions
@@ -817,7 +854,8 @@ public class Inputs : IInputActionCollection
         public InputAction @Move { get { return m_Wrapper.m_Player_Move; } }
         public InputAction @RunAndDodge { get { return m_Wrapper.m_Player_RunAndDodge; } }
         public InputAction @Look { get { return m_Wrapper.m_Player_Look; } }
-        public InputAction @Attack { get { return m_Wrapper.m_Player_Attack; } }
+        public InputAction @AttackLight { get { return m_Wrapper.m_Player_AttackLight; } }
+        public InputAction @AttackHeavy { get { return m_Wrapper.m_Player_AttackHeavy; } }
         public InputAction @TargetLock { get { return m_Wrapper.m_Player_TargetLock; } }
         public InputAction @SwitchTarget { get { return m_Wrapper.m_Player_SwitchTarget; } }
         public InputActionMap Get() { return m_Wrapper.m_Player; }
@@ -839,9 +877,12 @@ public class Inputs : IInputActionCollection
                 Look.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
                 Look.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
                 Look.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnLook;
-                Attack.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
-                Attack.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
-                Attack.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttack;
+                AttackLight.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttackLight;
+                AttackLight.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttackLight;
+                AttackLight.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttackLight;
+                AttackHeavy.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttackHeavy;
+                AttackHeavy.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttackHeavy;
+                AttackHeavy.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnAttackHeavy;
                 TargetLock.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
                 TargetLock.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
                 TargetLock.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTargetLock;
@@ -861,9 +902,12 @@ public class Inputs : IInputActionCollection
                 Look.started += instance.OnLook;
                 Look.performed += instance.OnLook;
                 Look.canceled += instance.OnLook;
-                Attack.started += instance.OnAttack;
-                Attack.performed += instance.OnAttack;
-                Attack.canceled += instance.OnAttack;
+                AttackLight.started += instance.OnAttackLight;
+                AttackLight.performed += instance.OnAttackLight;
+                AttackLight.canceled += instance.OnAttackLight;
+                AttackHeavy.started += instance.OnAttackHeavy;
+                AttackHeavy.performed += instance.OnAttackHeavy;
+                AttackHeavy.canceled += instance.OnAttackHeavy;
                 TargetLock.started += instance.OnTargetLock;
                 TargetLock.performed += instance.OnTargetLock;
                 TargetLock.canceled += instance.OnTargetLock;
@@ -911,7 +955,8 @@ public class Inputs : IInputActionCollection
         void OnMove(InputAction.CallbackContext context);
         void OnRunAndDodge(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
-        void OnAttack(InputAction.CallbackContext context);
+        void OnAttackLight(InputAction.CallbackContext context);
+        void OnAttackHeavy(InputAction.CallbackContext context);
         void OnTargetLock(InputAction.CallbackContext context);
         void OnSwitchTarget(InputAction.CallbackContext context);
     }

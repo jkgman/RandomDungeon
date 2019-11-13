@@ -154,7 +154,7 @@ namespace Dungeon.Characters.Enemies
 		private void AttackingUpdate()
 		{
 			EMovement.RotateTowardsPosition(ECombat.GetTargetPosition());
-			ECombat.AttackUpdate();
+			ECombat.AttackUpdate(AttackType.lightAttack);
 		}
 
 		/// <summary>

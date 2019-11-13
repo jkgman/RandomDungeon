@@ -318,8 +318,19 @@
                     "bindings": []
                 },
                 {
-                    "name": "Attack",
+                    "name": "AttackLight",
                     "id": "a775e4fd-e153-4bd2-b010-4c35c28c90b3",
+                    "expectedControlLayout": "Button",
+                    "continuous": false,
+                    "passThrough": false,
+                    "initialStateCheck": false,
+                    "processors": "",
+                    "interactions": "",
+                    "bindings": []
+                },
+                {
+                    "name": "AttackHeavy",
+                    "id": "82be19f6-9f36-402f-b941-6b57f6d06b14",
                     "expectedControlLayout": "Button",
                     "continuous": false,
                     "passThrough": false,
@@ -515,7 +526,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Attack",
+                    "action": "AttackLight",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "modifiers": ""
@@ -526,8 +537,8 @@
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
-                    "action": "Attack",
+                    "groups": ";KBM",
+                    "action": "AttackLight",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "modifiers": ""
@@ -612,6 +623,30 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "RunAndDodge",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "6b09ad8c-ec56-49d5-8d0e-3575d9093604",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "AttackHeavy",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "modifiers": ""
+                },
+                {
+                    "name": "",
+                    "id": "eaa58129-5504-40a6-99c2-5a53705308c0",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KBM",
+                    "action": "AttackHeavy",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "modifiers": ""

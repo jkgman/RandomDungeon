@@ -459,12 +459,12 @@ namespace Dungeon.Characters
 		/// <summary>
 		/// Start attack if allowed.
 		/// </summary>
-		protected override void Attack()
+		protected override void Attack(AttackType type)
 		{
 			Debug.Log("Tried attack. Allowed:" + Player.AllowAttack());
 			if (Player.AllowAttack())
 			{
-				base.Attack();
+				base.Attack(type);
 			}
 		}
 	
@@ -482,12 +482,15 @@ namespace Dungeon.Characters
 			Inputs.Player.RunAndDodge.started += InputDodgeStarted;
 			Inputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
 			Inputs.Player.RunAndDodge.Enable();
-			Inputs.Player.Attack.started += InputAttackStarted;
-			Inputs.Player.Attack.canceled += InputAttackCancelled;
-			Inputs.Player.Attack.Enable();
-			//inputs.Player.Move.performed += InputAttackCancellationPerformed;
-			//inputs.Player.Move.Enable();
-		}
+			Inputs.Player.AttackLight.started += InputAttackLightStarted;
+			Inputs.Player.AttackLight.canceled += InputAttackLightCanceled;
+			Inputs.Player.AttackLight.Enable();
+            Inputs.Player.AttackHeavy.started += InputAttackHeavyStarted;
+            Inputs.Player.AttackHeavy.canceled += InputAttackHeavyCanceled;
+            Inputs.Player.AttackHeavy.Enable();
+            //inputs.Player.Move.performed += InputAttackCancellationPerformed;
+            //inputs.Player.Move.Enable();
+        }
 
 		void ControlsUnsubscribe() 
 		{
@@ -553,16 +556,24 @@ namespace Dungeon.Characters
 			}
 		}
 
-		void InputAttackStarted(InputAction.CallbackContext context)
+		void InputAttackLightStarted(InputAction.CallbackContext context)
 		{
-			Attack();
+			Attack(AttackType.lightAttack);
 		}
-		void InputAttackCancelled(InputAction.CallbackContext context)
+		void InputAttackLightCanceled(InputAction.CallbackContext context)
 		{
 
 		}
-		
-		void InputAttackCancellationPerformed(InputAction.CallbackContext context)
+        void InputAttackHeavyStarted(InputAction.CallbackContext context)
+        {
+            Attack(AttackType.heavyAttack);
+        }
+        void InputAttackHeavyCanceled(InputAction.CallbackContext context)
+        {
+
+        }
+
+        void InputAttackCancellationPerformed(InputAction.CallbackContext context)
 		{
 			//Gets called by all inputs that have ability to cancel attack, such as movement
 			if (PWeapon.IsAttacking)

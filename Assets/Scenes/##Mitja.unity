@@ -1651,6 +1651,86 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_Curve.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_Curve.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_Curve.Array.data[0].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_Curve.Array.data[0].tangentMode
+      value: 34
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_Curve.Array.data[1].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_Curve.Array.data[1].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_Curve.Array.data[1].tangentMode
+      value: 34
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_PreInfinity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.moveMultiplierCurve.m_PostInfinity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_Curve.Array.data[0].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_Curve.Array.data[0].tangentMode
+      value: 34
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_Curve.Array.data[1].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_Curve.Array.data[1].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_Curve.Array.data[1].tangentMode
+      value: 34
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_PreInfinity
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653800508161471562, guid: d15be6b0d70a905439d7341bb469164f,
+        type: 3}
+      propertyPath: heavyAttacks.Array.data[0].allowedActions.rotationMultiplierCurve.m_PostInfinity
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
 --- !u!1001 &4811878782413475771

@@ -116,7 +116,7 @@ namespace Dungeon.Characters
 				CAnimHandler.SetAttackData(CWeapon.GetCurrentAttackData());
 		}
 
-		protected virtual void Attack()
+		protected virtual void Attack(AttackType type)
 		{
 			if (!CWeapon) return;
 
@@ -131,7 +131,7 @@ namespace Dungeon.Characters
 				if (pendingAttackCo != null)
 					StopCoroutine(pendingAttackCo);
 
-				pendingAttackCo = WaitForPendingAttack();
+				pendingAttackCo = WaitForPendingAttack(type);
 				StartCoroutine(pendingAttackCo);
 			}
 			else //Start attck
@@ -142,12 +142,12 @@ namespace Dungeon.Characters
 					Debug.Log("Stopped attack coroutine");
 				}
 
-				currentAttackCo = LightAttackRoutine();
+				currentAttackCo = AttackRoutine(type);
 				StartCoroutine(currentAttackCo);
 			}
 		}
 
-		IEnumerator WaitForPendingAttack()
+		IEnumerator WaitForPendingAttack(AttackType type)
 		{
 			while(attackPending)
 			{
@@ -159,7 +159,7 @@ namespace Dungeon.Characters
 				{
 					attackPending = false;
 					CancelAttack(true);
-					Attack();
+					Attack(type);
 				}
 				yield return null;
 			}
@@ -200,16 +200,16 @@ namespace Dungeon.Characters
 		/// <summary>
 		/// The main routine of attacking, goes through phases charge, attack and recovery.
 		/// </summary>
-		protected IEnumerator LightAttackRoutine()
+		protected IEnumerator AttackRoutine(AttackType type)
 		{
-			CWeapon.StartAttacking(AttackType.lightAttack);
+			CWeapon.StartAttacking(type);
 			SetAttackData();
 
 			yield return null; //Wait for one frame because animator sucks ass (ignores booleans if setting durations in same frame)
 
-			yield return StartCoroutine(LightAttackCharge());
-			yield return StartCoroutine(LightAttackAttack());
-			yield return StartCoroutine(LightAttackRecovery());
+			yield return StartCoroutine(AttackCharge());
+			yield return StartCoroutine(AttackAttack());
+			yield return StartCoroutine(AttackRecovery());
 
 			CWeapon.EndAttacking();
 
@@ -219,7 +219,7 @@ namespace Dungeon.Characters
 		/// First phase of attack, drawing weapon to charge position.
 		/// Applies movement curves and tells weapon what is going on.
 		/// </summary>
-		protected virtual IEnumerator LightAttackCharge()
+		protected virtual IEnumerator AttackCharge()
 		{
 			CWeapon.CurrentAttackState = AttackState.charge;
 			CAnimHandler.SetChargeStarted(); //Tells animator to start charge animation.
@@ -259,7 +259,7 @@ namespace Dungeon.Characters
 		/// Second phase of attack, the actual damaging action.
 		/// Applies movement curves and tells weapon what is going on.
 		/// </summary>
-		protected virtual IEnumerator LightAttackAttack()
+		protected virtual IEnumerator AttackAttack()
 		{
 			CWeapon.CurrentAttackState = AttackState.attack;
 			CAnimHandler.SetAttackStarted(); //Tells animator to start attack animation.
@@ -297,7 +297,7 @@ namespace Dungeon.Characters
 		/// Last phase of attack, recovering back to original pose.
 		/// Applies movement curves and tells weapon what is going on.
 		/// </summary>
-		protected virtual IEnumerator LightAttackRecovery()
+		protected virtual IEnumerator AttackRecovery()
 		{
 			CWeapon.CurrentAttackState = AttackState.recovery;
 			CAnimHandler.SetRecoveryStarted(); //Tells animator to start recovery animation.
