@@ -45,6 +45,8 @@ GameObject:
   - component: {fileID: 4088125857030464951}
   - component: {fileID: 1135344561}
   - component: {fileID: 1135344557}
+  - component: {fileID: 1352269574153057571}
+  - component: {fileID: 1135344564}
   m_Layer: 10
   m_Name: Scarecrow
   m_TagString: Untagged
@@ -126,9 +128,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce5d2982001e96341a994405bbae7409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageableDataList:
-  - collider: {fileID: 2407985155898916529}
-    armor: 0
+  colliders:
+  - col: {fileID: 2407985155898916529}
+    baseArmor: 0
+  damagedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!114 &1135344557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,6 +151,33 @@ MonoBehaviour:
   damageStackInterval: 0.1
   maxHealth: 50
   maxStamina: 0
+--- !u!114 &1352269574153057571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509093735644033472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3b9644c2020e6c45b0171ce29b3dfba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageable: {fileID: 0}
+  buffs: {fileID: 0}
+  stats: {fileID: 0}
+--- !u!114 &1135344564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509093735644033472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e3313c26c266b4985f1e4cf44dcc01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3893613868379724995
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,7 +241,7 @@ VisualEffect:
         m_Overridden: 1
     m_Vector2f:
       m_Array:
-      - m_Value: {x: 4000, y: 5000}
+      - m_Value: {x: 1000, y: 2000}
         m_Name: MinMax Count
         m_Overridden: 1
     m_Vector3f:
@@ -320,7 +354,7 @@ VisualEffect:
       - m_Value: 2
         m_Name: Max Start Speed
         m_Overridden: 1
-      - m_Value: 0.05
+      - m_Value: 0.02
         m_Name: Size
         m_Overridden: 1
       - m_Value: 0.5
@@ -331,7 +365,7 @@ VisualEffect:
         m_Overridden: 1
     m_Vector2f:
       m_Array:
-      - m_Value: {x: 100, y: 500}
+      - m_Value: {x: 50, y: 100}
         m_Name: MinMax Count
         m_Overridden: 1
     m_Vector3f:

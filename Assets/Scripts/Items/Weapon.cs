@@ -371,7 +371,7 @@ namespace Dungeon.Items
 					col = other,
 					position = other.ClosestPointOnBounds(transform.position),
 					damage = GetCurrentDamage(),
-					force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage() * 0.5f
+					force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage() * 0.05f
 				};
 			
 				dmg.TakeDamage(hit);
@@ -396,7 +396,7 @@ namespace Dungeon.Items
 					col = other,
 					position = other.ClosestPointOnBounds(transform.position),
 					damage = GetCurrentDamage(),
-					force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage() * 0.5f
+					force = (other.transform.position - CurrentEquipper.position).normalized * GetCurrentDamage() * 0.05f
 				};
 
 				dmg.TakeDamage(hit);

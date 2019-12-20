@@ -1516,6 +1516,7 @@ GameObject:
   - component: {fileID: 1496731353625701271}
   - component: {fileID: 8976699587235194805}
   - component: {fileID: 7260297169089378275}
+  - component: {fileID: 8676049263662751339}
   m_Layer: 10
   m_Name: Enemy
   m_TagString: Untagged
@@ -1582,9 +1583,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 934e18e1af9261c4f8d6df66d461b380, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  colliders:
-  - col: {fileID: 7182638871977614135}
-    colType: 0
   minIdleTime: 0
   maxIdleTime: 1
   minStrollTime: 5
@@ -1654,7 +1652,7 @@ MonoBehaviour:
   rightHand: {fileID: 3181009561127481423}
   leftHand: {fileID: 3181004455728167187}
   targetFindDistance: 10
-  maxAttackDistance: 2
+  maxAttackDistance: 2.1
   attackDelay: 1
   forgetTargetDelay: 5
   obstacleMask:
@@ -1687,7 +1685,7 @@ NavMeshAgent:
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 1.5
+  m_StoppingDistance: 2
   m_AutoTraverseOffMeshLink: 0
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -1714,6 +1712,26 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &8676049263662751339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6212252257882444870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce5d2982001e96341a994405bbae7409, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  colliders:
+  - col: {fileID: 7182638871977614135}
+    baseArmor: 10
+  damagedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!1 &8417191889679759685
 GameObject:
   m_ObjectHideFlags: 0

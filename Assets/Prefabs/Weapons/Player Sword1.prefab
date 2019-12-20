@@ -221,90 +221,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   staggerableDuringAction: 1
-  actions:
-    allowComboInputStartTime: 0.51
-    allowComboInputEndTime: 0.835
-    allowComboStartTime: 0.663
-    moveMultiplierCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 1
-        inSlope: -5.074503
-        outSlope: -5.074503
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.19583079
-        value: 0.0062561035
-        inSlope: -0.011627907
-        outSlope: -0.011627907
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 1
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.73337525
-        value: 0.0046920776
-        inSlope: 0.0034306047
-        outSlope: 0.0034306047
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 1
-      - serializedVersion: 3
-        time: 1
-        value: 1
-        inSlope: 3.7329915
-        outSlope: 3.7329915
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    rotationMultiplierCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 1
-        inSlope: 4.6713305
-        outSlope: 4.6713305
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.086207
-        value: 1.4027014
-        inSlope: -3.516313
-        outSlope: -3.516313
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.3624878
-        value: 0.006248474
-        inSlope: -0.000007792683
-        outSlope: -0.000007792683
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.54021436
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
   lightAttacks:
-  - chargeDuration: 0.2
-    attackDuration: 0.5
-    recoveryDuration: 1
-    attackDamage: 15
+  - chargeDuration: 0.5
+    attackDuration: 0.3
+    recoveryDuration: 0.8
+    attackDamage: 50
     chargeMoveCurve:
       serializedVersion: 2
       m_Curve:
@@ -378,6 +299,22 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     overrides: {fileID: 22100000, guid: bf6e23929cdeb1345a02d2258ec23c1f, type: 2}
+    allowedActions:
+      allowComboInputStartTime: 0
+      allowComboInputEndTime: 0
+      allowComboStartTime: 0
+      moveMultiplierCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      rotationMultiplierCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
   heavyAttacks: []
 --- !u!114 &5222115819417140130
 MonoBehaviour:
