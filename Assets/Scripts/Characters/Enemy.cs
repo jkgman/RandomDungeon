@@ -92,9 +92,8 @@ namespace Dungeon.Characters.Enemies
 		/// <summary>
 		/// Checks what current state is and calls state-specific Update function.
 		/// </summary>
-		protected override void Update()
+		void Update()
 		{
-			base.Update();
 
 			if (!isActive)
 				return;
@@ -233,9 +232,9 @@ namespace Dungeon.Characters.Enemies
             //Todo: Drop call
             Drop();
 
-			Effects.PlayDeathParticles();
-			Effects.SetInvisible();
-			DisableColliders();
+			BuffsEffects.PlayDeathParticles();
+			BuffsEffects.SetInvisible();
+			ColDmgHandler.SetColliders(false);
 			isActive = false;
 
 			yield return new WaitForSeconds(2f);

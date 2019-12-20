@@ -7,7 +7,7 @@ namespace Dungeon.Characters
 {
 	public class Scarecrow : MonoBehaviour
 	{
-		[SerializeField] private Damageable damageable;
+		[SerializeField] private CollisionDamageHandler damageable;
 		[SerializeField] private CharacterBuffsAndEffects buffs;
 		[SerializeField] private Stats stats;
 
@@ -15,9 +15,9 @@ namespace Dungeon.Characters
 		void Start()
 		{
 			
-			damageable = GetComponent <Damageable> ();
+			damageable = GetComponent <CollisionDamageHandler> ();
 			if (damageable)
-				GetComponent<Damageable>().damagedEvent.AddListener(Damaged);
+				GetComponent<CollisionDamageHandler>().damagedEvent.AddListener(Damaged);
 			buffs = GetComponent<CharacterBuffsAndEffects>();
 			stats = GetComponent<Stats>();
 		}
@@ -58,9 +58,9 @@ namespace Dungeon.Characters
 				GetComponent<CharacterBuffsAndEffects>().SetInvisible();
 			}
 			
-			if (GetComponent<Damageable>())
+			if (GetComponent<CollisionDamageHandler>())
 			{
-				GetComponent<Damageable>().SetDamageable(false);
+				GetComponent<CollisionDamageHandler>().SetColliders(false);
 			}
 			if (GetComponent<Targetable>())
 			{
@@ -73,9 +73,9 @@ namespace Dungeon.Characters
 			{
 				GetComponent<CharacterBuffsAndEffects>().SetVisible();
 			}
-			if (GetComponent<Damageable>())
+			if (GetComponent<CollisionDamageHandler>())
 			{
-				GetComponent<Damageable>().SetDamageable(true);
+				GetComponent<CollisionDamageHandler>().SetColliders(true);
 			}
 			if (GetComponent<Targetable>())
 			{

@@ -122,7 +122,7 @@ namespace Dungeon.Characters
 
 			bool pending = CWeapon.IsAttacking;
 			pending &= !CWeapon.AttackAllowed(elapsedAttackTime);
-			pending &= CWeapon.AttackPendingAllowed(elapsedAttackTime);
+			pending &= CWeapon.ComboPendingAllowed(elapsedAttackTime);
 
 			if (pending) //Start waiting until attack is available.
 			{

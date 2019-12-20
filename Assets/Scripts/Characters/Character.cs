@@ -10,31 +10,8 @@ namespace Dungeon.Characters
 	[RequireComponent(typeof(Stats))]
 	public class Character : MonoBehaviour
 	{
-		#region Structs enums classes
-		
-		[System.Serializable]
-		protected struct CharacterCollider
-		{
-			public Collider col;
-			public CharacterColliderType colType;
-		}
-		protected enum CharacterColliderType
-		{
-			torso,
-			arm,
-			leg,
-			head
-		}
-		
-		#endregion Structs enums classes
 
 		#region Variables & References
-
-		//_______ Start of Exposed variables
-		[SerializeField, Tooltip("All Characted colliders and their body positions.")]
-		protected List<CharacterCollider> colliders;
-		//_______ End of Exposed variables
-
 
 		//_______ Start of Hidden variables
 		protected bool isActive = true;
@@ -53,14 +30,14 @@ namespace Dungeon.Characters
 				return _stats;
 			}
 		}
-		private CharacterBuffsAndEffects _effects;
-		protected CharacterBuffsAndEffects Effects
+		private CharacterBuffsAndEffects _buffsEffects;
+		protected CharacterBuffsAndEffects BuffsEffects
 		{
 			get{
-				if (_effects)
-					_effects = GetComponent<CharacterBuffsAndEffects>();
+				if (!_buffsEffects)
+					_buffsEffects = GetComponent<CharacterBuffsAndEffects>();
 
-				return _effects;
+				return _buffsEffects;
 			}
 		}
 		private RagdollScript _ragdoll;
@@ -73,17 +50,28 @@ namespace Dungeon.Characters
 				return _ragdoll;
 			}
 		}
-		//_______ End of Class References
+        private CollisionDamageHandler _colDmgHandler;
+        protected CollisionDamageHandler ColDmgHandler
+        {
+            get
+            {
+                if (!_colDmgHandler)
+                    _colDmgHandler = GetComponent<CollisionDamageHandler>();
+
+                return _colDmgHandler;
+            }
+        }
+        //_______ End of Class References
 
 
-		#endregion Variables & References
+        #endregion Variables & References
 
-		#region Getters & Setters
+        #region Getters & Setters
 
-		/// <summary>
-		/// Gets current player position. If ragdolled, gets position from hip location.
-		/// </summary>
-		public Vector3 GetPhysicalPosition()
+        /// <summary>
+        /// Gets current player position. If ragdolled, gets position from hip location.
+        /// </summary>
+        public Vector3 GetPhysicalPosition()
 		{
 			if (Ragdoll && Ragdoll.IsRagdolling)
 			{
@@ -95,22 +83,45 @@ namespace Dungeon.Characters
 			}
 		}
 
-		#endregion Getters & Setters
+        #endregion Getters & Setters
 
-		#region Initialization & Updates
+        #region Initialization & Updates
 
-		protected virtual void Update()
-		{
-			CheckDeath();
-		}
+        protected void Start()
+        {
+            if (ColDmgHandler)
+                ColDmgHandler.damagedEvent.AddListener(Damaged);
+        }
 
-		private void CheckDeath()
-		{
-			//IF not dying but should be, start dying.
-			if (!Stats.health.IsAlive() && !dieRoutineStarted)
-				StartCoroutine(DieRoutine());
+        void Damaged()
+        {
+            if (Stats)
+            {
+                if (!Stats.health.IsAlive() && !dieRoutineStarted)
+                {
+                    //Died
+                    if (BuffsEffects)
+                    {
+                        BuffsEffects.PlayDeathParticles();
+                    }
 
-		}
+				    StartCoroutine(DieRoutine());
+
+                }
+                else
+                {
+                    //Took damage
+                    if (BuffsEffects)
+                    {
+                        Debug.Log("Should play damage particles");
+                        if (ColDmgHandler)
+                            BuffsEffects.PlayDamageParticles(ColDmgHandler.GetLastHitData().position, ColDmgHandler.GetLastHitData().force);
+                        else
+                            BuffsEffects.PlayDamageParticles();
+                    }
+                }
+            }
+        }
 
 		#endregion Initialization & Updates
 
@@ -121,11 +132,12 @@ namespace Dungeon.Characters
 		/// <returns></returns>
 		protected virtual IEnumerator DieRoutine()
 		{
-			if (Effects)
+			if (BuffsEffects)
 			{
-				Effects.PlayDeathParticles();
+				BuffsEffects.PlayDeathParticles();
 			}
-			DisableColliders();
+
+            ColDmgHandler.SetColliders(false);
 
 			yield return new WaitForSeconds(2f);
 
@@ -133,24 +145,6 @@ namespace Dungeon.Characters
 		}
 
 		#endregion Coroutines
-
-		#region Helper Functions
-
-		protected void EnableColliders()
-		{
-			for (int i = 0; i < colliders.Count; i++)
-			{
-				colliders[i].col.enabled = true;
-			}
-		}
-		protected void DisableColliders()
-		{
-			for (int i = 0; i < colliders.Count; i++)
-			{
-				colliders[i].col.enabled = false;
-			}
-		}
-
-		#endregion Helper Functions
+        
 	}
 }

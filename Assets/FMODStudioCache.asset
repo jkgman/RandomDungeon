@@ -19,6 +19,25 @@ MonoBehaviour:
   - Name: Desktop
     Value: 8320
   Exists: 1
+--- !u!114 &-4703398237446858319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Path: E:\Mitja\Projects\GitHub\RandomDungeon\Assets\FMOD\Project-RandomDungeon\Build\Desktop\InGame-Effects.bank
+  lastModified: 637124559452947641
+  LoadResult: 0
+  FileSizes:
+  - Name: Desktop
+    Value: 8320
+  Exists: 1
 --- !u!114 &-4228934191945113201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75,16 +94,16 @@ MonoBehaviour:
   m_Name: FMODStudioCache
   m_EditorClassIdentifier: 
   EditorBanks:
-  - {fileID: 508203503314555359}
-  - {fileID: -8249322975514718404}
-  - {fileID: -1586187616213918807}
+  - {fileID: 7926106021808531827}
+  - {fileID: -4703398237446858319}
+  - {fileID: 4752085832722351617}
   EditorEvents:
-  - {fileID: -4228934191945113201}
+  - {fileID: 9003443546734464328}
   MasterBanks:
-  - {fileID: -1586187616213918807}
+  - {fileID: 4752085832722351617}
   StringsBanks:
-  - {fileID: 508203503314555359}
-  stringsBankWriteTime: 636923494875574104
+  - {fileID: 7926106021808531827}
+  stringsBankWriteTime: 637124559452757691
   cacheVersion: 3
 --- !u!114 &508203503314555359
 MonoBehaviour:
@@ -105,3 +124,65 @@ MonoBehaviour:
   - Name: Desktop
     Value: 776
   Exists: 1
+--- !u!114 &4752085832722351617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Path: E:\Mitja\Projects\GitHub\RandomDungeon\Assets\FMOD\Project-RandomDungeon\Build\Desktop\Master
+    Bank.bank
+  lastModified: 637124559452687710
+  LoadResult: 0
+  FileSizes:
+  - Name: Desktop
+    Value: 12474
+  Exists: 1
+--- !u!114 &7926106021808531827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Path: Assets\FMOD\Project-RandomDungeon\Build\Desktop\Master Bank.strings.bank
+  lastModified: 637124559452757691
+  LoadResult: 0
+  FileSizes:
+  - Name: Desktop
+    Value: 776
+  Exists: 1
+--- !u!114 &9003443546734464328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Path: event:/Small Hit
+  guid: 4bd45cd77c1a7d42879ed372ec5be1b8
+  Banks:
+  - {fileID: -4703398237446858319}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 600

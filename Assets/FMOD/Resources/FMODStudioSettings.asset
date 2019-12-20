@@ -59,6 +59,8 @@ MonoBehaviour:
   - Platform: 2
     Value: 32
   Plugins: []
-  MasterBanks: []
-  Banks: []
+  MasterBanks:
+  - Master Bank
+  Banks:
+  - InGame-Effects
   LiveUpdatePort: 9264

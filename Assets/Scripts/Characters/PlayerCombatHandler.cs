@@ -16,6 +16,7 @@ namespace Dungeon.Characters
 		#region Variables & References
 
 		//_______ Start of Events
+        [HideInInspector]
 		public UnityEvent targetChangedEvent;
 		//_______ End of Events
 
@@ -614,7 +615,7 @@ namespace Dungeon.Characters
 			output = IsStunned ? false : output;
 
 			if (PWeapon)
-				output = PWeapon.AttackPendingAllowed(elapsedAttackTime) ? output : false;
+				output = PWeapon.ComboPendingAllowed(elapsedAttackTime) ? output : false;
 			else
 				output = false;
 

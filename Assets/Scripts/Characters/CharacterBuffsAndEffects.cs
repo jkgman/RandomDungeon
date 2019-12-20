@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Experimental.VFX;
 
 namespace Dungeon.Characters
@@ -15,11 +16,13 @@ namespace Dungeon.Characters
 		[Header("Mesh References etc")]
 		[SerializeField] private Transform meshVisualsParent = null;
 
-		#endregion Variables & References
+        #endregion Variables & References
 
-		#region Exposed Functions
 
-		public void SetInvisible()
+
+        #region Exposed Functions
+
+        public void SetInvisible()
 		{
 			if (meshVisualsParent)
 				meshVisualsParent.gameObject.SetActive(false);

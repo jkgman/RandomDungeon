@@ -61,8 +61,8 @@ namespace Dungeon.Characters
 		{
 			dieRoutineStarted = true;
 
-			Effects.PlayDeathParticles();
-			DisableColliders();
+			BuffsEffects.PlayDeathParticles();
+			ColDmgHandler.SetColliders(false);
 			Ragdoll.StartRagdoll();
 	
 			isActive = false;
@@ -80,9 +80,9 @@ namespace Dungeon.Characters
 			Ragdoll.Reset();
 			Stats.health.AddHealth(100000f);
 			transform.position = PMovement.GetSpawnPosition();
-			Effects.SetVisible();
+			BuffsEffects.SetVisible();
 
-			EnableColliders();
+			ColDmgHandler.SetColliders(true);
 			isActive = true;
 			dieRoutineStarted = false;
 		}

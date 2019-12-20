@@ -233,7 +233,7 @@ namespace Dungeon.Characters.Enemies
 			output = IsStunned ? false : output;
 			output = TargetIsAttackable() ? output : false;
 			if (EWeapon && EWeapon.IsAttacking)
-				output = EWeapon.AttackPendingAllowed(elapsedAttackTime) ? output : false;
+				output = EWeapon.ComboPendingAllowed(elapsedAttackTime) ? output : false;
 
 			return output;
 		}
