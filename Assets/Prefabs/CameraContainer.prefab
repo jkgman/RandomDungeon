@@ -48,7 +48,7 @@ MonoBehaviour:
   distTargeting: 5
   angleVTargeting: -20
   angleHTargeting: 15
-  lookSensitivityMouse: 10
+  lookSensitivityMouse: 5
   lookSensitivityGamepad: 200
   collidingLayers:
     serializedVersion: 2
@@ -58,7 +58,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  debugVisuals: 1
+  debugVisuals: 0
 --- !u!1 &7496383073002038917
 GameObject:
   m_ObjectHideFlags: 0
