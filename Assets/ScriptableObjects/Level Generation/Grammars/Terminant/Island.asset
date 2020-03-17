@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 563603b376097144b97e107d0ca10197, type: 3}
+  m_Name: Island
+  m_EditorClassIdentifier: 
+  grammar:
+    _grammerName: Island
+    _visual: {fileID: 6887295875223243882, guid: 679ae08564952a34fb855cc390a41b77,
+      type: 3}
+    _connections:
+    - Position: {x: -7.835, y: 0, z: -0.078}
+      Direction: {x: -1, y: 0, z: 0}
+    - Position: {x: 0, y: -0.054, z: -4.711}
+      Direction: {x: 0, y: 0, z: -1}
+    - Position: {x: 2.291, y: 1.309, z: 0}
+      Direction: {x: 1, y: 0, z: 0}
+    _definitions: []
+  ConnectionTransforms: []

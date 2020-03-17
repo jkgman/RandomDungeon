@@ -4,19 +4,17 @@ using UnityEngine;
 
 public class SpawnRoom : MonoBehaviour
 {
-    public GameObject playerprefab;
-    public GameObject cam;
-    // Start is called before the first frame update
+    [SerializeField]
+    private GameObject playerprefab = default;
+    [SerializeField]
+    private Vector3 offset = Vector3.zero;
+    [SerializeField]
+    private GameObject cam = default;
+
     void Start()
     {
-        GameObject player = Instantiate(playerprefab, transform.position + new Vector3(0, 2, 0), Quaternion.identity);
-        //player.transform.position = transform.position;// + new Vector3(0,2,0);
+        GameObject player = Instantiate(playerprefab, transform.position + offset, Quaternion.identity);
         Instantiate(cam);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
