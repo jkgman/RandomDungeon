@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: ExitArea
   m_EditorClassIdentifier: 
   data:
-    rectSize: {x: 20, y: 20}
+    rectSize: {x: 10, y: 20}
     island: {fileID: 7045293656011048614, guid: d6a5f258eb748304988bc56fb2ca498d,
       type: 3}
     connectionsPoints:
-    - Position: {x: 0, y: 10}
-      Rotation: {x: 0, y: 1}
+    - Position: {x: -5, y: 0}
+      Rotation: {x: -1, y: 0}
     loot: []
     enemies: []

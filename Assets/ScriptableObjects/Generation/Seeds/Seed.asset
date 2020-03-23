@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 889caca8d947e99458cb7ea5f3ca0f02, type: 3}
   m_Name: Seed
   m_EditorClassIdentifier: 
-  roomCount: 7
+  roomCount: 2
+  bridgeLength: 0
   startAreaOptions:
   - {fileID: 11400000, guid: e9a3a227a89b28c44abf9461435fa137, type: 2}
   middleAreaOptions:

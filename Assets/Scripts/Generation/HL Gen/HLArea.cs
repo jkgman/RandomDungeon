@@ -44,7 +44,7 @@ public class HLArea
     }
     public Vector2 GetRectCenter()
     {
-        return rect.position + rect.size / 2;
+        return rect.position - rect.size / 2;
     }
 
     public bool MaxConnectionsReached() {

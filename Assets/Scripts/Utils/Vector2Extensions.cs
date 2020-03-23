@@ -23,8 +23,8 @@ public class Vector2Extensions
     /// <returns></returns>
     public static Vector2 RotateDegree(Vector2 vec, float deg)
     {
-        float ca = Mathf.Cos(deg * Mathf.Deg2Rad);
-        float sa = Mathf.Sin(deg * Mathf.Deg2Rad);
+        float ca = Mathf.Cos(-deg * Mathf.Deg2Rad);
+        float sa = Mathf.Sin(-deg * Mathf.Deg2Rad);
         return new Vector2(ca * vec.x - sa * vec.y, sa * vec.x + ca * vec.y);
     }
 }

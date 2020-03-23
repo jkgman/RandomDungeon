@@ -19,7 +19,7 @@ public static class HLGenerator
         dungeonMap.areas.Add(new HLArea(seed.RandomStart(),new Vector2(0,0)));
 
         //until seed count reached try adding rooms
-        while (dungeonMap.areas.Count < seed.RoomCount)
+        while (dungeonMap.areas.Count < seed.RoomCount-1)
         {
             AddRoom(dungeonMap, seed.RandomMiddle());
         }
@@ -40,9 +40,10 @@ public static class HLGenerator
         HLArea addingArea = new HLArea(roomData, new Vector2(0, 0));
         //Find connection point
         Connection connection = FindValidConnection(dungeonMap, addingArea);
+        Debug.Log(connection.FromAreaIndex + " " + connection.FromConnectionPoint+ " " + connection.ToAreaIndex + " " + connection.ToConnectionPoint);
         //Add to map
         dungeonMap.areas.Add(addingArea);
-        float rot = Vector2.SignedAngle(dungeonMap.areas[connection.ToAreaIndex].ConnectionPoints[connection.ToConnectionPoint].Rotation, dungeonMap.areas[connection.FromAreaIndex].ConnectionPoints[connection.FromConnectionPoint].Rotation);
+        float rot = Vector2.SignedAngle(dungeonMap.areas[connection.ToAreaIndex].ConnectionPoints[connection.ToConnectionPoint].Rotation, dungeonMap.areas[connection.FromAreaIndex].ConnectionPoints[connection.FromConnectionPoint].Rotation) + 180;
         addingArea.Rotate(rot);
         addingArea.SetRectPosition(dungeonMap.areas[connection.ToAreaIndex].GetRectCenter() + dungeonMap.areas[connection.ToAreaIndex].ConnectionPoints[connection.ToConnectionPoint].Position -
             dungeonMap.areas[connection.FromAreaIndex].ConnectionPoints[connection.FromConnectionPoint].Position - dungeonMap.areas[connection.FromAreaIndex].rect.size / 2);
@@ -71,9 +72,6 @@ public static class HLGenerator
         int[] roomConnectionPoints = IntArrayExtensions.CreateArrayRange(0, newArea.ConnectionPoints.Count);
         ArrayExtension.ShuffleArray(roomConnectionPoints);
 
-        Debug.Log(areas.Length);
-
-        Debug.Log(roomConnectionPoints.Length);
         //look over each area 
         for (int i = 0; i < areas.Length; i++)
         {
@@ -92,10 +90,14 @@ public static class HLGenerator
                 {
                     Debug.Log("Made it to check");
                     //rotate new area to align conection directions
-                    float degrees = Vector2.SignedAngle(currArea.UnusedConnection[currAreaConnectionPoints[j]].Rotation, newArea.ConnectionPoints[roomConnectionPoints[k]].Rotation);
+                    float degrees = Vector2.SignedAngle(currArea.UnusedConnection[currAreaConnectionPoints[j]].Rotation, newArea.ConnectionPoints[roomConnectionPoints[k]].Rotation)+180;
                     Vector2 rectSize = Vector2Extensions.RotateDegree(newArea.rect.size, degrees);
                     Vector2 rectPos = currArea.GetRectCenter() + currArea.UnusedConnection[currAreaConnectionPoints[j]].Position;
-                    rectPos += -Vector2Extensions.RotateDegree(newArea.ConnectionPoints[roomConnectionPoints[k]].Position, degrees) - rectSize / 2;
+                    rectPos += -Vector2Extensions.RotateDegree(newArea.ConnectionPoints[roomConnectionPoints[k]].Position, degrees);
+
+                    Debug.Log("degree" + degrees);
+                    Debug.Log("new rect pos" + rectPos);
+                    Debug.Log("new rect size"+ rectSize);
                     if (dungeonMap.DoesntOverlap(new Rect(rectPos, rectSize)))
                     {
                         return new Connection(dungeonMap.areas.Count, roomConnectionPoints[k], areas[i], currArea.GetConnectionIndex( currArea.UnusedConnection[currAreaConnectionPoints[j]]));
