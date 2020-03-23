@@ -535,14 +535,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1091109201}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58584439e8f5e4042b9107d74beb72bc, type: 3}
+  m_Script: {fileID: 11500000, guid: 171cac24fbfe0544c9fb2fef93ba6a24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Level: {fileID: 11400000, guid: 23d57059cd1ea6448816cc34ab6855f0, type: 2}
-  StartConnection:
-    Position: {x: 0, y: 0, z: 0}
-    Direction: {x: 0, y: 0, z: 0}
-  library: {fileID: 11400000, guid: 349df7eb4e794084293231bf3efa8f13, type: 2}
+  areaSize: 30
+  seed: {fileID: 11400000, guid: 6702d2a20099cc84482d189501ffc8c2, type: 2}
 --- !u!4 &1091109203
 Transform:
   m_ObjectHideFlags: 0

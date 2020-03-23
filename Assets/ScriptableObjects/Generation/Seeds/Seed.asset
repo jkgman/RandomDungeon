@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 889caca8d947e99458cb7ea5f3ca0f02, type: 3}
+  m_Name: Seed
+  m_EditorClassIdentifier: 
+  roomCount: 7
+  startAreaOptions:
+  - {fileID: 11400000, guid: e9a3a227a89b28c44abf9461435fa137, type: 2}
+  middleAreaOptions:
+  - {fileID: 11400000, guid: da0afc6bb585a8646ac2021fba7db394, type: 2}
+  endAreaOptions:
+  - {fileID: 11400000, guid: b25ffadc09cc4634d8750bfa298d9ebe, type: 2}
+  bridges:
+  - {fileID: 1331082358209109718, guid: b76b5ced01bfe0845ac162a049c83760, type: 3}
