@@ -13,6 +13,12 @@ public class LevelGenerator : MonoBehaviour
     
     private void Start()
     {
+        HLArea area = new HLArea(seed.RandomStart());
+        area.PrintAreaSummary(true);
+        area.RotateAroundRectPos(90);
+        area.PrintAreaSummary(true);
+
+
         Generate(seed);
         DisplayHLMap(_hlMap);
     }
@@ -21,7 +27,6 @@ public class LevelGenerator : MonoBehaviour
     {
         //pass seed to hlgen to return hl map
         _hlMap = HLGenerator.GenerateHighLevelMap(seed);
-        
         //call hlmap to gen llmaps
         //pass final map to display
     }
@@ -33,6 +38,14 @@ public class LevelGenerator : MonoBehaviour
     private void Display(HLMap map) {
 
     }
+
+    private void PrintMapData(HLMap map) {
+        for (int i = 0; i < map.areas.Count; i++)
+        {
+            Debug.Log("Size " + map.areas[i].rect.size + " Pos " + map.areas[i].rect.position + " Center " + map.areas[i].GetRectCenter());
+        }
+    }
+
 
     private void DisplayHLMap(HLMap map)
     {
