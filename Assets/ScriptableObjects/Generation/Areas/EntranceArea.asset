@@ -17,7 +17,7 @@ MonoBehaviour:
     island: {fileID: 5053965567294408318, guid: dc42d57679394ac40ad6cf2566e1ce49,
       type: 3}
     connectionsPoints:
-    - Position: {x: 0, y: 5}
+    - Position: {x: 0, y: 6}
       Rotation: {x: 0, y: 1}
     loot: []
     enemies: []

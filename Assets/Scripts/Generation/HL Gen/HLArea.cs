@@ -20,16 +20,16 @@ public class HLArea
 
     public HLArea(HLAreaData data, Vector2 rectPos) {
         this.data = data;
-        unusedConnections = data.ConnectionsPoints;
-        connectionPoints = data.ConnectionsPoints;
+        unusedConnections = data.CopyOfConnections();
+        connectionPoints = data.CopyOfConnections();
         SetRect(rectPos, data.RectSize);
     }
 
     public HLArea(HLAreaData data)
     {
         this.data = data;
-        unusedConnections = data.ConnectionsPoints;
-        connectionPoints = data.ConnectionsPoints;
+        unusedConnections = data.CopyOfConnections();
+        connectionPoints = data.CopyOfConnections();
         SetRect(Vector2.zero, data.RectSize);
     }
 
@@ -66,7 +66,7 @@ public class HLArea
     /*Evaluators*/
     public bool IsMaxConnectionsReached()
     {
-        return (connections.Count + backConnection.Count >= data.ConnectionsPoints.Count);
+        return (connections.Count + backConnection.Count >= data.ConnectionPoints.Count);
     }
 
     public ConnectionPoint FindValidDirection()
@@ -99,7 +99,8 @@ public class HLArea
     public void AddConnection(Connection connection, bool isBackwards) {
         for (int i = 0; i < unusedConnections.Count; i++)
         {
-            if (unusedConnections[i] == data.ConnectionsPoints[connection.FromConnectionPoint])
+            unusedConnections[i].Print();
+            if (unusedConnections[i] == ConnectionPoints[connection.FromConnectionPoint])
             {
                 unusedConnections.RemoveAt(i);
                 break;

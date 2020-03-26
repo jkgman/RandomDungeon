@@ -89,7 +89,7 @@ public static class HLGenerator
                 {
 
                     //rotate new area to align conection directions
-                    float degrees = Vector2.SignedAngle(currArea.UnusedConnections[currAreaConnectionPoints[j]].Rotation, newArea.ConnectionPoints[roomConnectionPoints[k]].Rotation)+180;
+                    float degrees = Vector2.SignedAngle(currArea.UnusedConnections[currAreaConnectionPoints[j]].Rotation, newArea.ConnectionPoints[roomConnectionPoints[k]].Rotation);
                     Vector2 rectSize = Vector2Extensions.RotateDegree(newArea.rect.size, degrees);
                     Vector2 rectPos = currArea.GetRectCenter() + currArea.UnusedConnections[currAreaConnectionPoints[j]].Position;
                     rectPos += -Vector2Extensions.RotateDegree(newArea.ConnectionPoints[roomConnectionPoints[k]].Position, degrees);

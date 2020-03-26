@@ -17,13 +17,13 @@ MonoBehaviour:
     island: {fileID: 5872093498580597968, guid: 6edc8b101118dc6488e7b3edf8eab65f,
       type: 3}
     connectionsPoints:
-    - Position: {x: 10, y: 0}
+    - Position: {x: 11, y: 0}
       Rotation: {x: 1, y: 0}
-    - Position: {x: 0, y: 10}
+    - Position: {x: 0, y: 11}
       Rotation: {x: 0, y: 1}
-    - Position: {x: -10, y: 0}
+    - Position: {x: -11, y: 0}
       Rotation: {x: -1, y: 0}
-    - Position: {x: 0, y: -10}
+    - Position: {x: 0, y: -11}
       Rotation: {x: 0, y: -1}
     loot: []
     enemies: []

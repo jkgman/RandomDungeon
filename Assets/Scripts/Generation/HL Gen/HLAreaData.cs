@@ -9,7 +9,7 @@ public class HLAreaData
     [SerializeField]
     GameObject island;
     [SerializeField]
-    List<ConnectionPoint> connectionsPoints = new List<ConnectionPoint>();
+    List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
     [SerializeField]
     List<Loot> loot;
@@ -19,7 +19,7 @@ public class HLAreaData
 
     public Vector2 RectSize { get => rectSize; }
     public GameObject Island { get => island; }
-    public List<ConnectionPoint> ConnectionsPoints { get => connectionsPoints; }
+    public List<ConnectionPoint> ConnectionPoints { get => connectionPoints; }
 
     public HLAreaData(Vector2 rectSize, GameObject island, List<ConnectionPoint> connectionsPoints, List<Loot> loot, List<Enemies> enemies)
     {
@@ -27,14 +27,22 @@ public class HLAreaData
         this.island = island;
         for (int i = 0; i < connectionsPoints.Count; i++)
         {
-            this.connectionsPoints.Add(new ConnectionPoint(connectionsPoints[i]));
+            this.connectionPoints.Add(new ConnectionPoint(connectionsPoints[i]));
         }
         this.loot = loot;
         this.enemies = enemies;
     }
 
     public HLAreaData GetCopy() {
-        return new HLAreaData(rectSize, island, connectionsPoints, loot, enemies);
+        return new HLAreaData(rectSize, island, connectionPoints, loot, enemies);
+    }
+    public List<ConnectionPoint> CopyOfConnections() {
+        List<ConnectionPoint> newList = new List<ConnectionPoint>();
+        for (int i = 0; i < connectionPoints.Count; i++)
+        {
+            newList.Add(connectionPoints[i].GetCopy());
+        }
+        return newList;
     }
 
 }

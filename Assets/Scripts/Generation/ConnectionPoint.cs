@@ -28,4 +28,10 @@ public struct ConnectionPoint
         return !connectionA.Equals(connectionB);
     }
 
+    public void Print() {
+        Debug.Log("Connection Point: " + Position + " Direction " + Rotation);
+    }
+    public ConnectionPoint GetCopy() {
+        return new ConnectionPoint(Position, Rotation);
+    }
 }

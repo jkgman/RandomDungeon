@@ -14,4 +14,7 @@ public struct Connection
         ToAreaIndex = toAreaIndex;
         ToConnectionPoint = toConnectionPoint;
      }
+    public void Print() {
+        Debug.Log("Connection: From " + FromAreaIndex + " Point " + FromConnectionPoint + " To " + ToAreaIndex + " Point " + ToConnectionPoint);
+    }
 }

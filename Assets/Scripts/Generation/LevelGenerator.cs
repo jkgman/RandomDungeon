@@ -14,9 +14,6 @@ public class LevelGenerator : MonoBehaviour
     private void Start()
     {
         HLArea area = new HLArea(seed.RandomStart());
-        area.PrintAreaSummary(true);
-        area.RotateAroundRectPos(90);
-        area.PrintAreaSummary(true);
 
 
         Generate(seed);
