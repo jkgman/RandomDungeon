@@ -13,8 +13,11 @@ public class Vector2Extensions
     public static Vector2 RotateRadians(Vector2 vec, float rad) {
         float ca = Mathf.Cos(rad);
         float sa = Mathf.Sin(rad);
-        return new Vector2(ca * vec.x - sa * vec.y, sa * vec.x + ca * vec.y);
+        float x = ca * vec.x - sa * vec.y;
+        float y = sa * vec.x + ca * vec.y;
+        return new Vector2(Mathf.Round(x * 100f) / 100f, Mathf.Round(y * 100f) / 100f);
     }
+
     /// <summary>
     /// Rotates Counter clockwise for positive inputs
     /// </summary>
@@ -23,8 +26,6 @@ public class Vector2Extensions
     /// <returns></returns>
     public static Vector2 RotateDegree(Vector2 vec, float deg)
     {
-        float ca = Mathf.Cos(deg * Mathf.Deg2Rad);
-        float sa = Mathf.Sin(deg * Mathf.Deg2Rad);
-        return new Vector2(ca * vec.x - sa * vec.y, sa * vec.x + ca * vec.y);
+        return RotateRadians(vec, deg * Mathf.Deg2Rad);
     }
 }

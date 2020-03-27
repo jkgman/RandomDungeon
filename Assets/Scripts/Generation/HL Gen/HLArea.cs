@@ -35,10 +35,6 @@ public class HLArea
 
 
     /*Get and Sets*/
-    public Vector2 GetRectCenter()
-    {
-        return rect.position + (rect.size / 2);
-    }
 
     public int GetConnectionIndex(ConnectionPoint point)
     {
@@ -93,13 +89,12 @@ public class HLArea
     }
 
     public void RotateAroundRectCenter() {
-
+        throw new System.NotImplementedException();
     }
    
     public void AddConnection(Connection connection, bool isBackwards) {
         for (int i = 0; i < unusedConnections.Count; i++)
         {
-            unusedConnections[i].Print();
             if (unusedConnections[i] == ConnectionPoints[connection.FromConnectionPoint])
             {
                 unusedConnections.RemoveAt(i);
@@ -167,5 +162,8 @@ public class HLArea
             }
         }
         Debug.Log(summary);
+    }
+    public void TestSuit() {
+
     }
 }

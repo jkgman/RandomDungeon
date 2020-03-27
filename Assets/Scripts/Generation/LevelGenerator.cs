@@ -39,14 +39,14 @@ public class LevelGenerator : MonoBehaviour
     private void PrintMapData(HLMap map) {
         for (int i = 0; i < map.areas.Count; i++)
         {
-            Debug.Log("Size " + map.areas[i].rect.size + " Pos " + map.areas[i].rect.position + " Center " + map.areas[i].GetRectCenter());
+            Debug.Log("Size " + map.areas[i].rect.size + " Pos " + map.areas[i].rect.position + " Center " + map.areas[i].rect.center);
         }
     }
 
 
     private void DisplayHLMap(HLMap map)
     {
-        Instantiate(map.areas[0].data.Island, new Vector3(map.areas[0].GetRectCenter().x,0, map.areas[0].GetRectCenter().y), Quaternion.identity, transform);
+        Instantiate(map.areas[0].data.Island, new Vector3(map.areas[0].rect.center.x,0, map.areas[0].rect.center.y), Quaternion.identity, transform);
         //map.areas[0].Position = Vector3.zero;
         for (int i = 0; i < map.areas[0].Connections.Count; i++)
         {
@@ -58,7 +58,7 @@ public class LevelGenerator : MonoBehaviour
     {
         //Vector3 pos = map.areas[index].Position + map.areas[index].data.ConnectionsPos[connection.FromConnectionPoint] + seed.BridgeLength;
         //Vector3 bridgePos = map.areas[index].Position + EvaluateToDirection(connection.Direction) / 2;
-        Instantiate(map.areas[connection.ToAreaIndex].data.Island, new Vector3( map.areas[connection.ToAreaIndex].GetRectCenter().x,0, map.areas[connection.ToAreaIndex].GetRectCenter().y), Quaternion.identity, transform);
+        Instantiate(map.areas[connection.ToAreaIndex].data.Island, new Vector3( map.areas[connection.ToAreaIndex].rect.center.x,0, map.areas[connection.ToAreaIndex].rect.center.y), Quaternion.identity, transform);
         //Instantiate(map.GetRandomBridge(), bridgePos, Quaternion.Euler(EvaluateToDirection(connection.Direction)), transform);
         for (int i = 0; i < map.areas[connection.ToAreaIndex].Connections.Count; i++)
         {

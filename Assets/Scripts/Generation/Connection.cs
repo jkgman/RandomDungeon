@@ -17,4 +17,13 @@ public struct Connection
     public void Print() {
         Debug.Log("Connection: From " + FromAreaIndex + " Point " + FromConnectionPoint + " To " + ToAreaIndex + " Point " + ToConnectionPoint);
     }
+    /// <summary>
+    /// Reverses a connection between two areas
+    /// </summary>
+    /// <param name="connection"></param>
+    /// <returns></returns>
+    public static Connection ReverseConnection(Connection connection)
+    {
+        return new Connection(connection.ToAreaIndex, connection.ToConnectionPoint, connection.FromAreaIndex, connection.FromConnectionPoint);
+    }
 }
