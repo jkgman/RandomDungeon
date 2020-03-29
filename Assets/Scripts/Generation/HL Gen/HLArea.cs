@@ -22,7 +22,7 @@ public class HLArea
         this.data = data;
         unusedConnections = data.CopyOfConnections();
         connectionPoints = data.CopyOfConnections();
-        SetRect(rectPos, data.RectSize);
+        SetRectByCenter(rectPos, data.RectSize);
     }
 
     public HLArea(HLAreaData data)
@@ -30,12 +30,12 @@ public class HLArea
         this.data = data;
         unusedConnections = data.CopyOfConnections();
         connectionPoints = data.CopyOfConnections();
-        SetRect(Vector2.zero, data.RectSize);
+        SetRectByCenter(Vector2.zero, data.RectSize);
     }
 
 
     /*Get and Sets*/
-
+    
     public int GetConnectionIndex(ConnectionPoint point)
     {
         for (int i = 0; i < connectionPoints.Count; i++)
@@ -48,14 +48,19 @@ public class HLArea
         return -1;
     }
 
-    private void SetRect(Vector2 rectPos, Vector2 rectSize)
+    private void SetRectByCenter(Vector2 rectCenterPos, Vector2 rectSize)
     {
-        rect = new Rect(rectPos.x - rectSize.x / 2, rectPos.y - rectSize.y / 2, rectSize.x, rectSize.y);
+        rect = new Rect(rectCenterPos.x - rectSize.x / 2, rectCenterPos.y - rectSize.y / 2, rectSize.x, rectSize.y);
     }
 
     public void SetPosition(Vector2 rectPos)
     {
         rect = new Rect(rectPos, rect.size);
+    }
+
+    public void SetPositionByConnection(Vector2 targetPos, int connectionPoint)
+    {
+        rect.position = targetPos - ConnectionPoints[connectionPoint].Position - (rect.size/2);
     }
 
 

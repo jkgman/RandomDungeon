@@ -54,7 +54,7 @@ public static class HLGenerator
 
     }
 
-    /// <summary>
+    /// <summary> 
     /// Returns an area and the direction pointing to its valid connection in form of a connection
     /// </summary>
     /// <param name="dungeonMap"></param>
@@ -88,15 +88,9 @@ public static class HLGenerator
                 for (int k = 0; k < roomConnectionPoints.Length; k++)
                 {
 
-                    //rotate new area to align conection directions
-                    float degrees = Vector2.SignedAngle(currArea.UnusedConnections[currAreaConnectionPoints[j]].Rotation, newArea.ConnectionPoints[roomConnectionPoints[k]].Rotation);
-                    Vector2 rectSize = Vector2Extensions.RotateDegree(newArea.rect.size, degrees);
-                    Vector2 rectPos = currArea.rect.center + currArea.UnusedConnections[currAreaConnectionPoints[j]].Position;
-                    rectPos += -Vector2Extensions.RotateDegree(newArea.ConnectionPoints[roomConnectionPoints[k]].Position, degrees);
-
-                    if (dungeonMap.DoesntOverlap(new Rect(rectPos, rectSize)))
+                    if (CanConnect(dungeonMap, newArea, areas[i], currAreaConnectionPoints[j], roomConnectionPoints[k]))
                     {
-                        return new Connection(dungeonMap.areas.Count, roomConnectionPoints[k], areas[i], currArea.GetConnectionIndex( currArea.UnusedConnections[currAreaConnectionPoints[j]]));
+                        return new Connection(dungeonMap.areas.Count, roomConnectionPoints[k], areas[i], currArea.GetConnectionIndex(currArea.UnusedConnections[currAreaConnectionPoints[j]]));
                     }
                 }
             }
@@ -104,5 +98,18 @@ public static class HLGenerator
         throw new System.Exception("No connections found in HLGeneration");
     }
 
+
+    public static bool CanConnect(HLMap dungeonMap, HLArea newArea, int targetArea, int targetConnection, int newAreaConnection) {
+        //rotate new area to align conection directions
+        float degrees = Vector2.SignedAngle(dungeonMap.areas[targetArea].UnusedConnections[targetConnection].Rotation, -newArea.ConnectionPoints[newAreaConnection].Rotation);
+        newArea.RotateAroundRectPos(degrees);
+        newArea.SetPositionByConnection(dungeonMap.areas[targetArea].rect.center + dungeonMap.areas[targetArea].UnusedConnections[targetConnection].Position, newAreaConnection);
+
+        if (dungeonMap.DoesntOverlap(newArea.rect))
+        {
+            return true;
+        }
+        return false;
+    }
     
 }
