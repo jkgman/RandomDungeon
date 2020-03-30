@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 889caca8d947e99458cb7ea5f3ca0f02, type: 3}
   m_Name: Seed
   m_EditorClassIdentifier: 
-  roomCount: 5
+  roomCount: 10
   bridgeLength: 0
   startAreaOptions:
   - {fileID: 11400000, guid: e9a3a227a89b28c44abf9461435fa137, type: 2}
@@ -20,5 +20,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: da0afc6bb585a8646ac2021fba7db394, type: 2}
   endAreaOptions:
   - {fileID: 11400000, guid: b25ffadc09cc4634d8750bfa298d9ebe, type: 2}
-  bridges:
-  - {fileID: 1331082358209109718, guid: b76b5ced01bfe0845ac162a049c83760, type: 3}
+  bridges: []

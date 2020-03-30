@@ -16,8 +16,6 @@ MonoBehaviour:
     rectSize: {x: 10, y: 10}
     island: {fileID: 7045293656011048614, guid: d6a5f258eb748304988bc56fb2ca498d,
       type: 3}
-    connectionsPoints:
-    - Position: {x: 0, y: 6}
+    connectionPoints:
+    - Position: {x: 0, y: 5}
       Rotation: {x: 0, y: 1}
-    loot: []
-    enemies: []
