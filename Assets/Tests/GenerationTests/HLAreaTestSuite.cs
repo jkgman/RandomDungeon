@@ -104,9 +104,24 @@ namespace Tests
             Assert.False(area.IsMaxConnectionsReached());
         }
 
-        private HLArea CreateDummyArea() {
+        [Test]
+        public void TestHLAreaSetPositionByConnection()
+        {
+            HLArea area = CreateDummyArea();
+            area.SetPositionByConnection(Vector2.zero, 0);
+            Assert.AreEqual(new Vector2(-10, -10),area.rect.position);
+        }
+
+        public static HLArea CreateDummyArea() {
             List<ConnectionPoint> points = new List<ConnectionPoint>();
             points.Add(new ConnectionPoint(new Vector2(0, 5), new Vector2(0, 1)));
+            HLAreaData data = new HLAreaData(new Vector2(20, 10), new GameObject(), points);
+            return new HLArea(data, Vector2.zero);
+        }
+        public static HLArea CreateNoneConnectingDummyArea()
+        {
+            List<ConnectionPoint> points = new List<ConnectionPoint>();
+            points.Add(new ConnectionPoint(new Vector2(0, 0), new Vector2(0, 1)));
             HLAreaData data = new HLAreaData(new Vector2(20, 10), new GameObject(), points);
             return new HLArea(data, Vector2.zero);
         }

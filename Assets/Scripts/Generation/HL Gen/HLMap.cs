@@ -18,7 +18,7 @@ public class HLMap
     public bool DoesntOverlap(Rect area) {
         for (int i = 0; i < areas.Count; i++)
         {
-            if (areas[i].rect.Overlaps(area))
+            if (areas[i].rect.Overlaps(area,true))
             {
                 return false;
             }
