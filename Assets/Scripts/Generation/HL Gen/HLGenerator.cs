@@ -90,11 +90,12 @@ public static class HLGenerator
 
                     //rotate new area to align conection directions
                     float degrees = Vector2.SignedAngle(currArea.UnusedConnections[currAreaConnectionPoints[j]].Rotation, newArea.ConnectionPoints[roomConnectionPoints[k]].Rotation);
-                    Vector2 rectSize = Vector2Extensions.RotateDegree(newArea.rect.size, degrees);
-                    Vector2 rectPos = currArea.rect.center + currArea.UnusedConnections[currAreaConnectionPoints[j]].Position;
-                    rectPos += -Vector2Extensions.RotateDegree(newArea.ConnectionPoints[roomConnectionPoints[k]].Position, degrees);
+                    newArea.RotateAroundRectPos(degrees);
+                    //Vector2 rectSize = Vector2Extensions.RotateDegree(newArea.rect.size, degrees);
+                    //Vector2 rectPos = currArea.rect.center + currArea.UnusedConnections[currAreaConnectionPoints[j]].Position;
+                    //rectPos += -Vector2Extensions.RotateDegree(newArea.ConnectionPoints[roomConnectionPoints[k]].Position, degrees);
 
-                    if (dungeonMap.DoesntOverlap(new Rect(rectPos, rectSize)))
+                    if (dungeonMap.DoesntOverlap(newArea.rect))
                     {
                         return new Connection(dungeonMap.areas.Count, roomConnectionPoints[k], areas[i], currArea.GetConnectionIndex( currArea.UnusedConnections[currAreaConnectionPoints[j]]));
                     }
@@ -104,5 +105,14 @@ public static class HLGenerator
         throw new System.Exception("No connections found in HLGeneration");
     }
 
+    private static bool CanFit(HLMap dungeonMap, HLArea newArea, int existingArea, int existingAreaPointIndex, int newAreaPointIndex ) {
+        float degrees = Vector2.SignedAngle(dungeonMap.areas[existingArea].UnusedConnections[existingAreaPointIndex].Rotation, newArea.ConnectionPoints[newAreaPointIndex].Rotation);
+        newArea.RotateAroundRectPos(degrees);
+        if (dungeonMap.DoesntOverlap(newArea.rect))
+        {
+            return true;
+        }
+        return false;
+    }
     
 }
