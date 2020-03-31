@@ -7,16 +7,25 @@ public class HLArea
 {
 
     public HLAreaData data;
+    public Rect rect;
+    
+    private float currentRotation = 0;
+
     private List<Connection> connections = new List<Connection>();
     private List<Connection> backConnection = new List<Connection>();
     private List<ConnectionPoint> connectionPoints;
     private List<ConnectionPoint> unusedConnections;
-    public Rect rect;
+
+    public GameObject AreaRoot { get => areaRoot; }
+
+    public float CurrentRotation { get; }
 
     public List<Connection> Connections { get => connections; private set => connections = value; }
     public List<Connection> BackConnection { get => backConnection; private set => backConnection = value; }
     public List<ConnectionPoint> UnusedConnections { get => unusedConnections; }
     public List<ConnectionPoint> ConnectionPoints { get => connectionPoints;  }
+
+    private GameObject areaRoot;
 
     public HLArea(HLAreaData data, Vector2 rectPos) {
         this.data = data;
@@ -32,10 +41,16 @@ public class HLArea
         connectionPoints = data.CopyOfConnections();
         SetRectByCenter(Vector2.zero, data.RectSize);
     }
-
+    public void GenerateLL(int index)
+    {
+        areaRoot = new GameObject();
+        areaRoot.name = index.ToString();
+        areaRoot.transform.position = new Vector3(rect.center.x, 0, rect.center.y);
+        data.LLGenerator.Generate(this);
+    }
 
     /*Get and Sets*/
-    
+
     public int GetConnectionIndex(ConnectionPoint point)
     {
         for (int i = 0; i < connectionPoints.Count; i++)
@@ -90,6 +105,7 @@ public class HLArea
         {
             ConnectionPoints[i] = new ConnectionPoint(Vector2Extensions.RotateDegree(ConnectionPoints[i].Position, rot), Vector2Extensions.RotateDegree(ConnectionPoints[i].Rotation, rot));
         }
+        currentRotation -= rot;
         rect = new Rect(rect.position, Vector2Extensions.RotateDegree(rect.size, rot));
     }
 

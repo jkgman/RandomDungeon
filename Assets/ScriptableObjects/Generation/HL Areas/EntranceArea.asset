@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: EntranceArea
   m_EditorClassIdentifier: 
   data:
-    rectSize: {x: 10, y: 10}
-    island: {fileID: 5053965567294408318, guid: dc42d57679394ac40ad6cf2566e1ce49,
-      type: 3}
+    rectSize: {x: 13, y: 12}
+    lLGenerator: {fileID: 11400000, guid: 162eb064b13e1a84ea24ce2ddb8d8e13, type: 2}
     connectionPoints:
-    - Position: {x: 0, y: 5}
-      Rotation: {x: 0, y: 1}
+    - Position: {x: 6.5, y: 0}
+      Rotation: {x: 1, y: 0}

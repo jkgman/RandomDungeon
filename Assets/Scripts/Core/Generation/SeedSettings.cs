@@ -8,21 +8,15 @@ public class SeedSettings : ScriptableObject
     [SerializeField]
     int roomCount;
     [SerializeField]
-    float bridgeLength;
-    [SerializeField]
     List<HLAreaSO> startAreaOptions = new List<HLAreaSO>();
     [SerializeField]
     List<HLAreaSO> middleAreaOptions = new List<HLAreaSO>();
     [SerializeField]
     List<HLAreaSO> endAreaOptions = new List<HLAreaSO>();
-    [SerializeField]
-    List<GameObject> bridges = new List<GameObject>();
     public int RoomCount { get => roomCount; }
-    public float BridgeLength { get => bridgeLength; }
     public List<HLAreaSO> StartAreaOptions { get => startAreaOptions; }
     public List<HLAreaSO> MiddleAreaOptions { get => middleAreaOptions; }
     public List<HLAreaSO> EndAreaOptions { get => endAreaOptions; }
-    public List<GameObject> Bridges { get => bridges; }
 
     public HLAreaData RandomStart() {
         if (StartAreaOptions.Count <= 0)

@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LLGenerator : ScriptableObject
+public abstract class LLGenerator : ScriptableObject
 {
+    protected HLArea area;
 
-    public LLMap GenerateLowLevelMap()
-    {
-        return null;
+    public virtual void Generate(HLArea containingArea) {
+        area = containingArea;
+        StartGen();
     }
+    protected abstract void StartGen();
 }

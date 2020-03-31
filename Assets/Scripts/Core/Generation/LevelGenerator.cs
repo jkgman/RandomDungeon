@@ -11,24 +11,17 @@ public class LevelGenerator : MonoBehaviour
     private void Start()
     {
         Generate(seed);
-        DisplayHLMap(_hlMap);
+        //DisplayHLMap(_hlMap);
     }
 
     private void Generate(SeedSettings seed)
     {
         //pass seed to hlgen to return hl map
         _hlMap = HLGenerator.GenerateHighLevelMap(seed);
-        //call hlmap to gen llmaps
+        _hlMap.GenerateLL();
         //pass final map to display
     }
 
-    /// <summary>
-    /// Display HLMAP
-    /// </summary>
-    /// <param name="map"></param>
-    private void Display(HLMap map) {
-
-    }
 
     private void PrintMapData(HLMap map) {
         for (int i = 0; i < map.areas.Count; i++)
@@ -38,23 +31,23 @@ public class LevelGenerator : MonoBehaviour
     }
 
 
-    private void DisplayHLMap(HLMap map)
-    {
-        Instantiate(map.areas[0].data.Island, new Vector3(map.areas[0].rect.center.x,0, map.areas[0].rect.center.y), Quaternion.identity, transform);
-        //map.areas[0].Position = Vector3.zero;
-        for (int i = 0; i < map.areas[0].Connections.Count; i++)
-        {
-            DisplayArea(map, 0, map.areas[0].Connections[i]);
-        }
-    }
+    //private void DisplayHLMap(HLMap map)
+    //{
+    //    Instantiate(map.areas[0].data.Island, new Vector3(map.areas[0].rect.center.x,0, map.areas[0].rect.center.y), Quaternion.identity, transform);
+    //    //map.areas[0].Position = Vector3.zero;
+    //    for (int i = 0; i < map.areas[0].Connections.Count; i++)
+    //    {
+    //        DisplayArea(map, 0, map.areas[0].Connections[i]);
+    //    }
+    //}
 
-    private void DisplayArea(HLMap map, int index, Connection connection)
-    {
-        Instantiate(map.areas[connection.ToAreaIndex].data.Island, new Vector3( map.areas[connection.ToAreaIndex].rect.center.x,0, map.areas[connection.ToAreaIndex].rect.center.y), Quaternion.identity, transform);
-        for (int i = 0; i < map.areas[connection.ToAreaIndex].Connections.Count; i++)
-        {
-            DisplayArea(map, connection.ToAreaIndex, map.areas[connection.ToAreaIndex].Connections[i]);
-        }
-    }
+    //private void DisplayArea(HLMap map, int index, Connection connection)
+    //{
+    //    Instantiate(map.areas[connection.ToAreaIndex].data.Island, new Vector3( map.areas[connection.ToAreaIndex].rect.center.x,0, map.areas[connection.ToAreaIndex].rect.center.y), Quaternion.identity, transform);
+    //    for (int i = 0; i < map.areas[connection.ToAreaIndex].Connections.Count; i++)
+    //    {
+    //        DisplayArea(map, connection.ToAreaIndex, map.areas[connection.ToAreaIndex].Connections[i]);
+    //    }
+    //}
 
 }

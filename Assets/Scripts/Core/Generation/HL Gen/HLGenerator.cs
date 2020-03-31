@@ -13,7 +13,7 @@ public static class HLGenerator
     public static HLMap GenerateHighLevelMap(SeedSettings seed)
     {
         //Setup Map and data
-        HLMap dungeonMap = new HLMap(seed.Bridges);
+        HLMap dungeonMap = new HLMap();
 
         //Add begining and set rect
         dungeonMap.areas.Add(new HLArea(seed.RandomStart(),new Vector2(0,0)));

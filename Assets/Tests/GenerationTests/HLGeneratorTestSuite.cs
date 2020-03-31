@@ -11,7 +11,7 @@ namespace Tests
         [Test]
         public void TestCanConnectValidAreas()
         {
-            HLMap map = new HLMap(new List<GameObject>());
+            HLMap map = new HLMap();
             HLArea area = HLAreaTestSuite.CreateDummyArea();
             map.areas.Add(area);
             HLArea area2 = HLAreaTestSuite.CreateDummyArea();
@@ -26,7 +26,7 @@ namespace Tests
         [Test]
         public void TestCanConnectHandlesInvalidAreas()
         {
-            HLMap map = new HLMap(new List<GameObject>());
+            HLMap map = new HLMap();
             HLArea area = HLAreaTestSuite.CreateDummyArea();
             map.areas.Add(area);
             HLArea area2 = HLAreaTestSuite.CreateNoneConnectingDummyArea();

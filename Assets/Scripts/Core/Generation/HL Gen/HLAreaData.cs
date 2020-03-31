@@ -7,24 +7,19 @@ public class HLAreaData
     [SerializeField]
     Vector2 rectSize;
     [SerializeField]
-    GameObject island;
+    LLGenerator lLGenerator;
     [SerializeField]
     List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
-    //[SerializeField]
-    //List<Loot> loot;
-    //[SerializeField]
-    //List<Enemies> enemies;
-
 
     public Vector2 RectSize { get => rectSize; }
-    public GameObject Island { get => island; }
+    public LLGenerator LLGenerator { get => lLGenerator; }
     public List<ConnectionPoint> ConnectionPoints { get => connectionPoints; }
 
-    public HLAreaData(Vector2 rectSize, GameObject island, List<ConnectionPoint> connectionsPoints)
+    public HLAreaData(Vector2 rectSize, LLGenerator lLGenerator, List<ConnectionPoint> connectionsPoints)
     {
         this.rectSize = rectSize;
-        this.island = island;
+        this.lLGenerator = lLGenerator;
         for (int i = 0; i < connectionsPoints.Count; i++)
         {
             this.connectionPoints.Add(new ConnectionPoint(connectionsPoints[i]));
@@ -32,7 +27,7 @@ public class HLAreaData
     }
 
     public HLAreaData GetCopy() {
-        return new HLAreaData(rectSize, island, connectionPoints);
+        return new HLAreaData(rectSize, lLGenerator, connectionPoints);
     }
     public List<ConnectionPoint> CopyOfConnections() {
         List<ConnectionPoint> newList = new List<ConnectionPoint>();

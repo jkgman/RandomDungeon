@@ -15,7 +15,7 @@ namespace Tests
             HLArea area1 = HLAreaTestSuite.CreateDummyArea();
             HLArea area2 = HLAreaTestSuite.CreateDummyArea();
             HLArea area3 = HLAreaTestSuite.CreateNoneConnectingDummyArea();
-            HLMap map = new HLMap(new List<GameObject>());
+            HLMap map = new HLMap();
             map.areas.Add(area1);
             Assert.IsFalse(map.DoesntOverlap(area2.rect));
             area2.rect.position = new Vector2(-10,5);

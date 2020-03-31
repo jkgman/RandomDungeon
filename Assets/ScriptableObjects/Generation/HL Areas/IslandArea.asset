@@ -10,12 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68b78478d0771cc47b1031067fbe72ac, type: 3}
-  m_Name: ExitArea
+  m_Name: IslandArea
   m_EditorClassIdentifier: 
   data:
-    rectSize: {x: 10, y: 10}
-    island: {fileID: 7045293656011048614, guid: d6a5f258eb748304988bc56fb2ca498d,
-      type: 3}
+    rectSize: {x: 22, y: 22}
+    lLGenerator: {fileID: 11400000, guid: cbfcdbcd4851f6d48bd0a3470c5efa3f, type: 2}
     connectionPoints:
-    - Position: {x: 0, y: 5}
+    - Position: {x: 0, y: 11}
       Rotation: {x: 0, y: 1}
+    - Position: {x: 0, y: -11}
+      Rotation: {x: 0, y: -1}
+    - Position: {x: 11, y: 0}
+      Rotation: {x: 1, y: 0}
+    - Position: {x: -11, y: 0}
+      Rotation: {x: -1, y: 0}
