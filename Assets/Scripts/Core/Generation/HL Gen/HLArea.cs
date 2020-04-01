@@ -18,7 +18,7 @@ public class HLArea
 
     public GameObject AreaRoot { get => areaRoot; }
 
-    public float CurrentRotation { get; }
+    public float CurrentRotation { get => currentRotation; }
 
     public List<Connection> Connections { get => connections; private set => connections = value; }
     public List<Connection> BackConnection { get => backConnection; private set => backConnection = value; }

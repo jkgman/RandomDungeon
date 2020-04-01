@@ -13,3 +13,7 @@ MonoBehaviour:
   m_Name: EntranceRoom
   m_EditorClassIdentifier: 
   room: {fileID: 6359299029124528327, guid: dc42d57679394ac40ad6cf2566e1ce49, type: 3}
+  spawnPos: {x: 0, y: 1.2, z: 0}
+  spawnRot: {x: 0, y: 90, z: 0}
+  player: {fileID: 3953715977821950901, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
+  spawnPlayer: 1
