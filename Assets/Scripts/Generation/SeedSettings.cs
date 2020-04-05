@@ -18,6 +18,16 @@ public class SeedSettings : ScriptableObject
     public List<HLAreaSO> MiddleAreaOptions { get => middleAreaOptions; }
     public List<HLAreaSO> EndAreaOptions { get => endAreaOptions; }
 
+    //Extract into serialized enemy seed struct(should have count of multiple enemie types)
+    [SerializeField]
+    private int enemyCount = 3;
+    [SerializeField]
+    private GameObject enemy;
+
+    public int EnemyCount { get => enemyCount; }
+    public GameObject Enemy { get => enemy; }
+
+
     public HLAreaData RandomStart() {
         if (StartAreaOptions.Count <= 0)
         {

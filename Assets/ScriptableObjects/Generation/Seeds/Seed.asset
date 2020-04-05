@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Seed
   m_EditorClassIdentifier: 
   roomCount: 10
-  bridgeLength: 0
   startAreaOptions:
   - {fileID: 11400000, guid: e9a3a227a89b28c44abf9461435fa137, type: 2}
   middleAreaOptions:
   - {fileID: 11400000, guid: da0afc6bb585a8646ac2021fba7db394, type: 2}
   endAreaOptions:
   - {fileID: 11400000, guid: b25ffadc09cc4634d8750bfa298d9ebe, type: 2}
-  bridges: []
+  enemyCount: 6
+  enemy: {fileID: 6212252257882444870, guid: fab49606a9aebf74dbf0f02f3b5eb7c2, type: 3}

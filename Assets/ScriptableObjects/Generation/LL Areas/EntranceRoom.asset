@@ -16,4 +16,5 @@ MonoBehaviour:
   spawnPos: {x: 0, y: 1.2, z: 0}
   spawnRot: {x: 0, y: 90, z: 0}
   player: {fileID: 3953715977821950901, guid: d15be6b0d70a905439d7341bb469164f, type: 3}
+  camera: {fileID: 7496383072165039998, guid: e357fa187e4202f46be5ac3cfc41ec3e, type: 3}
   spawnPlayer: 1
