@@ -83,17 +83,17 @@ namespace Dungeon.Characters.Enemies
 
 		public void Stroll()
 		{
-			/*SetRunning(false);
-			bool atDestination = (transform.position - Agent.destination).sqrMagnitude <= Agent.stoppingDistance * Agent.stoppingDistance * 1.1f;
-			if ((!Agent.pathPending && !Agent.hasPath) || atDestination || Agent.isPathStale)
+			SetRunning(false);
+			bool atDestination = (transform.position - Pather.destination).sqrMagnitude <= Pather.endReachedDistance * Pather.endReachedDistance * 1.1f;
+			if ((!Pather.pathPending && !Pather.hasPath) || atDestination || transform.position == lastPosition)
 			{
 				currentDestination = CreateNewDestination();
-				Agent.SetDestination(currentDestination);
+                Pather.destination=(currentDestination);
 			}
 			
 
 			RotateTowardsMovement();
-			UpdateAnimationData();*/
+			UpdateAnimationData();
 		}
 		public void Idle()
 		{

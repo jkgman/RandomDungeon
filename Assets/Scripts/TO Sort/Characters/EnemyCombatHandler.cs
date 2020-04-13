@@ -15,11 +15,10 @@ namespace Dungeon.Characters
 		[SerializeField] private float maxAttackDistance;
 		[SerializeField] private float attackDelay;
 		[SerializeField] private LayerMask obstacleMask;
-        [SerializeField] private float stoppingDistance;
+        private AIPath pather;
         private float attackDelayTimer;
 		private bool attackTimerReset;
 		private Transform target;
-        private Seeker seeker;
 		private float targetSeenLastTime;
 		protected EnemyWeapon CurrentWeapon
 		{
@@ -30,8 +29,9 @@ namespace Dungeon.Characters
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-            seeker = GetComponent<Seeker>();
-		}
+            pather = GetComponent<AIPath>();
+
+        }
 
 		public Vector3 GetTargetPosition()
 		{
@@ -70,7 +70,7 @@ namespace Dungeon.Characters
 			if (targetSeenLastTime + 5f > Time.time)
 			{
 				//For 5 seconds after having seen target, it can see players position within its range.
-				float sqrDist = (stoppingDistance + targetFindDistance) * (stoppingDistance + targetFindDistance);
+				float sqrDist = (pather.endReachedDistance + targetFindDistance) * (pather.endReachedDistance + targetFindDistance);
 				if (GetTargetDirection().sqrMagnitude < sqrDist)
 					return true;
 			}
@@ -101,7 +101,7 @@ namespace Dungeon.Characters
 		{
 			bool canAttack = true;
 			float sqrLen = GetTargetDirection().sqrMagnitude;
-			if (sqrLen < stoppingDistance * stoppingDistance)
+			if (sqrLen < pather.endReachedDistance * pather.endReachedDistance)
 			{
 				//Reset timer once
 				if (!attackTimerReset)
