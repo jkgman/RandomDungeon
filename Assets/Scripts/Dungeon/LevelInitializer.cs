@@ -21,7 +21,20 @@ public class LevelInitializer : MonoBehaviour
         enenmyTracker = GetComponent<InstanceTracker>();
 
         //Initialize level layout
-        HLMap hlMap = HLGenerator.GenerateHighLevelMap(seed);
+
+        HLMap hlMap = null;
+        for (int i = 0; i < 4; i++)
+        {
+            try
+            {
+                hlMap = HLGenerator.GenerateHighLevelMap(seed);
+                break;
+            }
+            catch (System.Exception)
+            {
+                Debug.Log("failed to generat " + i + " times");
+            }
+        }
         hlMap.GenerateLL();
         Debug.Log("generation finished");
         //Initialize navmesh
