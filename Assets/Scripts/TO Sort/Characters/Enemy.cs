@@ -19,8 +19,9 @@ namespace Dungeon.Characters.Enemies
 		[SerializeField] private float maxIdleTime;
 		[SerializeField] private float minStrollTime;
 		[SerializeField] private float maxStrollTime;
+        [SerializeField] private DropOnDestroy drop;
 
-		private float idleDuration;
+        private float idleDuration;
 		private float currentIdleTime;
 		private float strollDuration;
 		private float currentStrollTime;
@@ -181,7 +182,10 @@ namespace Dungeon.Characters.Enemies
 			//For now it is just a particle effect and disappear.
 			Debug.Log("Enemy dies nad disables");
 			dieRoutineStarted = true;
-
+            if (drop)
+            {
+                drop.Drop();
+            }
 
 			Effects.PlayDeathParticles();
 			Effects.SetInvisible();

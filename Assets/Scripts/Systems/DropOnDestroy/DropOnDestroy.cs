@@ -8,9 +8,9 @@ public class DropOnDestroy : MonoBehaviour
     GameObject dropingObject;
     [SerializeField]
     public bool drop;
-    void OnDestroy()
+    public void Drop()
     {
-        if (drop)
+        if (drop && dropingObject)
         {
             Instantiate(dropingObject, transform.position, transform.rotation);
         }

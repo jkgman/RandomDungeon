@@ -1,4 +1,5 @@
 ﻿//using System;
+using Pathfinding;
 using System;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,18 +21,26 @@ namespace Dungeon.Characters.Enemies
 
 		#region Getters & Setters		
 
-		private NavMeshAgent _agent;
-		private NavMeshAgent Agent
-		{
-			get
-			{
-				if (!_agent)
-					_agent = GetComponent<NavMeshAgent>();
-				return _agent;
-			}
-		}
+        private Seeker _seeker;
+        private Seeker Seeker
+        {
+            get {
+                if (!_seeker)
+                    _seeker = GetComponent<Seeker>();
+                return _seeker;
+            }
+        }
+        private AIPath _Pather;
+        private AIPath Pather
+        {
+            get {
+                if (!_Pather)
+                    _Pather = GetComponent<AIPath>();
+                return _Pather;
+            }
+        }
 
-		private Enemy _enemy;
+        private Enemy _enemy;
 		private Enemy Enemy
 		{
 			get
@@ -49,16 +58,21 @@ namespace Dungeon.Characters.Enemies
 		}
 
 
-		#endregion
-
+        #endregion
+        void Awake() {
+            if (!Pather)
+            {
+                throw new Exception("No pather found on enemy");
+            }
+        }
 		
 		private void OnEnable()
 		{
 			startPoint = transform.position;
-			if (Agent)
+			if (Pather)
 			{
-				Agent.speed = moveSpeed;
-				Agent.updateRotation = false;
+                Pather.maxSpeed = moveSpeed;
+                Pather.updateRotation = false;
 			}
 		}
 
@@ -69,27 +83,24 @@ namespace Dungeon.Characters.Enemies
 
 		public void Stroll()
 		{
-			if (Agent.isOnNavMesh)
+			/*SetRunning(false);
+			bool atDestination = (transform.position - Agent.destination).sqrMagnitude <= Agent.stoppingDistance * Agent.stoppingDistance * 1.1f;
+			if ((!Agent.pathPending && !Agent.hasPath) || atDestination || Agent.isPathStale)
 			{
-				SetRunning(false);
-				bool atDestination = (transform.position - Agent.destination).sqrMagnitude <= Agent.stoppingDistance * Agent.stoppingDistance * 1.1f;
-				if ((!Agent.pathPending && !Agent.hasPath) || atDestination || Agent.isPathStale)
-				{
-					currentDestination = CreateNewDestination();
-					Agent.SetDestination(currentDestination);
-				}
+				currentDestination = CreateNewDestination();
+				Agent.SetDestination(currentDestination);
 			}
+			
 
 			RotateTowardsMovement();
-			UpdateAnimationData();
+			UpdateAnimationData();*/
 		}
 		public void Idle()
 		{
-			if (Agent.isOnNavMesh)
-			{
-				if (!Agent.isStopped)
-					Agent.SetDestination(transform.position);
-			}
+
+            if (!Pather.isStopped)
+                Pather.destination=(transform.position);
+			
 			UpdateAnimationData();
 		}
 
@@ -107,8 +118,7 @@ namespace Dungeon.Characters.Enemies
 
 		public void Following(Vector3 targetPosition, bool targetVisible)
 		{ 
-			if (Agent.isOnNavMesh)
-				Agent.SetDestination(targetPosition);
+            Pather.destination=(targetPosition);
 
 			if (targetVisible)
 			{
@@ -153,16 +163,13 @@ namespace Dungeon.Characters.Enemies
 		{
 			base.SetRunning(value);
 
-			if (Agent)
-			{
-				Agent.speed = GetRunning() ? moveSpeed * runSpeedMultiplier : moveSpeed;
+			Pather.maxSpeed = GetRunning() ? moveSpeed * runSpeedMultiplier : moveSpeed;
 
-			}
 		}
 		public override void ExternalMove(Vector3 offset)
 		{
-			Agent.ResetPath();
-			Agent.Move(offset);
+			//Agent.ResetPath();
+            Pather.Move(offset);
 		}
 
 		#region Animations
@@ -170,7 +177,7 @@ namespace Dungeon.Characters.Enemies
 
 		void UpdateAnimationData()
 		{
-			bool stopped = !Agent.isOnNavMesh || Agent.isStopped;
+			bool stopped = Pather.isStopped;
 			float movePercentage = GetRunning() ? 1f : !stopped ? 0.5f : 0;
 			
 			Vector2 blend = new Vector2(0, movePercentage);

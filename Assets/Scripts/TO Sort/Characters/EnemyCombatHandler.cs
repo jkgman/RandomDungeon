@@ -7,17 +7,19 @@ using UnityEngine.AI;
 namespace Dungeon.Characters
 {
 	using Dungeon.Items;
+    using Pathfinding;
 
-	public class EnemyCombatHandler : CharacterCombatHandler , IAllowedEnemyActions
+    public class EnemyCombatHandler : CharacterCombatHandler , IAllowedEnemyActions
 	{
 		[SerializeField] private float targetFindDistance;
 		[SerializeField] private float maxAttackDistance;
 		[SerializeField] private float attackDelay;
 		[SerializeField] private LayerMask obstacleMask;
-		private float attackDelayTimer;
+        [SerializeField] private float stoppingDistance;
+        private float attackDelayTimer;
 		private bool attackTimerReset;
 		private Transform target;
-		private NavMeshAgent navMeshAgent;
+        private Seeker seeker;
 		private float targetSeenLastTime;
 		protected EnemyWeapon CurrentWeapon
 		{
@@ -28,7 +30,7 @@ namespace Dungeon.Characters
 		protected override void OnEnable()
 		{
 			base.OnEnable();
-			navMeshAgent = GetComponent<NavMeshAgent>();
+            seeker = GetComponent<Seeker>();
 		}
 
 		public Vector3 GetTargetPosition()
@@ -68,7 +70,7 @@ namespace Dungeon.Characters
 			if (targetSeenLastTime + 5f > Time.time)
 			{
 				//For 5 seconds after having seen target, it can see players position within its range.
-				float sqrDist = (navMeshAgent.stoppingDistance + targetFindDistance) * (navMeshAgent.stoppingDistance + targetFindDistance);
+				float sqrDist = (stoppingDistance + targetFindDistance) * (stoppingDistance + targetFindDistance);
 				if (GetTargetDirection().sqrMagnitude < sqrDist)
 					return true;
 			}
@@ -99,7 +101,7 @@ namespace Dungeon.Characters
 		{
 			bool canAttack = true;
 			float sqrLen = GetTargetDirection().sqrMagnitude;
-			if (sqrLen < navMeshAgent.stoppingDistance * navMeshAgent.stoppingDistance)
+			if (sqrLen < stoppingDistance * stoppingDistance)
 			{
 				//Reset timer once
 				if (!attackTimerReset)

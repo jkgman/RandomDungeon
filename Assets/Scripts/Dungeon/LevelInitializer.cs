@@ -10,20 +10,18 @@ public class LevelInitializer : MonoBehaviour
     [SerializeField]
     private SeedSettings seed;
 
-    private InstanceTracker enenmyTracker;
+    private InstanceTracker enemyTracker;
 
     public Vector3 ExitLocation;
     public GameObject EnemyWithKey;
 
     void Awake()
     {
-        Debug.Log("start");
-        enenmyTracker = GetComponent<InstanceTracker>();
+        enemyTracker = GetComponent<InstanceTracker>();
 
         //Initialize level layout
-
         HLMap hlMap = null;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 10; i++)
         {
             try
             {
@@ -32,17 +30,20 @@ public class LevelInitializer : MonoBehaviour
             }
             catch (System.Exception)
             {
-                Debug.Log("failed to generat " + i + " times");
             }
         }
         hlMap.GenerateLL();
         Debug.Log("generation finished");
+
+
+
         //Initialize navmesh
         //Spawn enemies
         enemySpawns.Spawn(seed.EnemyCount, seed.Enemy);
         Debug.Log("enemy spawn finished");
+
         //Add key to enemy
-        EnemyWithKey = enenmyTracker.GetRandomInstance();
+        EnemyWithKey = enemyTracker.GetRandomInstance();
         EnemyWithKey.GetComponent<DropOnDestroy>().drop = true;
         Debug.Log("key set");
     }
