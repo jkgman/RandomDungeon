@@ -20,4 +20,4 @@ MonoBehaviour:
   endAreaOptions:
   - {fileID: 11400000, guid: b25ffadc09cc4634d8750bfa298d9ebe, type: 2}
   enemyCount: 6
-  enemy: {fileID: 6212252257882444870, guid: fab49606a9aebf74dbf0f02f3b5eb7c2, type: 3}
+  enemy: {fileID: 3200293846820443431, guid: ad65c38e248ce5a42948a4a46031d586, type: 3}

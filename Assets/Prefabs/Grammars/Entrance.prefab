@@ -162,6 +162,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Env_Cliff_01
       objectReference: {fileID: 0}
+    - target: {fileID: 114422, guid: b1c5ebf76ee684f4d9c641a1fc1523cf, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 449656, guid: b1c5ebf76ee684f4d9c641a1fc1523cf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.4499998
@@ -242,6 +246,10 @@ PrefabInstance:
     - target: {fileID: 189614, guid: a0cb2c321fdf00a4ba429209e735b448, type: 3}
       propertyPath: m_Name
       value: SM_Env_Canal_Bridge_01
+      objectReference: {fileID: 0}
+    - target: {fileID: 189614, guid: a0cb2c321fdf00a4ba429209e735b448, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 402560, guid: a0cb2c321fdf00a4ba429209e735b448, type: 3}
       propertyPath: m_LocalPosition.x
