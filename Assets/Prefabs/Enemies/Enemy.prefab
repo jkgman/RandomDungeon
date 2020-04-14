@@ -280,7 +280,7 @@ MonoBehaviour:
   maxIdleTime: 1
   minStrollTime: 5
   maxStrollTime: 20
-  drop: {fileID: 0}
+  drop: {fileID: 5522711248394270394}
 --- !u!114 &981046088299306808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,7 +336,6 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 1
-  stoppingDistance: 1.5
 --- !u!114 &1141368157660754280
 MonoBehaviour:
   m_ObjectHideFlags: 0

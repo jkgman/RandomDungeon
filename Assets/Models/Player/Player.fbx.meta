@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f3575e209378c7945ab01ef3fb555451
+guid: 5d50650d9057d384789b2d323e13827a
 ModelImporter:
   serializedVersion: 19300
   internalIDToNameTable:
@@ -74,7 +74,7 @@ ModelImporter:
     second: roll
   externalObjects: {}
   materials:
-    materialImportMode: 1
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
