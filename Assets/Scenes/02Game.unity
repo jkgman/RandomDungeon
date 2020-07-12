@@ -545,7 +545,7 @@ MonoBehaviour:
     data_cachedStartup: 
     cacheStartup: 0
   showNavGraphs: 1
-  showUnwalkableNodes: 1
+  showUnwalkableNodes: 0
   debugMode: 0
   debugFloor: 0
   debugRoof: 1
@@ -611,7 +611,7 @@ MonoBehaviour:
     seed: 0
     pivotPointRoot: {fileID: 0}
     spreadOutCount: 1
-  showGraphs: 1
+  showGraphs: 0
 --- !u!4 &1491286339
 Transform:
   m_ObjectHideFlags: 0

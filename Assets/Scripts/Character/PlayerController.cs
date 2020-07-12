@@ -7,15 +7,11 @@ namespace INDEV.Player
 
     public class PlayerController : MonoBehaviour
     {
-
+        private void Start()
+        {
+        }
         private Vector3 MovementVector;
 
-        void Input(Vector3 newMovement)
-        {
-            //add newMovement vector normalized into movement vector
-        }
-
-        // Update is called once per frame
         void Update()
         {
             //Move movement vector amount 
@@ -23,9 +19,14 @@ namespace INDEV.Player
             //run any combat commands
         }
 
-        public async void Move() { }
+        public async void Move() {
+            //start move animation blended towards direction, or continue it
+        }
 
-        public async void Roll() { }
-        public async void LockOn() { }
+        public async void Roll() {
+            //cancel current animation and start rolling, this locks movement
+        }
+
+
     }
 }
