@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace INDEV.Player
 {
-    public enum MoveState { Walk, Run, Idle, Attack }
+    public enum MoveState { Idle, Walk, Run, Attack, Roll }
 
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
@@ -27,19 +27,24 @@ namespace INDEV.Player
         [SerializeField]
         private float rotateSpeed = 90;
 
+        [Header("Roll Parameters")]
+        [SerializeField]
+        private float rollMagnitude = 1;
+        [SerializeField]
+        private AnimationCurve rollCurve;
+
         //Make sure the values match up with the animators triggers
         private Dictionary<MoveState, string> stateDictionary = new Dictionary<MoveState, string>()
         {
             { MoveState.Walk, "Walk"},
             { MoveState.Run, "Run" },
             { MoveState.Idle, "Idle"},
-            { MoveState.Attack, "Attack"}
+            { MoveState.Attack, "Attack"},
+            { MoveState.Roll, "Roll"}
         };
         private CharacterController control;
 
-        private MoveState currentState;
-
-        bool inputLocked = false;
+        private MoveState currentState = MoveState.Idle;
 
         private bool running = false;
 
@@ -59,9 +64,6 @@ namespace INDEV.Player
 
         public void OnMove(InputAction.CallbackContext context)
         {
-            if(inputLocked)
-                return;
-
             Vector2 input = context.ReadValue<Vector2>();
             Vector3 projectedVector = new Vector3(input.x, 0, input.y);
             currentMoveInput = projectedVector;
@@ -70,28 +72,21 @@ namespace INDEV.Player
 
         public void OnRun(InputAction.CallbackContext context)
         {
-            if(context.started)
-            {
-                if(inputLocked)
-                    return;
-                running = true;
+            if(context.started) { 
                 lockedOn = false;
+                running = true;
             }
             else if(context.canceled)
-            {
                 running = false;
-            }
         }
 
         public void OnTargetLock(InputAction.CallbackContext context)
         {
-            if(!context.started || running)
+            if(!context.started)
                 return;
 
             if(!lockedOn)
             {
-                if(inputLocked)
-                    return;
                 lockedOn = true;
                 lockOnTarget = targetSystem.FindClosestTarget(transform.position);
             }
@@ -102,24 +97,35 @@ namespace INDEV.Player
         }
 
         public void OnAttack(InputAction.CallbackContext context) {
-
-            if(inputLocked || !context.started)
+            if(!context.started || currentState == MoveState.Roll || currentState == MoveState.Attack)
                 return;
             Attack();
+        }
+
+        public void OnRoll(InputAction.CallbackContext context)
+        {
+            if(!context.started || currentState == MoveState.Roll || currentState == MoveState.Attack)
+                return;
+            Roll();
         }
 
         #endregion Input Handling
 
         void Update()
         {
-            EvaluateMovement();
+            if(currentState == MoveState.Roll || currentState == MoveState.Attack)
+            {
+                return;
+            }
+            if(!EvaluateMovement())
+            {
+                ChangeState(MoveState.Idle);
+            }
         }
 
-        private void EvaluateMovement()
+        private bool EvaluateMovement()
         {
-            if(inputLocked)
-                return;
-
+            bool moved = false;
             Vector3 moveVector = (totalMovementVector.magnitude > 0) ? totalMovementVector : currentMoveInput;
             moveVector = (moveVector.magnitude <= moveVector.normalized.magnitude) ? moveVector : moveVector.normalized;
             moveVector *= Time.deltaTime;
@@ -130,13 +136,11 @@ namespace INDEV.Player
                     LockedOnMovement(moveVector);
                 else
                     FreeMove(moveVector);
-            }
-            else
-            {
-                ChangeState(MoveState.Idle);
+                moved = true;
             }
             totalMovementVector = Vector2.zero;
             direction = transform.forward;
+            return moved;
         }
 
         private void FreeMove(Vector3 moveVector) 
@@ -172,18 +176,41 @@ namespace INDEV.Player
             Vector2 dir = new Vector2(moveVector.x, moveVector.z);
             float dirAngle = Vector2Extensions.GetDegree(dir);
             float targetAngle = Vector2Extensions.GetDegree(lockOnTarget.transform.position - transform.position);
-            animator.SetFloat("WalkBlend", dirAngle - targetAngle);
+            float result = (dirAngle - targetAngle) - Mathf.CeilToInt((dirAngle - targetAngle) / 360f) * 360f;
+            if(result < 0)
+            {
+                result += 360f;
+            }
+            animator.SetFloat("WalkBlend", result);
             control.Move(moveVector);
             transform.LookAt(new Vector3(lockOnTarget.transform.position.x,transform.position.y, lockOnTarget.transform.position.z), Vector3.up);
         }
+        
+        #region Priority States
 
+        //priority states cancel whatever your currently doing to execute them if current state is cancelable, otherwise queues up for next action
         private async Task Attack()
         {
-            inputLocked = true;
             ChangeState(MoveState.Attack);
-            await WaitForAnimation(stateDictionary[MoveState.Attack]);
-            inputLocked = false;
+            await Awaiters.Seconds(.867f);
+            await Awaiters.NextFrame;
+            totalMovementVector = Vector2.zero;
+            currentState = MoveState.Idle;
         }
+
+        private async Task Roll()
+        {
+            ChangeState(MoveState.Roll);
+            Vector3 dir;
+            if(currentMoveInput.magnitude > 0)
+                dir = currentMoveInput.normalized;
+            else
+                dir = direction;
+            await AsyncAnimation.GlobalTranslate(transform, transform.position + dir * rollMagnitude, rollCurve, 2.4f);
+            totalMovementVector = Vector2.zero;
+            currentState = MoveState.Idle;
+        }
+        #endregion Priority States
 
         private async Task WaitForAnimation(string Animation)
         {
@@ -194,9 +221,12 @@ namespace INDEV.Player
             }
         }
 
+        private async Task Move(Vector3 destination, AnimationCurve curve, float duration) {
+
+        }
+
         private void ChangeState(MoveState state) {
             if(state != currentState) {
-                animator.ResetTrigger(stateDictionary[currentState]);
                 animator.SetTrigger(stateDictionary[state]);
                 currentState = state;
             }

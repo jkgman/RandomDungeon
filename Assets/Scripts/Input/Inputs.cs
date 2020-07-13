@@ -511,17 +511,6 @@ public class @Inputs : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""c017f771-6ed9-4dc7-8e60-b3388c9f5dde"",
-                    ""path"": ""<Keyboard>/space"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";KBM"",
-                    ""action"": ""TargetLock"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""e3af22c2-c39e-45fd-a7f0-ff1a6109dbbe"",
                     ""path"": ""<Gamepad>/rightStick"",
                     ""interactions"": """",
