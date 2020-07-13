@@ -298,9 +298,9 @@ public class @Inputs : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": ""TargetLock"",
-                    ""type"": ""Value"",
+                    ""type"": ""Button"",
                     ""id"": ""1106d524-5dc4-4b2f-960e-67d3c74592c0"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
                 },
