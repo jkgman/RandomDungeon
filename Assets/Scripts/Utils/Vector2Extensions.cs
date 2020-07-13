@@ -28,4 +28,19 @@ public class Vector2Extensions
     {
         return RotateRadians(vec, deg * Mathf.Deg2Rad);
     }
+
+    public static float GetRadian(Vector2 vec)
+    {
+        vec = RotateDegree(vec.normalized, -90);
+        float angle = Mathf.Atan2(vec.y, vec.x);
+        if(vec.y < 0)
+        {
+            angle = 2* Mathf.PI + angle;
+        }
+        return angle;
+    }
+    public static float GetDegree(Vector2 vec)
+    {
+        return GetRadian(vec) * Mathf.Rad2Deg;
+    }
 }

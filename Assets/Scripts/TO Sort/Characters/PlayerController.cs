@@ -429,10 +429,10 @@ namespace Dungeon.Characters
 			inputs.Player.Move.canceled += InputMoveCancelled;
 			inputs.Player.Move.Enable();
 
-			inputs.Player.RunAndDodge.started += InputRunStarted;
-			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
-			inputs.Player.RunAndDodge.canceled += InputRunCancelled;
-			inputs.Player.RunAndDodge.Disable();
+			//inputs.Player.RunAndDodge.started += InputRunStarted;
+			//inputs.Player.RunAndDodge.performed -= InputRunPerformed;
+			//inputs.Player.RunAndDodge.canceled += InputRunCancelled;
+			//inputs.Player.RunAndDodge.Disable();
 		}
 
 		void ControlsUnsubscribe()
@@ -443,10 +443,10 @@ namespace Dungeon.Characters
 			inputs.Player.Move.Disable();
 
 
-			inputs.Player.RunAndDodge.started -= InputRunStarted;
-			inputs.Player.RunAndDodge.performed -= InputRunPerformed;
-			inputs.Player.RunAndDodge.canceled -= InputRunCancelled;
-			inputs.Player.RunAndDodge.Disable();
+			//inputs.Player.RunAndDodge.started -= InputRunStarted;
+			//inputs.Player.RunAndDodge.performed -= InputRunPerformed;
+			//inputs.Player.RunAndDodge.canceled -= InputRunCancelled;
+			//inputs.Player.RunAndDodge.Disable();
 		}
 
 

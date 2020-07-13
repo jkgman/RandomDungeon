@@ -388,9 +388,9 @@ namespace Dungeon.Characters
 			inputs.Player.TargetLock.Enable();
 			inputs.Player.SwitchTarget.started += InputTargetSwitch;
 			inputs.Player.SwitchTarget.Enable();
-			inputs.Player.RunAndDodge.started += InputDodgeStarted;
-			inputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
-			inputs.Player.RunAndDodge.Enable();
+			//inputs.Player.RunAndDodge.started += InputDodgeStarted;
+			//inputs.Player.RunAndDodge.canceled += InputDodgeCancelled;
+			//inputs.Player.RunAndDodge.Enable();
 			inputs.Player.Attack.started += InputAttackStarted;
 			inputs.Player.Attack.canceled += InputAttackCancelled;
 			inputs.Player.Attack.Enable();
@@ -402,8 +402,8 @@ namespace Dungeon.Characters
 		{
 			inputs.Player.TargetLock.performed -= InputTargetLock;
 			inputs.Player.SwitchTarget.started -= InputTargetSwitch;
-			inputs.Player.RunAndDodge.started -= InputDodgeStarted;
-			inputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
+			//inputs.Player.RunAndDodge.started -= InputDodgeStarted;
+			//inputs.Player.RunAndDodge.canceled -= InputDodgeCancelled;
 			inputs.Player.Move.performed -= InputAttackCancellationPerformed;
 
 		}
