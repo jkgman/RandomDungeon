@@ -8,27 +8,10 @@ using UnityEngine.InputSystem;
 
 namespace RandomDungeon.Agent
 {
-    public enum MoveState { Idle, Walk, Run, Attack, Roll }
 
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : AgentBody
     {
-        [Header("Roll Parameters")]
-        [SerializeField]
-        private float rollMagnitude = 1;
-        [SerializeField]
-        private AnimationCurve rollCurve;
-
-        //Make sure the values match up with the animators triggers
-        private Dictionary<MoveState, string> stateDictionary = new Dictionary<MoveState, string>()
-        {
-            { MoveState.Walk, "Walk"},
-            { MoveState.Run, "Run" },
-            { MoveState.Idle, "Idle"},
-            { MoveState.Attack, "Attack"},
-            { MoveState.Roll, "Roll"}
-        };
-
 
         #region Input Handling
 
@@ -79,49 +62,18 @@ namespace RandomDungeon.Agent
         {
             if(!context.started)
                 return;
-            nextAction = Action.Attack;
+            nextAction = AgentAction.Attack;
         }
 
         public void OnRoll(InputAction.CallbackContext context)
         {
             if(!context.started)
                 return;
-            nextAction = Action.Roll;
+            nextAction = AgentAction.Roll;
         }
 
         #endregion Input Handling
 
-
-        #region Priority States
-
-        //priority states cancel whatever your currently doing to execute them if current state is cancelable, otherwise queues up for next action
-        private async Task Attack()
-        {
-            await Awaiters.Seconds(.867f);
-            await Awaiters.NextFrame;
-            totalMovementVector = Vector2.zero;
-        }
-
-        private async Task Roll()
-        {
-            Vector3 dir;
-            if(currentMoveInput.magnitude > 0)
-                dir = currentMoveInput.normalized;
-            else
-                dir = transform.forward;
-            await AsyncAnimation.GlobalTranslate(transform, transform.position + dir * rollMagnitude, rollCurve, 2.4f);
-            totalMovementVector = Vector2.zero;
-        }
-        #endregion Priority States
-
-        private async Task WaitForAnimation(string Animation)
-        {
-            while(animator.GetCurrentAnimatorStateInfo(0).IsName(Animation) || animator.GetNextAnimatorStateInfo(0).IsName(Animation))
-            {
-                Debug.Log("await");
-                await Awaiters.NextFrame;
-            }
-        }
 
 
     }

@@ -1,9 +1,11 @@
-﻿using Systems.Targeting;
+﻿using System.Threading.Tasks;
+using RandomDungeon.Combat;
+using Systems.Targeting;
 using UnityEngine;
 namespace RandomDungeon.Agent
 {
     public enum AgentState { Idle, Movement, Action }
-    public enum Action { None, Attack, Roll }
+    public enum AgentAction { None, Attack, Roll }
 
     [RequireComponent(typeof(CharacterController))]
     public class AgentBody : MonoBehaviour
@@ -11,18 +13,49 @@ namespace RandomDungeon.Agent
         [Header("Scene References")]
         [SerializeField]
         protected Animator animator;
+
         [Header("Asset References")]
         [SerializeField]
         protected TargetSystem targetSystem;
+
         [Header("Movement Parameters")]
         [SerializeField]
-        protected float walkSpeed;
+        protected float walkSpeed = 1;
         [SerializeField]
-        protected float runSpeed;
+        protected float runSpeed = 2;
         [SerializeField]
         protected float rotateSpeed = 650;
 
+        [Header("Roll Parameters")]
+        [SerializeField]
+        private float rollMagnitude = 1;
+        [SerializeField]
+        private AnimationCurve rollCurve;
+        [SerializeField]
+        private float rollDuration = 1;
         protected CharacterController control;
+
+        [Header("Attack Parameters")]
+        [SerializeField]
+        private CombatWeapon weapon;
+
+        [Header("Animation Triggers"), Tooltip("Make sure the hooked up animator uses these triggers for state handling")]
+        [SerializeField]
+        private string rollTrigger = "Roll";
+        [SerializeField]
+        private string attackTrigger = "Attack";
+        [SerializeField]
+        private string walkTrigger = "Walk";
+        [SerializeField]
+        private string runTrigger = "Run";
+        [SerializeField]
+        private string idleTrigger = "Idle";
+
+        [SerializeField]
+        private string walkBlendName = "WalkBlend";
+
+        [SerializeField]
+        private string idleStateName = "Base Layer.Idle";
 
         protected float GetSpeed { get => running ? runSpeed : walkSpeed; }
 
@@ -31,7 +64,7 @@ namespace RandomDungeon.Agent
         protected Target focusTarget;
         protected bool lockState = false;
         protected bool running = false;
-        protected Action nextAction = Action.None;
+        protected AgentAction nextAction = AgentAction.None;
 
         //Inputs
         protected Vector3 currentMoveInput;
@@ -49,13 +82,13 @@ namespace RandomDungeon.Agent
             switch(state)
             {
                 case AgentState.Idle:
-                    if(nextAction != Action.None)
+                    if(nextAction != AgentAction.None)
                         StartActionState(nextAction);
                     else if(currentMoveInput.magnitude > 0)
                         StartMoveState();
                     break;
                 case AgentState.Movement:
-                    if(nextAction != Action.None)
+                    if(nextAction != AgentAction.None)
                         StartActionState(nextAction);
                     else if(currentMoveInput.magnitude > 0)
                         Move();
@@ -63,7 +96,7 @@ namespace RandomDungeon.Agent
                         StartIdleState();
                     break;
                 case AgentState.Action:
-                    if(nextAction != Action.None)
+                    if(nextAction != AgentAction.None)
                         StartActionState(nextAction);
                     break;
                 default:
@@ -75,40 +108,46 @@ namespace RandomDungeon.Agent
         {
             state = AgentState.Movement;
             if(running)
-                animator.SetTrigger("Run");
+                animator.SetTrigger(runTrigger);
             else
-                animator.SetTrigger("Walk");
+                animator.SetTrigger(walkTrigger);
             Move();
         }
 
         public void StartIdleState()
         {
             state = AgentState.Idle;
-            animator.SetTrigger("Idle");
+            animator.SetTrigger(idleTrigger);
         }
-        public void StartActionState(Action action)
+
+        public async Task StartActionState(AgentAction action)
         {
             if(lockState)
             {
                 nextAction = action;
                 return;
             }
+            lockState = true;
             state = AgentState.Action;
-            //do action
+            nextAction = AgentAction.None;
             switch(action)
             {
-                case Action.None:
-                    return;
-                case Action.Attack:
+                case AgentAction.Attack:
+                    await Attack();
                     break;
-                case Action.Roll:
+                case AgentAction.Roll:
+                    await Roll();
                     break;
+                case AgentAction.None:
                 default:
-                    break;
+                    return;
             }
-
-            //on action finish set to idle state
-            //do nextAction if present
+            lockState = false;
+            totalMovementVector = Vector2.zero;
+            if(nextAction == AgentAction.None)
+            {
+                StartIdleState();
+            }
         }
 
         public void Move()
@@ -128,7 +167,7 @@ namespace RandomDungeon.Agent
         private void FreeMove(Vector3 moveVector)
         {
             moveVector *= GetSpeed;
-            animator.SetFloat("WalkBlend", 0);
+            animator.SetFloat(walkBlendName, 0);
 
             float angle = Vector3.Angle(transform.forward, moveVector);
             Vector3 Move = transform.forward * moveVector.magnitude * ((360 - angle) / 360);
@@ -151,11 +190,32 @@ namespace RandomDungeon.Agent
             {
                 result += 360f;
             }
-            animator.SetFloat("WalkBlend", result);
+            animator.SetFloat(walkBlendName, result);
             control.Move(moveVector);
             transform.LookAt(new Vector3(focusTarget.transform.position.x, transform.position.y, focusTarget.transform.position.z), Vector3.up);
         }
 
+        private async Task Attack()
+        {
+            weapon.Activate();
+            animator.SetTrigger(attackTrigger);
+            await AsyncAnimation.WaitForAnimation(idleStateName, animator);
+            weapon.DeActivate();
+        }
+
+        private async Task Roll()
+        {
+            Vector3 dir;
+
+            if(currentMoveInput.magnitude > 0)
+                dir = currentMoveInput.normalized;
+            else
+                dir = transform.forward;
+
+            animator.SetTrigger(rollTrigger);
+            AsyncAnimation.GlobalTranslate(transform, transform.position + dir * rollMagnitude, rollCurve, rollDuration);
+            await AsyncAnimation.WaitForAnimation(idleStateName, animator);
+        }
 
         public void FocusTarget()
         {

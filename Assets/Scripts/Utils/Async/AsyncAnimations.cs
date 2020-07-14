@@ -130,4 +130,33 @@ public static class AsyncAnimation
         target.color = newColor;
     }
 
+    /// <summary>
+    /// Waits for animator to reach animation state of string, kinda dangerous as it relys on proper naming
+    /// </summary>
+    /// <param name="Animation"></param>
+    /// <param name="animator"></param>
+    /// <returns></returns>
+    public static async Task WaitForAnimation(string Animation, Animator animator)
+    {
+        while(!animator.GetCurrentAnimatorStateInfo(0).IsName(Animation))
+        {
+            await Awaiters.NextFrame;
+        }
+    }
+
+    /// <summary>
+    /// Waits for animator to reach animation state of string, kinda dangerous as it relys on proper naming, little safer due to timeout
+    /// </summary>
+    /// <param name="Animation"></param>
+    /// <param name="animator"></param>
+    /// <returns></returns>
+    public static async Task WaitForAnimation(string Animation, Animator animator, float timeOutDuration)
+    {
+        float startTime = Time.time;
+        while(!animator.GetCurrentAnimatorStateInfo(0).IsName(Animation) && timeOutDuration <= Time.time - startTime)
+        {
+            await Awaiters.NextFrame;
+        }
+    }
+
 }
