@@ -21,15 +21,6 @@ namespace Dungeon.Characters.Enemies
 
 		#region Getters & Setters		
 
-        private Seeker _seeker;
-        private Seeker Seeker
-        {
-            get {
-                if (!_seeker)
-                    _seeker = GetComponent<Seeker>();
-                return _seeker;
-            }
-        }
         private AIPath _Pather;
         private AIPath Pather
         {

@@ -32,30 +32,30 @@ namespace RandomDungeon.Agent
         [SerializeField]
         private AnimationCurve rollCurve;
         [SerializeField]
-        private float rollDuration = 1;
+        protected float rollDuration = 1;
         protected CharacterController control;
 
         [Header("Attack Parameters")]
         [SerializeField]
-        private CombatWeapon weapon;
+        protected CombatWeapon weapon;
 
         [Header("Animation Triggers"), Tooltip("Make sure the hooked up animator uses these triggers for state handling")]
         [SerializeField]
-        private string rollTrigger = "Roll";
+        protected string rollTrigger = "Roll";
         [SerializeField]
-        private string attackTrigger = "Attack";
+        protected string attackTrigger = "Attack";
         [SerializeField]
-        private string walkTrigger = "Walk";
+        protected string walkTrigger = "Walk";
         [SerializeField]
-        private string runTrigger = "Run";
+        protected string runTrigger = "Run";
         [SerializeField]
-        private string idleTrigger = "Idle";
+        protected string idleTrigger = "Idle";
 
         [SerializeField]
-        private string walkBlendName = "WalkBlend";
+        protected string walkBlendName = "WalkBlend";
 
         [SerializeField]
-        private string idleStateName = "Base Layer.Idle";
+        protected string idleStateName = "Base Layer.Idle";
 
         protected float GetSpeed { get => running ? runSpeed : walkSpeed; }
 

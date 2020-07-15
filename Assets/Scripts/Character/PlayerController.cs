@@ -31,14 +31,14 @@ namespace RandomDungeon.Agent
                 running = true;
                 if(state == AgentState.Movement)
                 {
-                    animator.SetTrigger("Run");
+                    animator.SetTrigger(runTrigger);
                 }
             }
             else if(context.canceled) {
                 running = false;
                 if(state == AgentState.Movement)
                 {
-                    animator.SetTrigger("Walk");
+                    animator.SetTrigger(walkTrigger);
                 }
             }
         }
