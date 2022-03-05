@@ -20,7 +20,7 @@ MonoBehaviour:
     min: 0
   indirectDiffuseIntensity:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 428.8
     min: 0
 --- !u!114 &-32670715171550535
 MonoBehaviour:
@@ -111,19 +111,19 @@ MonoBehaviour:
     min: 0
   baseHeight:
     m_OverrideState: 1
-    m_Value: 16.7
+    m_Value: 5.7
   maximumHeight:
     m_OverrideState: 1
-    m_Value: 20
+    m_Value: 25
   albedo:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 1}
     hdr: 0
     showAlpha: 1
     showEyeDropper: 1
   meanFreePath:
     m_OverrideState: 1
-    m_Value: 136.34
+    m_Value: 5.45
     min: 1
   enableVolumetricFog:
     m_OverrideState: 1
